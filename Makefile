@@ -1,6 +1,6 @@
 NAME = a.out
 
-SRCS = main.cpp
+SRCS = main2.cpp
 
 FLAGS =  -std=c++98 -fsanitize=address -g 	#-Wall -Wextra -Werror
 
