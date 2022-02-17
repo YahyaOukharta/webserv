@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <map>
+#include "Request.hpp"
 class Server
 {
 	private:
@@ -15,6 +17,7 @@ class Server
 		int sock;
 		struct sockaddr_in address;
 		
+
 	public:
 		Server(){
 
@@ -115,11 +118,10 @@ class Server
 				tmp = new_sock;
 			}
 			int rd = 0;
-			while(rd == 0)
-			{
+			while(rd == 0) 
 				rd = recv( new_sock , buffer, 102400, 0);
-			}
-			std::cout << "val=" << rd << " " << buffer << std::endl<< std::endl;
+			Request req(buffer);
+			
 			std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
 			send(new_sock, response.c_str(), response.size(), 0);
 			close(new_sock);
