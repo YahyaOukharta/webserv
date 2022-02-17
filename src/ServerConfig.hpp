@@ -13,6 +13,8 @@ class ServerConfig
 		int			_port;  // server port, ie 8080
 		int			_backlog; //request queue size
 
+
+
 	public:
 		ServerConfig(){};
 

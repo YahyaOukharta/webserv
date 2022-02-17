@@ -3,7 +3,7 @@
 
 int main(int ac, char **av)
 {
-    ServerConfig conf("hello", "0.0.0.0", 3000, 10);
+    ServerConfig conf("hello", "0.0.0.0", 8000, 10);
     Server srv(conf);
 
     srv.initServer();

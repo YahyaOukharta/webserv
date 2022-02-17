@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-
+#include <fcntl.h>
 class Server
 {
 	private:
@@ -60,8 +60,6 @@ class Server
 				std::cout << "Invalid configuration " << getConfig() << std::endl;
 				return (-1);
 			}
-			std::cout << "good" << std::endl;
-
 			// Create server socket
 			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			if (sock <= 0)
@@ -80,6 +78,7 @@ class Server
 			address.sin_family = AF_INET;
 			address.sin_addr.s_addr =  INADDR_ANY;
 			address.sin_port = htons(conf.getPort());
+
 			if (bind(sock, (struct sockaddr *)&address, sizeof(address)))
 			{
 				perror("bind");
@@ -95,27 +94,41 @@ class Server
 	
 	int run (){
 
+		int tmp = 0;
 		while (1)
 		{
 			int new_sock;
 			int address_size = sizeof(address);
+
+			std::cout << "waiting for connection" << conf.getPort() << std::endl;
 			if((new_sock = accept(sock, (struct sockaddr *)&address, (socklen_t*)&address_size)) < 0)
 			{
 				perror("accept");
 				std::cout << "Error accepting" << std::endl;
+				return (-1);
 			}
 			std::cout << "accepted connection on port " << conf.getPort() << std::endl;
-			char buffer[1024] = {0};
-			int valread = read( new_sock , buffer, 1024);
-			if(valread == 0) //EOF
-				break;
-			printf("%s\n",buffer );
-			send(new_sock, "HELLOOOO\n", 9, 0);
+			char buffer[102400] = {0};
+			if(tmp!=new_sock)
+			{
+				fcntl(new_sock, F_SETFL,O_NONBLOCK);
+				tmp = new_sock;
+			}
+			int rd = 0;
+			while(rd == 0)
+			{
+				rd = recv( new_sock , buffer, 102400, 0);
+			}
+			std::cout << "val=" << rd << " " << buffer << std::endl<< std::endl;
+			std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+			send(new_sock, response.c_str(), response.size(), 0);
+			close(new_sock);
 		}
+		return (0);
 	}
 
 };
-
+//fcntl(fd, F_SETFL, O_NONBLOCK);
 std::ostream &			operator<<( std::ostream & o, Server const & i );
 
 #endif /* ********************************************************** SERVER_H */
