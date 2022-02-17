@@ -74,7 +74,7 @@ class Server
 			int sockopt_val = 1;
 			if ( setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockopt_val, sizeof(sockopt_val)) )
 			{
-				perror("setsockopt");
+				//perror("setsockopt");
 				std::cout << "Error setting socket options" << std::endl;
 				return (-3);
 			}
@@ -84,13 +84,14 @@ class Server
 
 			if (bind(sock, (struct sockaddr *)&address, sizeof(address)))
 			{
-				perror("bind");
+				//perror("bind");
 				std::cout << "Error bind socket to port" << std::endl;
 			}
 			if(listen(sock, 3)){
-				perror("listen");
+				//perror("listen");
 				std::cout << "Error listening" << std::endl;
 			}
+
 			std::cout << "Listening on port " << conf.getPort() << std::endl;
 			return (0);
 		}
@@ -103,33 +104,44 @@ class Server
 			int new_sock;
 			int address_size = sizeof(address);
 
-			std::cout << "waiting for connection" << conf.getPort() << std::endl;
+			std::cout << std::endl << "waiting for connection ..." << std::endl << std::endl;
 			if((new_sock = accept(sock, (struct sockaddr *)&address, (socklen_t*)&address_size)) < 0)
 			{
-				perror("accept");
+				//perror("accept");
 				std::cout << "Error accepting" << std::endl;
 				return (-1);
 			}
-			std::cout << "accepted connection on port " << conf.getPort() << std::endl;
+			std::cout << "-> Request :" << conf.getPort() << std::endl;
 			char buffer[102400] = {0};
 			if(tmp!=new_sock)
 			{
-				fcntl(new_sock, F_SETFL,O_NONBLOCK);
+				//fcntl(new_sock, F_SETFL,O_NONBLOCK);
 				tmp = new_sock;
 			}
+
 			int rd = 0;
-			while(rd == 0) 
 				rd = recv( new_sock , buffer, 102400, 0);
-			Request req(buffer);
-			
-			std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
-			send(new_sock, response.c_str(), response.size(), 0);
-			close(new_sock);
+			// std::cout << "buffer <"<<buffer<<">" <<std::endl<<std::endl;
+			try
+			{
+				Request req(buffer);
+				std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+				send(new_sock, response.c_str(), response.size(), 0);
+				close(new_sock);
+			}
+			catch(const webserv_exception& e)
+			{
+				std::string response("HTTP/1.1 500 ERROR\r\n\r\nOops\r\n");
+				send(new_sock, response.c_str(), response.size(), 0);
+				close(new_sock);
+				std::cerr << "Error : "<< e.what() << '\n';
+			}
 		}
 		return (0);
 	}
 
 };
+
 //fcntl(fd, F_SETFL, O_NONBLOCK);
 std::ostream &			operator<<( std::ostream & o, Server const & i );
 

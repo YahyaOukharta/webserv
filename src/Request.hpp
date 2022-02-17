@@ -8,10 +8,15 @@
 
 class Request
 {
+	public:
+		typedef typename std::vector<std::string> vec;
+		typedef typename std::vector<std::string>::iterator iter;
+
 	private:
 		std::string protocol; // HTTP
 		std::string version;  // 1.1
 
+		std::string method; // GET POST OPTIONS ...
 		std::string path;  //   /ee/aa/
 		std::string query; //	?hello=1&dkd=22
 		
@@ -19,27 +24,111 @@ class Request
 
 		std::string body;
 
+
 	public:
 
 		Request(){
 
 		}
-		Request(std::string raw_req){
-			parse_request(raw_req);
+		Request(std::string raw_req)
+		{
+			int error;
+			if ((error = parse_request(raw_req))){
+				if (error == 1)
+					throw webserv_exception("Bad request");
+				if (error == 2)
+					throw webserv_exception("Unsupported method");
+				if (error == 3)
+					throw webserv_exception("Too many '?'");
+			}
+			print();
 		}
 		Request( Request const & src );
 		~Request(){}
 
 		Request &		operator=( Request const & rhs );
 
+		// parsing
+
 		int parse_request(std::string raw_req){
-			std::vector<std::string> lines = split_to_lines(raw_req,"\r\n\r\n\r\n");
-			if(lines.size()==2)
-				body = lines[1];
-			
-			
+			vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
+			if (req_split_body.size() != 2)
+				return (1);
+			body = req_split_body[1];
+
+			//including first line
+			vec head = split_to_lines(req_split_body[0]);
+
+			//parse first line
+			std::string first_line = head[0]; // line 1
+			int ret = parse_first_line(first_line);
+			if (ret) return ret;
+
+			//parse headers
+			head.erase(head.begin());
+			for (iter it = head.begin(); it != head.end(); ++it)
+			{
+				vec header = split_to_lines(*it, ":");
+				headers[header[0]] = header[1];
+			}
 			return (0);
 		}
+
+		int parse_first_line(std::string first_line)
+		{
+			vec tokens = split_to_lines(first_line," ");
+			if (tokens.size() != 3)
+				return 1;
+			method = tokens[0];
+			vec tmp = split_to_lines(tokens[1],"?");
+			if (tmp.size() > 2)
+				return (3);
+			path = tmp[0];
+			query= tmp.size()==2 ? tmp[1] : "";
+			tmp = split_to_lines(tokens[2],"/");
+			if (tmp.size() != 2)
+				return (1);
+			protocol = tmp[0];
+			version = tmp[1];
+			return (0);
+		}
+		
+		int validate_request(){
+			return 0;
+		}
+
+		// getters
+		const std::string &getMethod() const {
+			return method;
+		}
+		const std::string &getPath() const {
+			return path;
+		}
+		const std::string &getQuery() const {
+			return query;
+		}
+		const std::map<std::string, std::string> &getHeaders() const {
+			return headers;
+		}
+		const std::string getHeader(std::string const &key) {
+			return headers[key];
+		}
+		const std::string &getBody() const {
+			return body;
+		}
+
+		// debug
+		int print(){
+			std::cout 
+				<< method << " " 
+				<< path << " " 
+				<< query << " " 
+				<< protocol << " " 
+				<< version << std::endl;
+			std::cout << headers.size() << " headers" << std::endl;
+			std::cout << (body.size() ? body : "Empty body") << std::endl;
+		}
+
 	private:
 
 };
