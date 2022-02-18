@@ -9,8 +9,8 @@
 class Request
 {
 	public:
-		typedef typename std::vector<std::string> vec;
-		typedef typename std::vector<std::string>::iterator iter;
+		typedef std::vector<std::string> vec;
+		typedef std::vector<std::string>::iterator iter;
 
 	private:
 		std::string protocol; // HTTP
@@ -118,7 +118,7 @@ class Request
 		}
 
 		// debug
-		int print(){
+		void print(){
 			std::cout 
 				<< method << " " 
 				<< path << " " 
