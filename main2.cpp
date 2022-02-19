@@ -7,7 +7,7 @@ int main(int ac, char **av)
     Server srv(conf);
 
     srv.initServer();
-    srv.run();
-
+    //srv.run();
+    srv.async();
     return (0);
 }

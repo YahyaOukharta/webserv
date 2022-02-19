@@ -64,6 +64,8 @@
         "clocale": "cpp",
         "deque": "cpp",
         "fstream": "cpp",
-        "numeric": "cpp"
+        "numeric": "cpp",
+        "__tree": "cpp",
+        "map": "cpp"
     }
 }

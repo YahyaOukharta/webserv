@@ -16,7 +16,8 @@ class Server
 		ServerConfig conf;
 		int sock;
 		struct sockaddr_in address;
-		
+		struct sockaddr_in client_address;
+		int address_size;
 
 	public:
 		Server(){
@@ -55,15 +56,9 @@ class Server
 			return true;
 		}
 
-		//init
-		int initServer()
-		{
-			if (!isValidConf())
-			{	
-				std::cout << "Invalid configuration " << getConfig() << std::endl;
-				return (-1);
-			}
 
+		// Socket init
+		int init_socket(){
 			// Create server socket
 			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			if (sock <= 0)
@@ -83,30 +78,170 @@ class Server
 			address.sin_family = AF_INET;
 			address.sin_addr.s_addr =  INADDR_ANY;
 			address.sin_port = htons(conf.getPort());
+			return (0);
+		}
 
+		int bind_socket()
+		{
 			if (bind(sock, (struct sockaddr *)&address, sizeof(address)))
 			{
 				//perror("bind");
 				std::cout << "Error bind socket to port" << std::endl;
+				return (-1);
 			}
+			return (0);
+		}
+
+		// init
+		int initServer()
+		{
+			address_size = sizeof(address);
+			if (!isValidConf())
+			{	
+				std::cout << "Invalid configuration " << getConfig() << std::endl;
+				return (-1);
+			}
+
+			//init socket
+			int error;
+			if((error = init_socket())){
+				return (error);
+			}
+
+			//bind to address
+			if((bind_socket())){
+				//perror("listen");
+				std::cout << "Error Binding" << std::endl;
+				return (-3);
+			}
+
+			// listen
 			if(listen(sock, 3)){
 				//perror("listen");
 				std::cout << "Error listening" << std::endl;
+				return (-4);
 			}
+
+			// set server sock to non blocking mode
+			fcntl(sock, F_SETFL, O_NONBLOCK);
 
 			std::cout << "Listening on port " << conf.getPort() << std::endl;
 			return (0);
 		}
+
 		int accept_connection()
 		{
 			int client_sock;
-			if((client_sock = accept(sock, (struct sockaddr *)&address, (socklen_t*)&address_size)) < 0)
+			if((client_sock = accept(sock, (struct sockaddr *)&client_address, (socklen_t*)&address_size)) < 0)
 			{
-				//perror("accept");
-				std::cout << "Error accepting" << std::endl;
+				std::cout << "Error Accepting" << std::endl;
 				return (-1);
 			}
 			return client_sock;
+		}
+
+//int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict errorfds, struct timeval *restrict timeout);
+		int async(){
+			fd_set master_set, working_set; 
+			struct timeval timeout = {15,0};
+			int max_fd = sock;
+
+			FD_ZERO(&master_set);
+			FD_SET(sock, &master_set);
+
+			int ret;
+			while (1){
+				memcpy( &working_set,&master_set,sizeof(master_set));
+				std::cout << "select, sock="<<sock << std::endl;
+				ret = select(max_fd + 1, &working_set, NULL,NULL,&timeout);
+				if(ret == -1)
+				{
+					std::cout << "select failed" << std::endl;
+					return (1);
+				}
+				if(ret == 0)
+				{
+					std::cout << "select timed out" << std::endl;
+					return (1);
+				}
+				std::cout << "select ret="<<ret << " max_fd="<<max_fd <<" sock="<<sock << std::endl;
+				for (int fd = 0; fd <= max_fd && ret > 0; fd++){
+
+					if(FD_ISSET(fd,&working_set)){
+						std::cout << "fd " << fd << " - " << std::endl;
+						ret--;
+						
+						if (fd == sock){ // server ready
+							std::cout << "server socket is ready" << std::endl;
+							int client_sock = 0;
+
+							while (client_sock != -1) { // Add to queue all incoming connections
+								client_sock = accept_connection();
+								if(client_sock == -1){
+									if(errno != EWOULDBLOCK){
+										std::cout << "Accept failed errno!=EWOUlDBLOCK" << std::endl;
+										return (1);
+									}
+									break;
+								}
+								std::cout << "new connection on sock " << client_sock << std::endl;
+								FD_SET(client_sock, &master_set);
+								if (client_sock > max_fd)
+									max_fd = client_sock;
+							}
+						}
+						else{ // client ready
+							int close_con = false;
+							std::string buf;
+
+							std::cout << "client socket is ready " << fd << std::endl;
+							while (1)
+							{
+								//fcntl(fd, F_SETFL, O_NONBLOCK);
+								char buffer[102400] = {0};
+								int rd = recv( fd , buffer, 102400, 0);
+
+								//fail
+								if (rd == -1){
+									if (errno != EWOULDBLOCK){
+										std::cout << "recv failed errno!=EWOUlDBLOCK" << std::endl;
+										close_con = 1;
+									}
+									else
+										std::cout << "recv failed errno==EWOUlDBLOCK" << std::endl;
+									close(fd);
+									break;
+								}
+								buf.append(buffer);
+								//
+								if (rd == 0){
+									std::cout << "connection closed by client" << std::endl;
+									close_con = 1;
+									std::cout << "Received req, rd="<<rd<< std::endl; 
+									Request req(buf);
+									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+									send(fd, response.c_str(), response.size(), 0);
+									break;
+								}
+							}
+							if (close_con)
+							{
+								close(fd);
+								FD_CLR(fd, &master_set);
+								if (fd == max_fd){
+									while(FD_ISSET(max_fd, &master_set) == 0 )
+										max_fd--;
+								}
+							}
+						}
+					}
+				}
+			}
+			for (int i = 0; i < max_fd; i++){
+				if(FD_ISSET(i, &master_set)){
+					close(i);
+				}
+			}
 		}
 
 		int run (){
@@ -118,7 +253,7 @@ class Server
 				int address_size = sizeof(address);
 
 				std::cout << std::endl << "waiting for connection ..." << std::endl << std::endl;
-				if((new_sock = accept(sock, (struct sockaddr *)&address, (socklen_t*)&address_size)) < 0)
+				if((new_sock = accept_connection()) < 0)
 				{
 					//perror("accept");
 					std::cout << "Error accepting" << std::endl;
