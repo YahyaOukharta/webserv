@@ -118,12 +118,12 @@ class Request
 		}
 
 		// debug
-		void print(){
+		void print() {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
 				<< query << " " 
-				<< protocol << " " 
+				<< protocol << "/" 
 				<< version << std::endl;
 			std::cout << headers.size() << " headers" << std::endl;
 			std::cout << (body.size() ? body : "Empty body") << std::endl;

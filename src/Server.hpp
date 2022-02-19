@@ -10,6 +10,10 @@
 #include <fcntl.h>
 #include <map>
 #include "Request.hpp"
+
+    // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
+
+
 class Server
 {
 	private:
@@ -128,7 +132,6 @@ class Server
 			std::cout << "Listening on port " << conf.getPort() << std::endl;
 			return (0);
 		}
-
 		int accept_connection()
 		{
 			int client_sock;
@@ -137,6 +140,9 @@ class Server
 				std::cout << "Error Accepting" << std::endl;
 				return (-1);
 			}
+			char str[20]={0};
+			inet_ntop(AF_INET, &(client_address.sin_addr), str, 20);
+			std::cout<<str<< std::endl;
 			return client_sock;
 		}
 
@@ -217,12 +223,14 @@ class Server
 								if (rd == 0){
 									std::cout << "connection closed by client" << std::endl;
 									close_con = 1;
-									std::cout << "Received req, rd="<<rd<< std::endl; 
-									Request req(buf);
-									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
-									send(fd, response.c_str(), response.size(), 0);
+
 									break;
 								}
+								std::cout << "Received req, rd="<<rd<< std::endl; 
+								Request req(buf);
+								std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+								send(fd, response.c_str(), response.size(), 0);
+								close_con = 1;
 							}
 							if (close_con)
 							{
