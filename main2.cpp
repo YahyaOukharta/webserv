@@ -8,6 +8,8 @@ int main(int ac, char **av)
 
     srv.initServer();
     //srv.run();
-    srv.async();
+    while(1){
+        srv.async();
+    }
     return (0);
 }

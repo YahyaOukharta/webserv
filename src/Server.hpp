@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <map>
 #include "Request.hpp"
-
+#include "../gnl/gnl.hpp"
     // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
 
 
@@ -137,12 +137,15 @@ class Server
 			int client_sock;
 			if((client_sock = accept(sock, (struct sockaddr *)&client_address, (socklen_t*)&address_size)) < 0)
 			{
-				std::cout << "Error Accepting" << std::endl;
+				//std::cout << "Error Accepting" << std::endl;
 				return (-1);
 			}
-			char str[20]={0};
-			inet_ntop(AF_INET, &(client_address.sin_addr), str, 20);
-			std::cout<<str<< std::endl;
+			fcntl(client_sock, F_SETFL, O_NONBLOCK);
+
+			// display client ip
+			// char str[20]={0};
+			// inet_ntop(AF_INET, &(client_address.sin_addr), str, 20);
+			// std::cout<<str<< std::endl;
 			return client_sock;
 		}
 
@@ -158,6 +161,8 @@ class Server
 			int ret;
 			while (1){
 				memcpy( &working_set,&master_set,sizeof(master_set));
+				std::cout <<"sleeping" << std::endl;
+				usleep(5000000);
 				std::cout << "select, sock="<<sock << std::endl;
 				ret = select(max_fd + 1, &working_set, NULL,NULL,&timeout);
 				if(ret == -1)
@@ -170,15 +175,13 @@ class Server
 					std::cout << "select timed out" << std::endl;
 					return (1);
 				}
+
 				std::cout << "select ret="<<ret << " max_fd="<<max_fd <<" sock="<<sock << std::endl;
 				for (int fd = 0; fd <= max_fd && ret > 0; fd++){
-
 					if(FD_ISSET(fd,&working_set)){
-						std::cout << "fd " << fd << " - " << std::endl;
-						ret--;
-						
+						ret--;						
 						if (fd == sock){ // server ready
-							std::cout << "server socket is ready" << std::endl;
+							//std::cout << "server socket is ready" << std::endl;
 							int client_sock = 0;
 
 							while (client_sock != -1) { // Add to queue all incoming connections
@@ -190,7 +193,7 @@ class Server
 									}
 									break;
 								}
-								std::cout << "new connection on sock " << client_sock << std::endl;
+								//std::cout << "new connection on sock " << client_sock << std::endl;
 								FD_SET(client_sock, &master_set);
 								if (client_sock > max_fd)
 									max_fd = client_sock;
@@ -200,7 +203,7 @@ class Server
 							int close_con = false;
 							std::string buf;
 
-							std::cout << "client socket is ready " << fd << std::endl;
+							//std::cout << "client socket is ready " << fd << std::endl;
 							while (1)
 							{
 								//fcntl(fd, F_SETFL, O_NONBLOCK);
@@ -210,27 +213,37 @@ class Server
 								//fail
 								if (rd == -1){
 									if (errno != EWOULDBLOCK){
-										std::cout << "recv failed errno!=EWOUlDBLOCK" << std::endl;
+										//std::cout << "recv failed errno!=EWOUlDBLOCK" << std::endl;
 										close_con = 1;
 									}
-									else
-										std::cout << "recv failed errno==EWOUlDBLOCK" << std::endl;
-									close(fd);
+									// else
+									// 	std::cout << "recv failed errno==EWOUlDBLOCK" << std::endl;
+									//close(fd);
 									break;
 								}
 								buf.append(buffer);
 								//
 								if (rd == 0){
-									std::cout << "connection closed by client" << std::endl;
+									//std::cout << "connection closed by client" << std::endl;
 									close_con = 1;
 
 									break;
 								}
-								std::cout << "Received req, rd="<<rd<< std::endl; 
-								Request req(buf);
-								std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
-								send(fd, response.c_str(), response.size(), 0);
+								//std::cout << "Received req, rd="<<rd<< std::endl; 
+								try
+								{
+									Request req(buffer);
+									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+									send(fd, response.c_str(), response.size(), 0);
+								}
+								catch(const webserv_exception& e)
+								{
+									std::string response("HTTP/1.1 500 ERROR\r\n\r\nOops\r\n");
+									send(fd, response.c_str(), response.size(), 0);
+									std::cerr << "Error : "<< e.what() << '\n';
+								}
 								close_con = 1;
+								break;
 							}
 							if (close_con)
 							{
@@ -271,7 +284,7 @@ class Server
 				char buffer[102400] = {0};
 				if(tmp!=new_sock)
 				{
-					//fcntl(new_sock, F_SETFL,O_NONBLOCK);
+					fcntl(new_sock, F_SETFL,O_NONBLOCK);
 					tmp = new_sock;
 				}
 
