@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <map>
 #include "Request.hpp"
+#include "FileSystem.hpp"
 #include "../gnl/gnl.hpp"
     // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
 
@@ -22,6 +23,8 @@ class Server
 		struct sockaddr_in address;
 		struct sockaddr_in client_address;
 		int address_size;
+
+		FileSystem fs;
 
 	public:
 		Server(){
@@ -161,8 +164,8 @@ class Server
 			int ret;
 			while (1){
 				memcpy( &working_set,&master_set,sizeof(master_set));
-				std::cout <<"sleeping" << std::endl;
-				usleep(5000000);
+				// std::cout <<"sleeping" << std::endl;
+				// usleep(5000000);
 				std::cout << "select, sock="<<sock << std::endl;
 				ret = select(max_fd + 1, &working_set, NULL,NULL,&timeout);
 				if(ret == -1)
@@ -233,8 +236,14 @@ class Server
 								try
 								{
 									Request req(buffer);
-									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\nWAAAAAAAAAA\r\n");
+
+									std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
+									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
+
+									response.append(fs.getFileContent("www"+filepath)+"\r\n");
+
 									send(fd, response.c_str(), response.size(), 0);
+
 								}
 								catch(const webserv_exception& e)
 								{

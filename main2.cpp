@@ -1,5 +1,6 @@
 // #include "src/ServerConfig.hpp"
 #include "src/Server.hpp"
+#include "src/FileSystem.hpp"
 
 int main(int ac, char **av)
 {
@@ -11,5 +12,11 @@ int main(int ac, char **av)
     while(1){
         srv.async();
     }
+
+
+    FileSystem fs;
+
+    std::string buf = fs.getFileContent("www/index.html");
+    std::cout << buf << std::endl;
     return (0);
 }
