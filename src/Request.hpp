@@ -51,10 +51,12 @@ class Request
 		// parsing
 
 		int parse_request(std::string raw_req){
+
 			vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
 			if (req_split_body.size() != 2)
 				return (1);
 			body = req_split_body[1];
+
 
 			//including first line
 			vec head = split_to_lines(req_split_body[0]);
@@ -124,9 +126,13 @@ class Request
 				<< path << " " 
 				<< query << " " 
 				<< protocol << "/" 
-				<< version << std::endl;
-			std::cout << headers.size() << " headers" << std::endl;
-			std::cout << (body.size() ? body : "Empty body") << std::endl;
+				<< version <<"  ";
+			std::cout << headers.size() << " headers   ";
+			if (body.size())
+				std::cout << "Body size : " << body.size() << " bytes"<< std::endl;
+			else
+				std::cout << "Empty body" << std::endl;
+
 		}
 
 	private:

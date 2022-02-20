@@ -11,7 +11,9 @@
 #include <map>
 #include "Request.hpp"
 #include "FileSystem.hpp"
-#include "../gnl/gnl.hpp"
+
+#include <errno.h>
+#include <cstring>
     // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
 
 
@@ -135,6 +137,7 @@ class Server
 			std::cout << "Listening on port " << conf.getPort() << std::endl;
 			return (0);
 		}
+
 		int accept_connection()
 		{
 			int client_sock;
@@ -155,7 +158,7 @@ class Server
 //int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict errorfds, struct timeval *restrict timeout);
 		int async(){
 			fd_set master_set, working_set; 
-			struct timeval timeout = {15,0};
+			struct timeval timeout = {3*60,0};
 			int max_fd = sock;
 
 			FD_ZERO(&master_set);
@@ -166,7 +169,6 @@ class Server
 				memcpy( &working_set,&master_set,sizeof(master_set));
 				// std::cout <<"sleeping" << std::endl;
 				// usleep(5000000);
-				std::cout << "select, sock="<<sock << std::endl;
 				ret = select(max_fd + 1, &working_set, NULL,NULL,&timeout);
 				if(ret == -1)
 				{
@@ -179,7 +181,7 @@ class Server
 					return (1);
 				}
 
-				std::cout << "select ret="<<ret << " max_fd="<<max_fd <<" sock="<<sock << std::endl;
+				// std::cout << "select ret="<<ret << " max_fd="<<max_fd <<" sock="<<sock << std::endl;
 				for (int fd = 0; fd <= max_fd && ret > 0; fd++){
 					if(FD_ISSET(fd,&working_set)){
 						ret--;						
@@ -203,65 +205,31 @@ class Server
 							}
 						}
 						else{ // client ready
-							int close_con = false;
-							std::string buf;
+							std::string buf = fs.getFileContent(fd);
 
-							//std::cout << "client socket is ready " << fd << std::endl;
-							while (1)
+							try
 							{
-								//fcntl(fd, F_SETFL, O_NONBLOCK);
-								char buffer[102400] = {0};
-								int rd = recv( fd , buffer, 102400, 0);
+								Request req(buf);
 
-								//fail
-								if (rd == -1){
-									if (errno != EWOULDBLOCK){
-										//std::cout << "recv failed errno!=EWOUlDBLOCK" << std::endl;
-										close_con = 1;
-									}
-									// else
-									// 	std::cout << "recv failed errno==EWOUlDBLOCK" << std::endl;
-									//close(fd);
-									break;
-								}
-								buf.append(buffer);
-								//
-								if (rd == 0){
-									//std::cout << "connection closed by client" << std::endl;
-									close_con = 1;
+								std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
+								std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
 
-									break;
-								}
-								//std::cout << "Received req, rd="<<rd<< std::endl; 
-								try
-								{
-									Request req(buffer);
+								response.append(fs.getFileContent("www"+filepath)+"\r\n");
 
-									std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
-									std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
+								send(fd, response.c_str(), response.size(), 0);
 
-									response.append(fs.getFileContent("www"+filepath)+"\r\n");
-
-									send(fd, response.c_str(), response.size(), 0);
-
-								}
-								catch(const webserv_exception& e)
-								{
-									std::string response("HTTP/1.1 500 ERROR\r\n\r\nOops\r\n");
-									send(fd, response.c_str(), response.size(), 0);
-									std::cerr << "Error : "<< e.what() << '\n';
-								}
-								close_con = 1;
-								break;
 							}
-							if (close_con)
+							catch(const webserv_exception& e)
 							{
-								close(fd);
-								FD_CLR(fd, &master_set);
-								if (fd == max_fd){
-									while(FD_ISSET(max_fd, &master_set) == 0 )
-										max_fd--;
-								}
+								std::string response("HTTP/1.1 500 ERROR\r\n\r\nOops\r\n");
+								send(fd, response.c_str(), response.size(), 0);
+								std::cerr << "Error : "<< e.what() << '\n';
+							}
+							close(fd);
+							FD_CLR(fd, &master_set);
+							if (fd == max_fd){
+								while(FD_ISSET(max_fd, &master_set) == 0 )
+									max_fd--;
 							}
 						}
 					}
@@ -275,13 +243,11 @@ class Server
 		}
 
 		int run (){
-
+			// no select
 			int tmp = 0;
 			while (1)
 			{
 				int new_sock;
-				int address_size = sizeof(address);
-
 				std::cout << std::endl << "waiting for connection ..." << std::endl << std::endl;
 				if((new_sock = accept_connection()) < 0)
 				{
@@ -297,8 +263,7 @@ class Server
 					tmp = new_sock;
 				}
 
-				int rd = 0;
-					rd = recv( new_sock , buffer, 102400, 0);
+				recv( new_sock , buffer, 102400, 0);
 				// std::cout << "buffer <"<<buffer<<">" <<std::endl<<std::endl;
 				try
 				{

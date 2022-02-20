@@ -4,6 +4,8 @@
 
 int main(int ac, char **av)
 {
+    (void)ac;
+    (void)av;
     ServerConfig conf("hello", "0.0.0.0", 8000, 10);
     Server srv(conf);
 
@@ -12,11 +14,5 @@ int main(int ac, char **av)
     while(1){
         srv.async();
     }
-
-
-    FileSystem fs;
-
-    std::string buf = fs.getFileContent("www/index.html");
-    std::cout << buf << std::endl;
     return (0);
 }
