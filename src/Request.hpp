@@ -6,6 +6,8 @@
 # include <map>
 #include "Utils.hpp"
 
+# define DEBUG 1
+
 class Request
 {
 	public:
@@ -127,6 +129,15 @@ class Request
 				<< query << " " 
 				<< protocol << "/" 
 				<< version <<"  ";
+			if (DEBUG)
+			{
+				std::cout << "\nHeaders:" << std::endl;
+				for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+					std::cout << " " << it->first << " " << it->second << std::endl;
+				}
+				std::cout << "\nBody:\n" <<body<< std::endl;
+				return;
+			}
 			std::cout << headers.size() << " headers   ";
 			if (body.size())
 				std::cout << "Body size : " << body.size() << " bytes"<< std::endl;
