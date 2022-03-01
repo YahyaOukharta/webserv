@@ -7,9 +7,10 @@
 #include "Utils.hpp"
 
 # define DEBUG 1
-
+#include "Response.hpp"
 class Request
 {
+
 	public:
 		typedef std::vector<std::string> vec;
 		typedef std::vector<std::string>::iterator iter;
@@ -23,6 +24,8 @@ class Request
 		std::string query; //	?hello=1&dkd=22
 		
 		std::map<std::string, std::string> headers;
+
+
 
 		std::string body;
 
@@ -136,6 +139,7 @@ class Request
 					std::cout << " " << it->first << " " << it->second << std::endl;
 				}
 				std::cout << "\nBody:\n" <<body<< std::endl;
+				Response a;
 				return;
 			}
 			std::cout << headers.size() << " headers   ";
