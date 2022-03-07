@@ -20,7 +20,7 @@ void config::parse_buffer(const std::string &s)
             serv.name = str;
             index_loc = 0;
             _servers.push_back(serv);
-            std::cout << _servers[0].name << std::endl;
+            //std::cout << _servers[0].name << std::endl;
         }
         else if(str == "end"){
             // std::cout << "dwadawdawdawd\n";
@@ -44,39 +44,40 @@ void config::parse_buffer(const std::string &s)
             }
             case 'p' :{
                 if(s.find("port = ") != std::string::npos){
-                str = s.substr(s.find("port = ") + 7, s.length() - 7);
-                str = str.substr(0, str.length() - 1);
-                _servers[index].port = ft::atoi(str.c_str());
-                // std::cout << _servers[index].port << std::endl;
+                    str = s.substr(s.find("port = ") + 7, s.length() - 7);
+                    str = str.substr(0, str.length() - 1);
+                    _servers[index].port = ft::atoi(str.c_str());
+                    // std::cout << _servers[index].port << std::endl;
                 }
               
                 break;
             }
             case 'd': {
                 if(s.find("default_error_pages = ") != std::string::npos){
-                str = s.substr(s.find("default_error_pages = ") + 22, s.length() - 22);
-                str = str.substr(0, str.length() - 1);
-                _servers[index].root = str;
-                // std::cout << _servers[index].root << std::endl;
+                    str = s.substr(s.find("default_error_pages = ") + 22, s.length() - 22);
+                    str = str.substr(0, str.length() - 1);
+                    _servers[index].root = str;
+                    // std::cout << _servers[index].root << std::endl;
                 }
                 break;
             }
             case 'b': {
                 if(s.find("bodysize_limit = ") != std::string::npos){
-                str = s.substr(s.find("bodysize_limit = ") + 17, s.length() - 17);
-                str = str.substr(0, str.length() - 1);
-                _servers[index].bodysize_limit = ft::atoi(str.c_str());
-                // std::cout << _servers[index].bodysize_limit << std::endl;
+                    str = s.substr(s.find("bodysize_limit = ") + 17, s.length() - 17);
+                    str = str.substr(0, str.length() - 1);
+                    _servers[index].bodysize_limit = ft::atoi(str.c_str());
+                    // std::cout << _servers[index].bodysize_limit << std::endl;
                 }
                 break;
             }
             case 'l': {
                 if(s.find("location = ") != std::string::npos){
-                str = s.substr(s.find("location = ") + 11, s.length() - 11);
-                str = str.substr(0, str.length() - 1);
-                // _servers[index].location = str;
-                //get infos from location line
-                std::cout << str << std::endl;}
+                    str = s.substr(s.find("location = ") + 11, s.length() - 11);
+                    str = str.substr(0, str.length() - 1);
+                    // _servers[index].location = str;
+                    //get infos from location line
+                    //std::cout << str << std::endl;
+                }
                 break;
             }
             

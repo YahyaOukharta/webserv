@@ -9,7 +9,8 @@
 
 int main()
 {
-    std::string s = "../configs/default.conf";
+    std::string s = "../configs/conf.conf";
     config cfg(s);
+    cfg.print_config();
     return 0;
 }
