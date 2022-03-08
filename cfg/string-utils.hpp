@@ -9,12 +9,12 @@ class ft{
     public:
     // const std::string WHITESPACE = " \n\r\t\f\v";
  
-static void ltrim(std::string &s,  const std::string& chars = "\t ")
+static void ltrim(std::string &s,  const std::string& chars = "\t {}")
 {
     s.erase(0, s.find_first_not_of(chars));
 }
  
-static void rtrim(std::string &s, const std::string& chars = "\t ")
+static void rtrim(std::string &s, const std::string& chars = "\t {}")
 {
     s.erase(s.find_last_not_of(chars) + 1);
 }

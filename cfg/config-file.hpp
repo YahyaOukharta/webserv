@@ -14,13 +14,14 @@ class config
 		~config();
         
         private:
-        struct location
+        struct location //this going to be a class with there geters
         {
-            std::string name;
+            std::string name;            
+            std::string path;
             std::string root;
             std::string index;
             std::vector<std::string> methods;  // allowed methodes
-            bool autoindex;
+            std::string autoindex;
             
             std::string cgi_path;
             std::vector<std::string> cgi_extension; // containes cgi extentions
@@ -48,7 +49,7 @@ class config
         void parse_buffer(const std::string &s);
         void count_servers(const std::string &s);
         int check_if_random(const std::string &s);
-
+        void multi_spliter(std::string &s);
 
         //getters and setters
         
