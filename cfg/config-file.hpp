@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <iostream>
 
 class config
 {
@@ -29,6 +30,7 @@ class config
             std::string upload_path;
             size_t client_max_body_size;
         };
+
         struct server
         {
             std::string name; // containes name of server
@@ -40,6 +42,7 @@ class config
             std::vector<location> locations; // containes all locations of a server
             
         };
+
         public:
         size_t server_count;
         size_t index;
@@ -52,7 +55,17 @@ class config
         void multi_spliter(std::string &s);
 
         //getters and setters
-        
+
+        void print_config() {
+            for(std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); ++it){
+                std::cout << "[" << it->name << "]" << std::endl;
+                std::cout << " host : " << it->host << std::endl; 
+                std::cout << " port : " << it->port << std::endl; 
+                std::cout << " max bodysize : " << it->bodysize_limit << std::endl; 
+                std::cout << " root : " << it->root << std::endl; 
+                std::cout << " Locations [" << it->locations.size() << "]" << std::endl;
+            }
+        }
 
     //need methodes to facilitate the parsing cant think of any or how now
 };

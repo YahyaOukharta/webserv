@@ -4,22 +4,17 @@
 # include <iostream>
 # include <string>
 # include "Request.hpp"
+
 class StatusCodes
 {
 
 	private:
-		StatusCodes(){
-			init();
-		}
+		StatusCodes(){}
 		~StatusCodes(){}
-		static std::map<int,std::string> statusCodesAndStrings; // https://w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
 	public:
-		std::map<int,std::string> init(){
-			std::map<int,std::string> m;
-			m.insert(std::make_pair(200, "OK"));
-			return m;
-		}
+		//static std::map<int,std::string> statusCodesAndStrings; // https://w3.org/Protocols/rfc2616/rfc2616-sec10.html
+
 		// 1xx Informational
 		static int CONTINUE(){ return 100; }
 		static int SWITCHING_PROTOCOLS(){ return 101; }
@@ -71,9 +66,6 @@ class StatusCodes
 		static int GATEWAY_TIMEOUT(){ return 504; }
 		static int HTTP_VERSION_NOT_SUPPORTED(){ return 504; }
 
-		static std::string getStatusMessage(int statusCode){
-			return StatusCodes::statusCodesAndStrings[statusCode];
-		}
 };
 
 class Response
@@ -87,7 +79,7 @@ class Response
 	public:
 
 		Response(){
-			std::cout << StatusCodes::getStatusMessage(StatusCodes::OK()) << std::endl;
+			// StatusCodes::statu
 		}
 		Response( Response const & src );
 		~Response(){}
