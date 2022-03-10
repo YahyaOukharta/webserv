@@ -1,7 +1,5 @@
 // #include "src/ServerConfig.hpp"
-#include "src/Server.hpp"
-#include "src/FileSystem.hpp"
-#include "src/Parser.hpp"
+# include "src/Webserv.hpp"
 int main(int ac, char **av)
 {
     (void)ac;
@@ -14,12 +12,18 @@ int main(int ac, char **av)
     // while(1){
     //     srv.async();
     // }
-
-    std::vector<ServerConfig> configs = Parser::parseFile("./configs/conf.conf");
-    Server srv(configs[0]);
-    srv.initServer();
-    while(1){
-        srv.async();
+    if (ac != 2){
+        std::cout << "Usage : ./webserv config_file" << std::endl;
+        return (1);
+    }
+    Webserv srv;
+    try {
+        srv = Webserv(std::string(av[1]));
+        srv.run();
+    }
+    catch(webserv_exception const &e){
+        std::cerr << e.what() << std::endl;
+        return (1);
     }
     return (0);
 }

@@ -72,8 +72,8 @@ class Server
 			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			if (sock <= 0)
 			{
-				std::cout << "Error creating socket" << std::endl;
-				return (-2);
+				throw(webserv_exception("Error creating socket"));
+				//return (-2);
 			}
 
 			// Set socket options
@@ -81,7 +81,8 @@ class Server
 			if ( setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockopt_val, sizeof(sockopt_val)) )
 			{
 				//perror("setsockopt");
-				std::cout << "Error setting socket options" << std::endl;
+				throw(webserv_exception("Error setting socket options"));
+
 				return (-3);
 			}
 			address.sin_family = AF_INET;
@@ -95,8 +96,8 @@ class Server
 			if (bind(sock, (struct sockaddr *)&address, sizeof(address)))
 			{
 				//perror("bind");
-				std::cout << "Error bind socket to port" << std::endl;
-				return (-1);
+				throw(webserv_exception("Error bind socket to port"));
+
 			}
 			return (0);
 		}
@@ -105,36 +106,39 @@ class Server
 		int initServer()
 		{
 			address_size = sizeof(address);
-			if (!isValidConf())
+			if (!isValidConf()) // add more validation for new variables (max body size, etc ..)
 			{	
 				std::cout << "Invalid configuration " << getConfig() << std::endl;
+				throw(webserv_exception("Error in Config"));
+
 				return (-1);
 			}
 
 			//init socket
 			int error;
 			if((error = init_socket())){
+				throw(webserv_exception("Error in init_socket : " + error));
 				return (error);
 			}
 
 			//bind to address
 			if((bind_socket())){
 				//perror("listen");
-				std::cout << "Error Binding" << std::endl;
+				throw(webserv_exception("Error binding : " + error));
 				return (-3);
 			}
 
 			// listen
 			if(listen(sock, 3)){
 				//perror("listen");
-				std::cout << "Error listening" << std::endl;
+				throw(webserv_exception("Error listening : " + error));
 				return (-4);
 			}
 
 			// set server sock to non blocking mode
 			fcntl(sock, F_SETFL, O_NONBLOCK);
 
-			std::cout << "Listening on port " << conf.getPort() << std::endl;
+			 std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			return (0);
 		}
 
@@ -158,7 +162,7 @@ class Server
 //int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict errorfds, struct timeval *restrict timeout);
 		int async(){
 			fd_set master_set, working_set; 
-			struct timeval timeout = {3*60,0};
+			struct timeval timeout = {1,0};
 			int max_fd = sock;
 
 			FD_ZERO(&master_set);
@@ -204,9 +208,8 @@ class Server
 									max_fd = client_sock;
 							}
 						}
-						else{ // client ready
+						else { // client ready
 							std::string buf = fs.getFileContent(fd);
-
 							try
 							{
 								Request req(buf);

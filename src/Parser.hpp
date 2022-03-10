@@ -32,8 +32,8 @@ class Parser
 			std::ifstream input( conf_path );
 			if (!input.is_open())
 			{
-				std::cout << "Error opening file "<< conf_path << std::endl;
-				throw webserv_exception("Invalid config file path");
+				// std::cout << "Error opening file "<< conf_path << std::endl;
+				throw webserv_exception("Invalid config file path "+conf_path);
 			}
 
 			servers_fields_map servers_fields; // field like port host ..
@@ -58,7 +58,7 @@ class Parser
 					current_srv_name = line.substr(1,i - 1);
 					if (line.substr(i+1) != "")
 					{
-						std::cout << "Error near server name  " << std::endl;
+						// std::cout << "Error near server name  " << std::endl;
 						throw webserv_exception("Error near server name");
 					}
 					if (current_srv_name != "")
@@ -67,13 +67,13 @@ class Parser
 						continue;
 					}
 					else{
-						std::cout << "Error with server name  " << std::endl;
+						// std::cout << "Error with server name  " << std::endl;
 						throw webserv_exception("Invalid server name 1");
 					}
 				}
 				else if (line[0] == '[')
 				{
-					std::cout << "Error with server name  " << std::endl;
+					// std::cout << "Error with server name  " << std::endl;
 					throw webserv_exception("Invalid server name 2");
 				}
 				// other fields
@@ -85,7 +85,7 @@ class Parser
 					trim(value);
 					if (value[value.size() - 1] != ';')
 					{
-						std::cout << "Missing semicolon at the end of line  "<<line_counter << std::endl;
+						// std::cout << "Missing semicolon at the end of line  "<<line_counter << std::endl;
 						throw webserv_exception("missing semicolon near line " + std::to_string(line_counter));
 					}
 					//std::cout << "key=<"<<field<<"> "<< "value=<"<<value<<"> " << std::endl;
@@ -96,10 +96,11 @@ class Parser
 				}
 				else
 				{
-					std::cout << "Error with field in line " << line_counter << std::endl;
+					// std::cout << "Error with field in line " << line_counter << std::endl;
 					throw webserv_exception("Error with field in line " + std::to_string(line_counter));
 				}
 			}
+
 			std::vector<ServerConfig> configs;
 			for (servers_fields_map::iterator it = servers_fields.begin(); it != servers_fields.end(); ++it){
 				std::cout << "[" << it->first << "]" << std::endl;
@@ -148,7 +149,7 @@ class Parser
 					body_size_limit = std::stoi(it->second);
 				else
 				{
-					std::cout << "Error with Server config, unknown field <"<< it->first << "> in line " << line_counter << std::endl;
+					//std::cout << "Error with Server config, unknown field <"<< it->first << "> in line " << line_counter << std::endl;
 					throw webserv_exception("Error with Server config, unknown field <"+ it->first +"> in line " + std::to_string(line_counter));
 				}
 			}
@@ -165,7 +166,7 @@ class Parser
 
 			if (loc[0] !='{' || loc[loc.size()-1] !='}')
 			{
-				std::cout << "Error with Location in line " << line_counter << std::endl;
+				//std::cout << "Error with Location in line " << line_counter << std::endl;
 				throw webserv_exception("Error with Location in line " + std::to_string(line_counter));
 			}
 			loc = loc.substr(1,loc.size()-2);
@@ -177,7 +178,7 @@ class Parser
 				str_vec sp = split_to_lines(*it, "=");
 				if (sp.size() != 2)
 				{
-					std::cout << "Error with Location in line " << line_counter << std::endl;
+					//std::cout << "Error with Location in line " << line_counter << std::endl;
 					throw webserv_exception("Error with Location in line " + std::to_string(line_counter));
 				}
 				std::string key = sp[0];
@@ -200,7 +201,7 @@ class Parser
 					body_size_limit = std::stoi(val);
 				else
 				{
-					std::cout << "Error with Location, unknown field <"<< key << "> in line " << line_counter << std::endl;
+					//std::cout << "Error with Location, unknown field <"<< key << "> in line " << line_counter << std::endl;
 					throw webserv_exception("Error with Location, unknown field <"+ key +"> in line " + std::to_string(line_counter));
 				}
 			}
