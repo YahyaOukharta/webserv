@@ -5,7 +5,7 @@
 # include <string>
 # include "ServerConfig.hpp"
 # include "Location.hpp"
-
+# include "Utils.hpp"
 #include <fstream>
 #include <istream>
 
@@ -14,9 +14,12 @@ class Parser
 	private:
 
 	public:
+
+		typedef std::vector<std::string> str_vec;
 		typedef std::map<std::string,std::string> str_map;
+
 		typedef std::map<std::string, str_map> servers_fields_map;
-		typedef std::map<std::string, std::vector<std::string> > servers_loc_map;
+		typedef std::map<std::string, str_vec > servers_loc_map;
 
 		Parser();
 		Parser( Parser const & src );
@@ -99,6 +102,7 @@ class Parser
 				}
 			}
 
+
 			for (servers_fields_map::iterator it = servers_fields.begin(); it != servers_fields.end(); ++it){
 				std::cout << "[" << it->first << "]" << std::endl;
 				for (str_map::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
@@ -106,19 +110,71 @@ class Parser
 					std::cout << " "<< it2->first << "=" << it2->second << std::endl;
 				}
 				std::cout << " Locations : " << std::endl;
-				for (std::vector<std::string>::iterator it2 = servers_locations[it->first].begin(); it2 != servers_locations[it->first].end(); ++it2)
+				std::vector<Location> locs;
+				for (str_vec::iterator it2 = servers_locations[it->first].begin(); it2 != servers_locations[it->first].end(); ++it2)
 				{
-					std::cout << "  "<< *it2 << std::endl;
+					//std::cout << "  "<< *it2 << std::endl;
+					locs.push_back(parseLocation(*it2, line_counter));
 				}
 				std::cout << std::endl;
-			}	
+			}
 
 			return ServerConfig();
 		}
 
 
-		Location parseLocation() {
-			return Location();
+		static Location parseLocation(std::string loc, int line_counter) {
+
+			std::string path;
+			std::string root;
+			str_vec allowed_methods;
+			int			body_size_limit;
+			int			auto_index;
+			std::string error_page;
+
+			if (loc[0] !='{' || loc[loc.size()-1] !='}')
+			{
+				std::cout << "Error with Location in line " << line_counter << std::endl;
+				throw webserv_exception("Error with Location in line " + std::to_string(line_counter));
+			}
+			loc = loc.substr(1,loc.size()-2);
+			trim(loc);
+			std::cout << "loc to parse :" << loc << std::endl;
+			str_vec sp_loc = split_to_lines(loc,",");
+			for (str_vec::iterator it = sp_loc.begin(); it != sp_loc.end();++it)
+			{
+				str_vec sp = split_to_lines(*it, "=");
+				if (sp.size() != 2)
+				{
+					std::cout << "Error with Location in line " << line_counter << std::endl;
+					throw webserv_exception("Error with Location in line " + std::to_string(line_counter));
+				}
+				std::string key = sp[0];
+				std::string val = sp[1];
+				trim(key);
+				trim(val);
+				//std::cout << key << "=" << val << std::endl;
+
+				if (key=="path")
+					path = val;
+				else if (key=="root")
+					root = val;
+				else if (key=="autoindex")
+					auto_index = val == "on" ? 1 : 0;
+				else if (key=="methods")
+					allowed_methods = split_to_lines(val,"/");
+				else if (key=="error_page")
+					error_page = val;
+				else if (key =="body_size_limit")
+					body_size_limit = std::stoi(val);
+				else
+				{
+					std::cout << "Error with Location, unknown field <"<< key << "> in line " << line_counter << std::endl;
+					throw webserv_exception("Error with Location, unknown field <"+ key +"> in line " + std::to_string(line_counter));
+				}
+			}
+			return Location(path, root, allowed_methods, body_size_limit, auto_index, error_page);
+
 		}
 };
 

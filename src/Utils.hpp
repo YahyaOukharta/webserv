@@ -1,3 +1,5 @@
+#ifndef UTILS_HPP
+#define UTILS_HPP
 #include <iostream>
 #include <string>
 #include <vector>
@@ -39,10 +41,15 @@ static void rtrim(std::string &s)
 {
     s.erase(s.find_last_not_of("\t ") + 1);
 }
+
+
 static void trim(std::string &s){
     ltrim2(s);
     rtrim(s);
 }
+
+
+
 // to do : add here all error messages/codes
 class webserv_exception : public std::exception
 {
@@ -54,3 +61,5 @@ class webserv_exception : public std::exception
         return _msg.c_str();
    }
 };
+
+#endif
