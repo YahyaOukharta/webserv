@@ -3,19 +3,30 @@
 
 # include <iostream>
 # include <string>
+# include <vector>
 
 class Location
 {
+	private:
+		std::string _path;
 
+		std::string _root;
+		int _body_size_limit;
+		std::vector<std::string> _allowed_methods;
+
+		int _auto_index; // default off
+		std::string _error_page;
 	public:
 
-		Location();
+		Location(){
+
+		}
 		Location( Location const & src );
-		~Location();
+		~Location(){}
 
 		Location &		operator=( Location const & rhs );
 
-	private:
+
 
 };
 

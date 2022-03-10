@@ -102,11 +102,7 @@ void config::parse_buffer(const std::string &s)
             serv.name = str;
             index_loc = 0;
             _servers.push_back(serv);
-<<<<<<< HEAD
-            std::cout << _servers[index].name << "<================="<< std::endl;
-=======
-            //std::cout << _servers[0].name << std::endl;
->>>>>>> 615e4f4d9effebc48f8a322678fab38dae60730a
+            //std::cout << _servers[index].name << "<================="<< std::endl;
         }
         else{
             index++;
@@ -157,21 +153,12 @@ void config::parse_buffer(const std::string &s)
             }
             case 'l': {
                 if(s.find("location = ") != std::string::npos){
-<<<<<<< HEAD
                 str = s.substr(s.find("location = ") + 11, s.length() - 11);
                 str = str.substr(0, str.length() - 1);
                 multi_spliter(str);
                 // _servers[index].location = str;
                 //get infos from location line
                 // std::cout << str << std::endl;}
-=======
-                    str = s.substr(s.find("location = ") + 11, s.length() - 11);
-                    str = str.substr(0, str.length() - 1);
-                    // _servers[index].location = str;
-                    //get infos from location line
-                    //std::cout << str << std::endl;
-                }
->>>>>>> 615e4f4d9effebc48f8a322678fab38dae60730a
                 break;
             }
             
@@ -211,7 +198,6 @@ config::config(const std::string s)
                 buffer = buffer.substr(0, pos);
             ft::ltrim(buffer);ft::rtrim(buffer);
             parse_buffer(buffer);
-            
         }
     }
     size_t i = -1;

@@ -30,7 +30,19 @@ static inline std::string ltrim(std::string s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), notisspace));
     return s;
 }
-
+static void ltrim2(std::string &s)
+{
+    s.erase(0, s.find_first_not_of("\t "));
+}
+ 
+static void rtrim(std::string &s)
+{
+    s.erase(s.find_last_not_of("\t ") + 1);
+}
+static void trim(std::string &s){
+    ltrim2(s);
+    rtrim(s);
+}
 // to do : add here all error messages/codes
 class webserv_exception : public std::exception
 {

@@ -11,6 +11,6 @@ int main()
 {
     std::string s = "../configs/conf.conf";
     config cfg(s);
-    cfg.print_config();
+    // cfg.print_config();
     return 0;
 }

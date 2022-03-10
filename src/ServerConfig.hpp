@@ -4,6 +4,8 @@
 # include <iostream>
 # include <string>
 
+# include "./Location.hpp"
+#include <vector>
 class ServerConfig
 {
 
@@ -11,6 +13,12 @@ class ServerConfig
 		std::string _name; // server name
 		std::string _host ;  // server host, ie 0.0.0.0
 		int			_port;  // server port, ie 8080
+		//int 		_body_size_limit; // body size limit 
+		std::string _default_error_page; 
+
+		std::vector<Location> _locations;
+		std::vector<std::string> _allowed_methods; // GET POST ..
+
 		int			_backlog; //request queue size
 
 
