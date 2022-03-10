@@ -34,14 +34,40 @@ class Location
 			_error_page = error_page;
 	
 		}
-		Location( Location const & src );
+		Location( Location const & src ){
+			*this = src;
+		}
 		~Location(){}
 		Location(){}
 
-		Location &		operator=( Location const & rhs );
+		Location &		operator=( Location const & rhs ){
+			_path = rhs.getPath();
+			_root = rhs.getRoot();
+			_allowed_methods = rhs.getAllowedMethods();
+			_body_size_limit = rhs.getBodySizeLimit();
+			_auto_index = rhs.getAutoIndex();
+			_error_page = rhs.getErrorPage();
+			return *this;
+		}
 
-
-
+		std::string const &getPath()const {
+			return _path;
+		}
+		std::string const &getRoot()const {
+			return _root;
+		}
+		int getBodySizeLimit() const{
+			return _body_size_limit;
+		}
+		bool getAutoIndex() const{
+			return _auto_index;
+		}
+		std::vector<std::string> const &getAllowedMethods()const{
+			return _allowed_methods;
+		}
+		std::string const &getErrorPage()const {
+			return _error_page;
+		}
 };
 
 std::ostream &			operator<<( std::ostream & o, Location const & i );
