@@ -27,7 +27,7 @@ class Parser
 
 		Parser &		operator=( Parser const & rhs );
 
-		static ServerConfig parseFile(std::string conf_path)
+		static std::vector<ServerConfig> parseFile(std::string conf_path)
 		{
 			std::ifstream input( conf_path );
 			if (!input.is_open())
@@ -76,7 +76,6 @@ class Parser
 					std::cout << "Error with server name  " << std::endl;
 					throw webserv_exception("Invalid server name 2");
 				}
-
 				// other fields
 				if ((i = line.find("=",1)) > 0)
 				{
@@ -101,14 +100,11 @@ class Parser
 					throw webserv_exception("Error with field in line " + std::to_string(line_counter));
 				}
 			}
-
-
+			std::vector<ServerConfig> configs;
 			for (servers_fields_map::iterator it = servers_fields.begin(); it != servers_fields.end(); ++it){
 				std::cout << "[" << it->first << "]" << std::endl;
-				for (str_map::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
-				{
-					std::cout << " "<< it2->first << "=" << it2->second << std::endl;
-				}
+				ServerConfig cfg = parseServer(it->second, it->first, line_counter);
+
 				std::cout << " Locations : " << std::endl;
 				std::vector<Location> locs;
 				for (str_vec::iterator it2 = servers_locations[it->first].begin(); it2 != servers_locations[it->first].end(); ++it2)
@@ -116,13 +112,48 @@ class Parser
 					//std::cout << "  "<< *it2 << std::endl;
 					locs.push_back(parseLocation(*it2, line_counter));
 				}
+				cfg.setLocations(locs);
+				configs.push_back(cfg);
 				std::cout << std::endl;
 			}
 
-			return ServerConfig();
+			return configs;
 		}
 
+		static ServerConfig parseServer(str_map server_fields, std::string server_name, int line_counter) {
 
+			std::string host ;  // server host, ie 0.0.0.0
+			int			port;  // server port, ie 8080
+
+			int 		body_size_limit; // body size limit 
+			std::string default_error_page; // error page
+			std::vector<std::string> allowed_methods; // GET POST ..
+
+			int backlog = 30;
+
+			for (str_map::iterator it = server_fields.begin(); it != server_fields.end(); ++it)
+			{
+				std::cout << " "<< it->first << "=" << it->second << std::endl;
+				if (it->first=="host")
+					host = it->second;
+				else if (it->first=="port")
+					port = std::stoi(it->second);
+				else if (it->first=="body_size_limit")
+					body_size_limit = std::stoi(it->second);
+				else if (it->first=="allowed_methods")
+					allowed_methods = split_to_lines(it->second,"/");
+				else if (it->first=="default_error_page")
+					default_error_page = it->second;
+				else if (it->first =="body_size_limit")
+					body_size_limit = std::stoi(it->second);
+				else
+				{
+					std::cout << "Error with Server config, unknown field <"<< it->first << "> in line " << line_counter << std::endl;
+					throw webserv_exception("Error with Server config, unknown field <"+ it->first +"> in line " + std::to_string(line_counter));
+				}
+			}
+			return ServerConfig(server_name,host,port,body_size_limit,default_error_page,allowed_methods, backlog);
+		}
 		static Location parseLocation(std::string loc, int line_counter) {
 
 			std::string path;
@@ -174,7 +205,6 @@ class Parser
 				}
 			}
 			return Location(path, root, allowed_methods, body_size_limit, auto_index, error_page);
-
 		}
 };
 

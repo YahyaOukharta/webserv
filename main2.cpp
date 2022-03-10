@@ -15,6 +15,11 @@ int main(int ac, char **av)
     //     srv.async();
     // }
 
-    Parser::parseFile("./configs/conf.conf");
+    std::vector<ServerConfig> configs = Parser::parseFile("./configs/conf.conf");
+    Server srv(configs[0]);
+    srv.initServer();
+    while(1){
+        srv.async();
+    }
     return (0);
 }
