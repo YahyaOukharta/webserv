@@ -6,10 +6,20 @@
 
 # include "Server.hpp"
 # include "Parser.hpp"
+# include "Request.hpp"
+#include "FileSystem.hpp"
 
 class Webserv
 {
+	public:
+		typedef std::vector<Server*> srv_vec;
+		typedef std::vector<Server*>::iterator srv_vec_it;
+		typedef std::vector<Server*>::const_iterator srv_vec_cit;
+	private:
+
 	std::vector<Server*> servers;
+	std::map<int, int> client_to_srv_idx;
+	std::map<int, Request> client_to_req; 
 
 	public:
 
@@ -30,9 +40,10 @@ class Webserv
 			*this = src;
 		}
 		~Webserv(){
-			// for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end();++it){
-			// 	delete (*it);
+			// for (srv_vec_cit it = servers.begin(); it!= servers.end(); ++it){
+			// 	delete(*it);
 			// }
+
 		}
 
 		Webserv &		operator=( Webserv const & rhs ){
@@ -44,10 +55,109 @@ class Webserv
 			return servers;
 		}
 
+		int getServerIndexWithSock(int sock) const{
+			for (srv_vec_cit it = servers.begin(); it!= servers.end(); ++it){
+				if ((*it)->getSocket() == sock)
+					return it - servers.begin();
+			}
+			return (-1);
+		}
 		void run(){
-			while(1){
-				for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end();++it){
-					std::cout << (*it)->async() << std::endl;
+			// while (1){
+			// 	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end();++it){
+			// 		std::cout << (*it)->async() << std::endl;
+			// 	}
+			// }
+			fd_set master_rd_set, working_rd_set; // reading fd sets
+			fd_set master_wr_set, working_wr_set; // writing fd sets
+			struct timeval select_timeout = {10, 0}; 
+			int max_fd = 0;
+
+			FD_ZERO(&master_rd_set);
+			FD_ZERO(&master_wr_set);
+			
+			for (srv_vec_it it = servers.begin(); it!= servers.end(); ++it){ //add servers socks to reading set
+				int sock = (*it)->getSocket();
+				FD_SET (sock, &master_rd_set);
+				if (sock > max_fd)
+					max_fd = sock;
+			}
+
+			int select_ret;
+			while (1){
+				memcpy(&working_rd_set, &master_rd_set, sizeof(master_rd_set));
+				memcpy(&working_wr_set, &master_wr_set, sizeof(master_wr_set));
+				
+				// std::cout << "sleeping 5 sec " << std::endl;
+				// usleep(2 * 1e6);
+
+				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL, &select_timeout);
+				if (select_ret == -1)
+				{
+					perror("ss");
+					std::cout << "select failed" << std::endl;
+					return;
+				}
+				if (select_ret == 0)
+				{
+					std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
+					return;
+				}
+				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){
+					if (FD_ISSET(fd, &working_rd_set)){ // fd is ready for writing
+						select_ret--;
+						int srv_index;
+						if ((srv_index = getServerIndexWithSock(fd)) != -1){ // server socket ready for reading
+							// accept all connections
+							int client_sock = 0;
+							while (client_sock != -1){
+								client_sock = servers[srv_index]->accept_connection();
+								if (client_sock == -1){
+									if (errno != EWOULDBLOCK)
+									{
+										std::cout << "accepting failed" << std::endl;
+										return;
+									}
+									break;
+								}
+
+								client_to_srv_idx[client_sock] = srv_index; // map client sock to server it came from 
+								FD_SET(client_sock, &master_rd_set); // add client sock to master reading set
+
+								if (client_sock > max_fd) max_fd = client_sock; // update max_fd
+							}
+						}
+						else { // client socket ready for reading
+							std::string buf = FileSystem::getFileContent(fd);
+							Request req(buf);
+							client_to_req[fd] = req;
+							FD_CLR(fd, &master_rd_set);
+							FD_SET(fd, &master_wr_set);
+						}
+					}
+					else if(FD_ISSET(fd, &working_wr_set)){
+						Request req = client_to_req[fd];
+						client_to_req.erase(fd);
+
+						// response
+						std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
+						std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
+						response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
+						//
+
+						client_to_srv_idx.erase(fd);
+						send(fd, response.c_str(), response.size(), 0);
+						close(fd);
+
+						FD_CLR(fd, &master_wr_set);
+						while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
+							max_fd--;
+					}
+				}
+			}
+			for (int i = 0; i < max_fd; i++){
+				if(FD_ISSET(i, &master_rd_set)){
+					close(i);
 				}
 			}
 		}
@@ -59,3 +169,4 @@ class Webserv
 std::ostream &			operator<<( std::ostream & o, Webserv const & i );
 
 #endif /* ********************************************************* WEBSERV_H */
+

@@ -6,7 +6,7 @@
 # include <map>
 #include "Utils.hpp"
 
-# define DEBUG 1
+# define DEBUG 0
 #include "Response.hpp"
 class Request
 {
@@ -48,10 +48,22 @@ class Request
 			}
 			print();
 		}
-		Request( Request const & src );
+		Request( Request const & src ){
+			*this = src;
+		}
 		~Request(){}
 
-		Request &		operator=( Request const & rhs );
+		Request &		operator=( Request const & rhs )
+		{
+			protocol = rhs.getProtocol();
+			version = rhs.getVersion();			
+			method = rhs.getMethod();
+			path = rhs.getPath();
+			query = rhs.getQuery();
+			headers = rhs.getHeaders();
+			body = rhs.getBody();
+			return *this;
+		}
 
 		// parsing
 
@@ -105,6 +117,13 @@ class Request
 		}
 
 		// getters
+		const std::string &getProtocol() const {
+			return protocol;
+		}
+		const std::string &getVersion() const {
+			return version;
+		}
+
 		const std::string &getMethod() const {
 			return method;
 		}

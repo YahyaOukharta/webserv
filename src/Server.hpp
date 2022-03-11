@@ -26,7 +26,6 @@ class Server
 		struct sockaddr_in client_address;
 		int address_size;
 
-		FileSystem fs;
 
 	public:
 		Server(){
@@ -42,7 +41,9 @@ class Server
 		Server( Server const & src ){
 			*this = src;
 		}
-		~Server(){}
+		~Server(){
+			//close(sock);
+		}
 
 		Server &		operator=( Server const & rhs ){
 			conf = rhs.getConfig();
@@ -209,7 +210,7 @@ class Server
 							}
 						}
 						else { // client ready
-							std::string buf = fs.getFileContent(fd);
+							std::string buf = FileSystem::getFileContent(fd);
 							try
 							{
 								Request req(buf);
@@ -217,7 +218,7 @@ class Server
 								std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
 								std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
 
-								response.append(fs.getFileContent("www"+filepath)+"\r\n");
+								response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
 
 								send(fd, response.c_str(), response.size(), 0);
 
@@ -286,6 +287,9 @@ class Server
 			return (0);
 		}
 
+		int getSocket() const {
+			return sock;
+		}
 };
 
 //fcntl(fd, F_SETFL, O_NONBLOCK);
