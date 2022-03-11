@@ -46,7 +46,7 @@ class Request
 				if (error == 3)
 					throw webserv_exception("Too many '?'");
 			}
-			print();
+			//print();
 		}
 		Request( Request const & src ){
 			*this = src;

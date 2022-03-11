@@ -19,6 +19,9 @@ class Webserv
 
 	std::vector<Server*> servers;
 	std::map<int, int> client_to_srv_idx;
+
+
+	std::map<int, std::string> client_to_buf; 
 	std::map<int, Request> client_to_req; 
 
 	public:
@@ -88,8 +91,8 @@ class Webserv
 				memcpy(&working_rd_set, &master_rd_set, sizeof(master_rd_set));
 				memcpy(&working_wr_set, &master_wr_set, sizeof(master_wr_set));
 				
-				// std::cout << "sleeping 5 sec " << std::endl;
-				// usleep(2 * 1e6);
+				// std::cout << "sleeping 2 sec " << std::endl;
+				// usleep(1e5);
 
 				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL, &select_timeout);
 				if (select_ret == -1)
@@ -128,26 +131,79 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-							std::string buf = FileSystem::getFileContent(fd);
-							Request req(buf);
-							client_to_req[fd] = req;
-							FD_CLR(fd, &master_rd_set);
-							FD_SET(fd, &master_wr_set);
+							std::string buf; // = FileSystem::getFileContent(fd);
+
+
+
+							bool close_con = false;
+							while (1)
+							{
+								char buff[1024] = {0};
+								int rd = recv(fd, buff, 1023, 0);
+								if (rd == -1){ // recv failed
+									if (errno != EWOULDBLOCK){ // we close the connection
+										perror("recv :");
+										close_con = true;
+										break;
+									}
+									else {
+										rd = 0;
+										perror("recv else:");
+									} // EWOULDBLOCK , give back fd to select, save buff
+									//break;
+								}
+								if (rd == 0)
+								{ // done reading
+									try{
+										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
+										Request req(client_to_buf[fd]);
+										req.print();
+										client_to_req[fd] = req;
+									}
+									catch(webserv_exception const& e){ // bad request
+										std::cout << e.what() << std::endl;
+									}
+									FD_CLR(fd, &master_rd_set);
+									FD_SET(fd, &master_wr_set);
+									//std::cout << "buf " << client_to_buf[fd] << std::endl;
+									client_to_buf.erase(fd);
+
+									break;
+								}
+
+								client_to_buf[fd].append(buff);
+							}
+							if (close_con){
+								close(fd);
+								FD_CLR(fd, &master_rd_set);
+								while (FD_ISSET(max_fd, &master_rd_set) == 0)
+									max_fd -= 1;
+							}
 						}
 					}
 					else if(FD_ISSET(fd, &working_wr_set)){
 						Request req = client_to_req[fd];
-						client_to_req.erase(fd);
+						std::string response;
 
+						client_to_req.erase(fd);
+						std::cout << "here" << std::endl;
 						// response
-						std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
-						std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
-						response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
+						if(req.getVersion()=="")
+						{
+							response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
+
+						}
+						else{
+							std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
+							response = ("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
+							response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
 						//
+						}
 
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
 						close(fd);
+						std::cout << "CLOSED RESPONDED" << std::endl;
 
 						FD_CLR(fd, &master_wr_set);
 						while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
