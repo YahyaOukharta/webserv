@@ -2,7 +2,7 @@ NAME = cfg
 
 SRCS = *.cpp
 
-FLAGS = -Wall -Wextra -Werror -fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror
 
 all: $(NAME)
 

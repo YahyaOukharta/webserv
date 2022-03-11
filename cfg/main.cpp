@@ -9,8 +9,13 @@
 
 int main()
 {
-    std::string s = "../configs/conf.conf";
+    std::string s = "../configs/default.conf";
+    try{
     config cfg(s);
-    // cfg.print_config();
+    }
+    catch(std::exception & e)
+    {
+        std::cout << e.what();
+    }
     return 0;
 }
