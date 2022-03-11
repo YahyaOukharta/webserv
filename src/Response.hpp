@@ -92,4 +92,3 @@ class Response
 std::ostream &			operator<<( std::ostream & o, Response const & i );
 
 #endif /* ******************************************************** RESPONSE_H */
-

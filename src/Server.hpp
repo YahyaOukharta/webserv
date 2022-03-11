@@ -117,21 +117,21 @@ class Server
 			//init socket
 			int error;
 			if((error = init_socket())){
-				throw(webserv_exception("Error in init_socket : " + error));
+				throw(webserv_exception("Error in init_socket : " + std::to_string(error)));
 				return (error);
 			}
 
 			//bind to address
 			if((bind_socket())){
 				//perror("listen");
-				throw(webserv_exception("Error binding : " + error));
+				throw(webserv_exception("Error binding "));
 				return (-3);
 			}
 
 			// listen
 			if(listen(sock, 3)){
 				//perror("listen");
-				throw(webserv_exception("Error listening : " + error));
+				throw(webserv_exception("Error listening "));
 				return (-4);
 			}
 
