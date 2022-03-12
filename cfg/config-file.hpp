@@ -20,19 +20,20 @@ class config
             std::string path;
             std::string root;
             std::string index;
-            std::vector<std::string> methods;  // allowed methodes
+            std::string method;
+            // std::vector<std::string> methods;  // allowed methodes maybe for later
             std::string autoindex;
             std::string cgi_path;
             
             std::string upload_path;
             size_t client_max_body_size;
         };
-        struct server
+        struct serveur
         {
             std::string name; // containes name of server
             std::string host;
             int port;
-            size_t bodysize_limit;
+            int bodysize_limit;
             std::string root;
             std::map<int, std::string> error_pages; //int for error number string for path
             std::vector<location> locations; // containes all locations of a server
@@ -42,13 +43,14 @@ class config
         size_t server_count;
         size_t index;
         size_t checker;
-        std::vector<server> _servers; // containes all the servers
+        std::vector<serveur> _servers; // containes all the servers
 
         void parse_buffer(const std::string &s);
         void count_servers(const std::string &s);
         int check_if_random(const std::string &s);
-        void multi_spliter(std::string &s, const std::string &);
+        void parse_location(std::string &s, const std::string &);
         std::string normal_split(const std::string &line, const std::string &spliter);
+        void set_defaults(size_t);
         //getters and setters
         
 

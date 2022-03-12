@@ -8,7 +8,7 @@ std::string config::normal_split(const std::string &line, const std::string &spl
     s = s.substr(0 , s.find_first_of(spliter) - 1);
     return s;
 }
-void config::multi_spliter(std::string &line, const std::string &spliter)
+void config::parse_location(std::string &line, const std::string &spliter)
  {
     ft::ltrim(line);
     ft::rtrim(line);
@@ -58,7 +58,7 @@ void config::multi_spliter(std::string &line, const std::string &spliter)
                     
                     {str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
                     str = str.substr(0, str.length());
-                    l.methods.push_back(str);}
+                    l.method = str;}
                     
                 }
                 else
@@ -97,11 +97,18 @@ void config::multi_spliter(std::string &line, const std::string &spliter)
     }
     _servers[index].locations.push_back(l);
  }
+void config::set_defaults(size_t i)
+{
+    _servers[i].port = -1;
+    _servers[i].host = "NULL";
+    _servers[i].root = "NULL";
+    _servers[i].bodysize_limit = -1;
+}
  
 void config::parse_buffer(const std::string &s)
 {
     // std::cout << s << std::endl;
-    server serv;
+    serveur serv;
     std::string str;
     
     
@@ -117,16 +124,19 @@ void config::parse_buffer(const std::string &s)
         str = s.substr(s.find("[") + 1, s.find("]") - 1);
         if (str != "end")
         {
+            
+            checker++;
             serv.name = str;
             // index_loc = 0;
-            checker = 1;
             _servers.push_back(serv);
+            set_defaults(index);
             
+
             std::cout << "==================>" + _servers[index].name << "<================="<< std::endl;
         }
         else{
             index++;
-            checker = 0;
+            checker--;
         }
     }
     else{
@@ -137,7 +147,7 @@ void config::parse_buffer(const std::string &s)
         switch(s[0]){
             case 'h':{
                 std::string test = normal_split(s, "=");
-                if(s.find("host = ") != std::string::npos && test == "host")
+                if(s.find("host = ") != std::string::npos && test == "host" && _servers[index].host == "NULL")
                 {
                     {str = s.substr(s.find("host = ") + 7, s.length() - 7);
                     str = str.substr(0, str.length() - 1);
@@ -149,12 +159,12 @@ void config::parse_buffer(const std::string &s)
             }
             case 'p' :{
                 std::string test = normal_split(s, "=");
-                if(s.find("port = ") != std::string::npos && test == "port")
+                if(s.find("port = ") != std::string::npos && test == "port" && _servers[index].port == -1)
                 {
-                    
-                    {str = s.substr(s.find("port = ") + 7, s.length() - 7);
-                    str = str.substr(0, str.length() - 1);
-                    _servers[index].port = ft::atoi(str.c_str());
+                    {
+                        str = s.substr(s.find("port = ") + 7, s.length() - 7);
+                        str = str.substr(0, str.length() - 1);
+                        _servers[index].port = ft::atoi(str.c_str());
                     }
                 }
                 else
@@ -163,7 +173,7 @@ void config::parse_buffer(const std::string &s)
             }
             case 'd': {
                 std::string test = normal_split(s, "=");
-                if(s.find("default_error_pages = ") != std::string::npos && test == "default_error_pages")
+                if(s.find("default_error_pages = ") != std::string::npos && test == "default_error_pages" && _servers[index].root == "NULL")
                 {
                     
                     {str = s.substr(s.find("default_error_pages = ") + 22, s.length() - 22);
@@ -177,7 +187,7 @@ void config::parse_buffer(const std::string &s)
             }
             case 'b': {
                 std::string test = normal_split(s, "=");
-                if(s.find("bodysize_limit = ") != std::string::npos && test == "bodysize_limit")
+                if(s.find("bodysize_limit = ") != std::string::npos && test == "bodysize_limit" && _servers[index].bodysize_limit == -1)
                 {
                    
                     {str = s.substr(s.find("bodysize_limit = ") + 17, s.length() - 17);
@@ -196,7 +206,7 @@ void config::parse_buffer(const std::string &s)
                     // if(normal_split(s, "=") == "location")
                     {str = s.substr(s.find("location = ") + 11, s.length() - 11);
                     str = str.substr(0, str.length() - 1);
-                    multi_spliter(str, ",");}
+                    parse_location(str, ",");}
                 // _servers[index].location = str;
                 //get infos from location line
                 // std::cout << str << std::endl;}
@@ -216,6 +226,7 @@ config::config(const std::string s)
     //thisi s for allocation of servers later
     // count_servers(s);
     index = 0;
+    checker = 0;
     // std::cout << server_count << std::endl;
     //
     std::ifstream       file(s);
@@ -232,10 +243,8 @@ config::config(const std::string s)
 
         while(std::getline(a, buffer))
         {
-            // std::cout << buffer << std::endl;
             ft::ltrim(buffer);
             ft::rtrim(buffer);
-            // std::cout << buffer << std::endl;
             if(ft::isSkippable(buffer))
                 continue ;
             size_t pos = buffer.find_first_of('#');
@@ -248,6 +257,7 @@ config::config(const std::string s)
     }
     if(checker != 0)
     {
+        // std::cout << index << " " << std::endl;
         throw std::invalid_argument( "config file syntax is not proper\n");
     }
     size_t i = -1;
@@ -255,11 +265,8 @@ config::config(const std::string s)
     while(++i < _servers[1].locations.size())
     {
         std::cout << _servers[1].locations[i].path + "  " + _servers[1].locations[i].root + "  " + _servers[1].locations[i].autoindex;
-        size_t j = -1;
-        while(++j < _servers[1].locations[i].methods.size())
-        {
-            std::cout << "  " + _servers[1].locations[i].methods[j] << " ";
-        }
+        
+        std::cout << "  " + _servers[1].locations[i].method << " ";
         std::cout << std::endl;
     }
 }
