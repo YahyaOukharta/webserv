@@ -16,6 +16,7 @@ void config::multi_spliter(std::string &line, const std::string &spliter)
     location l;
     std::size_t prev = 0, pos;
     std::string str;
+
     while ((pos = line.find_first_of(spliter, prev)) != std::string::npos)
     {
         if (pos > prev)
@@ -117,12 +118,15 @@ void config::parse_buffer(const std::string &s)
         if (str != "end")
         {
             serv.name = str;
-            index_loc = 0;
+            // index_loc = 0;
+            checker = 1;
             _servers.push_back(serv);
+            
             std::cout << "==================>" + _servers[index].name << "<================="<< std::endl;
         }
         else{
             index++;
+            checker = 0;
         }
     }
     else{
@@ -130,8 +134,6 @@ void config::parse_buffer(const std::string &s)
         ft::rtrim_space(str);
         if(str[str.length() - 1] != ';')
         {throw std::invalid_argument( "bad argumet :" + str + "\n");}
-        // if(check_if_random())
-            // std::cout << "wtf you typing\n";return ;
         switch(s[0]){
             case 'h':{
                 std::string test = normal_split(s, "=");
@@ -152,8 +154,6 @@ void config::parse_buffer(const std::string &s)
                     
                     {str = s.substr(s.find("port = ") + 7, s.length() - 7);
                     str = str.substr(0, str.length() - 1);
-                    if(_servers[index].port)
-                        {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].port = ft::atoi(str.c_str());
                     }
                 }
@@ -246,8 +246,12 @@ config::config(const std::string s)
             
         }
     }
+    if(checker != 0)
+    {
+        throw std::invalid_argument( "config file syntax is not proper\n");
+    }
     size_t i = -1;
-    std::cout << _servers[1].locations.size() << std::endl;
+    // std::cout << _servers[1].locations.size() << std::endl;
     while(++i < _servers[1].locations.size())
     {
         std::cout << _servers[1].locations[i].path + "  " + _servers[1].locations[i].root + "  " + _servers[1].locations[i].autoindex;
