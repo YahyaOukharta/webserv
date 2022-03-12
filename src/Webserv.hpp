@@ -139,17 +139,22 @@ class Webserv
 							while (1)
 							{
 								char buff[1024] = {0};
-								int rd = recv(fd, buff, 1023, 0);
+								int rd = recv(fd, buff, 1023, MSG_DONTWAIT);
 								if (rd == -1){ // recv failed
 									if (errno != EWOULDBLOCK){ // we close the connection
 										perror("recv :");
 										close_con = true;
 										break;
 									}
-									else {
-										rd = 0;
-										perror("recv else:");
-									} // EWOULDBLOCK , give back fd to select, save buff
+									else { // EWOULDBLOCK , give back fd to select
+										//perror("recv else:");
+										if (client_to_buf[fd].size())
+										{
+											rd = 0;
+										}
+										else break;
+										
+									} 
 									//break;
 								}
 								if (rd == 0)
@@ -186,7 +191,6 @@ class Webserv
 						std::string response;
 
 						client_to_req.erase(fd);
-						std::cout << "here" << std::endl;
 						// response
 						if(req.getVersion()=="")
 						{
@@ -203,7 +207,6 @@ class Webserv
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
 						close(fd);
-						std::cout << "CLOSED RESPONDED" << std::endl;
 
 						FD_CLR(fd, &master_wr_set);
 						while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)

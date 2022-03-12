@@ -130,7 +130,7 @@ class Parser
 			std::string default_error_page; // error page
 			std::vector<std::string> allowed_methods; // GET POST ..
 
-			int backlog = 30;
+			int backlog = 32;
 
 			for (str_map::iterator it = server_fields.begin(); it != server_fields.end(); ++it)
 			{
