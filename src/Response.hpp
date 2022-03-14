@@ -68,6 +68,28 @@ class StatusCodes
 
 };
 
+class Implemented {
+	
+	public:
+		static std::vector<std::string> METHODS(){
+			std::vector<std::string> m;
+			m.push_back("OPTIONS");
+			//m.push_back("GET");
+			m.push_back("POST");
+			m.push_back("DELETE");
+			return (m);
+		};
+
+		static std::vector<std::string> CONTENT_HEADERS(){
+			std::vector<std::string> m;
+			m.push_back("content-encoding");
+			m.push_back("content-language");
+			m.push_back("content-length");
+			m.push_back("content-type");
+			return (m);
+		};
+};
+
 class Response
 {
 	private:
@@ -75,17 +97,123 @@ class Response
 		int 		statusCode;
 		std::string	statusString;
 
+		std::map<std::string, std::string> general_headers;
+		std::map<std::string, std::string> representation_headers;
+		std::map<std::string, std::string> response_headers;
 
+		std::string body;
+
+		Request req;
 	public:
 
-		Response(){
-			// StatusCodes::statu
+		Response(Request const &_req) : statusCode(0), req(_req){
+			int status = 0;
+			status = handle_system_block();
+			std::cout << statusCode << std::endl;
+			if (status) return;
 		}
+		Response(){}
 		Response( Response const & src );
 		~Response(){}
 
 		Response &		operator=( Response const & rhs );
 
+		bool handle_system_block() {
+			if (!is_service_available()){
+				return (statusCode = StatusCodes::SERVICE_UNAVAILABLE());
+			}
+			else if (is_uri_too_long()){
+				return (statusCode = StatusCodes::REQUEST_URI_TOO_LONG());
+			}
+			else if (are_headers_too_large()){
+				return (statusCode = StatusCodes::REQUEST_ENTITIY_TOO_LARGE());
+			}
+			else if (
+				!is_method_implemented() ||
+				!are_content_headers_implemented() ||
+				!is_functionality_implemented()
+			){
+				return (statusCode = StatusCodes::NOT_IMPLEMENTED());
+			}
+			else if (!are_expect_extensions_implemented()){
+				return (statusCode = StatusCodes::EXPECTATION_FAILED());
+			}
+			else if (!is_system_block_ok()){
+				return (statusCode = StatusCodes::EXPECTATION_FAILED());
+			}
+			return (0);
+		}
+
+		bool handle_request_block() {
+
+			return (0);
+		}
+		bool handle_accept_block() {
+
+			return (0);
+		}
+		bool handle_retrieve_block() {
+
+			return (0);
+		}
+		bool handle_precondition_block() {
+
+			return (0);
+		}
+		bool handle_create_process_block() {
+
+			return (0);
+		}
+		bool handle_response_block() {
+
+			return (0);
+		}
+		bool handle_alternative_block() {
+
+			return (0);
+		}
+
+		// System block utils
+		bool is_service_available(){
+			return (true);
+		} // 503
+		bool is_uri_too_long(){
+			return (false);
+		} // 414
+		bool are_headers_too_large(){
+			return (false);
+		} // 413
+		bool is_method_implemented(){
+			std::vector<std::string> methods = Implemented::METHODS();
+			return (std::find(methods.begin(), methods.end(), req.getMethod()) != methods.end());
+		} // 501
+		bool are_content_headers_implemented(){
+			return (true);
+		} // 501
+
+		bool is_functionality_implemented(){
+			return (true);
+		} // 501
+		bool are_expect_extensions_implemented(){
+			return (true);
+		} // 417
+
+		bool is_system_block_ok(){
+			return (true);
+		} // 500
+		//
+		// Request block utils
+		int is_method_allowed(); // 405
+		int is_authorized(); // 401
+		int expects_continue(); // 100 ?
+		int has_content(); //
+		int is_content_too_large(); // 413
+		int is_content_type_accepted(); // 415
+		int from_content(); // 400 ? loop ? 
+		int is_method_trace(); // 200 
+		int is_method_options(); // 200
+		int is_request_block_ok(); // 400 
+		//
 
 };
 

@@ -7,6 +7,7 @@
 # include "Server.hpp"
 # include "Parser.hpp"
 # include "Request.hpp"
+# include "Response.hpp"
 #include "FileSystem.hpp"
 
 class Webserv
@@ -153,8 +154,7 @@ class Webserv
 											rd = 0;
 										}
 										else break;
-										
-									} 
+									}
 									//break;
 								}
 								if (rd == 0)
@@ -175,7 +175,6 @@ class Webserv
 
 									break;
 								}
-
 								client_to_buf[fd].append(buff);
 							}
 							if (close_con){
@@ -203,7 +202,7 @@ class Webserv
 							response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
 						//
 						}
-
+						Response res(req);
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
 						close(fd);
