@@ -8,6 +8,21 @@ std::string config::normal_split(const std::string &line, const std::string &spl
     s = s.substr(0 , s.find_first_of(spliter) - 1);
     return s;
 }
+void config::set_defaults(size_t i)
+{
+    _servers[i].port = -1;
+    _servers[i].host = "NULL";
+    _servers[i].root = "NULL";
+    _servers[i].bodysize_limit = -1;
+    _servers[i].default_error_pages = "default/path";
+}
+void config::set_defaults_2(location *l)
+{
+    l->path = "NULL";
+    l->method = "NULL";
+    l->root = "NULL";
+    l->autoindex = "NULL";
+}
 void config::parse_location(std::string &line, const std::string &spliter)
  {
     ft::ltrim(line);
@@ -17,6 +32,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
     std::size_t prev = 0, pos;
     std::string str;
 
+    set_defaults_2(&l);
     while ((pos = line.find_first_of(spliter, prev)) != std::string::npos)
     {
         if (pos > prev)
@@ -41,7 +57,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
            
             case 'p':{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("path = ") != std::string::npos && test == "path")
+                if(s[pos].find("path = ") != std::string::npos && test == "path" && l.path == "NULL")
                 {
                     str = s[pos].substr(s[pos].find("path = ") + 7, s[pos].length());
                     str = str.substr(0, str.length());
@@ -53,7 +69,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'm' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("method = ") != std::string::npos && test == "method")
+                if(s[pos].find("method = ") != std::string::npos && test == "method" && l.method == "NULL")
                 {
                     
                     {str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
@@ -67,7 +83,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'r' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("root = ") != std::string::npos && test == "root")
+                if(s[pos].find("root = ") != std::string::npos && test == "root" && l.root == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("root = ") + 7, s[pos].length());
                     str = str.substr(0, str.length());
@@ -79,7 +95,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'a' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("autoindex = ") != std::string::npos && test == "autoindex")
+                if(s[pos].find("autoindex = ") != std::string::npos && test == "autoindex"  && l.autoindex == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("autoindex = ") + 12, s[pos].length());
                     str = str.substr(0, str.length());
@@ -97,13 +113,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
     }
     _servers[index].locations.push_back(l);
  }
-void config::set_defaults(size_t i)
-{
-    _servers[i].port = -1;
-    _servers[i].host = "NULL";
-    _servers[i].root = "NULL";
-    _servers[i].bodysize_limit = -1;
-}
+
  
 void config::parse_buffer(const std::string &s)
 {
@@ -173,13 +183,13 @@ void config::parse_buffer(const std::string &s)
             }
             case 'd': {
                 std::string test = normal_split(s, "=");
-                if(s.find("default_error_pages = ") != std::string::npos && test == "default_error_pages" && _servers[index].root == "NULL")
+                if(s.find("default_error_pages = ") != std::string::npos && test == "default_error_pages" && _servers[index].default_error_pages == "default/path")
                 {
                     
                     {str = s.substr(s.find("default_error_pages = ") + 22, s.length() - 22);
                     str = str.substr(0, str.length() - 1);
-                    _servers[index].root = str;}
-                // std::cout << _servers[index].root << std::endl;
+                    _servers[index].default_error_pages = str;}
+                    // std::cout << _servers[index].default_error_pages << std::endl;
                 }
                  else
                 {throw std::invalid_argument( "bad argumet :" + s + "\n");}

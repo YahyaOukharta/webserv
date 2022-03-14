@@ -35,7 +35,8 @@ class config
             int port;
             int bodysize_limit;
             std::string root;
-            std::map<int, std::string> error_pages; //int for error number string for path
+            std::string default_error_pages;
+            // std::map<int, std::string> error_pages; //int for error number string for path for later
             std::vector<location> locations; // containes all locations of a server
             
         };
@@ -51,6 +52,7 @@ class config
         void parse_location(std::string &s, const std::string &);
         std::string normal_split(const std::string &line, const std::string &spliter);
         void set_defaults(size_t);
+        void set_defaults_2(location *l);
         //getters and setters
         
 
