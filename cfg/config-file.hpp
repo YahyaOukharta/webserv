@@ -53,6 +53,7 @@ class config
         std::string normal_split(const std::string &line, const std::string &spliter);
         void set_defaults(size_t);
         void set_defaults_2(location *l);
+        int check_args();
         //getters and setters
         
 

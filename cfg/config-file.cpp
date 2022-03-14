@@ -8,6 +8,28 @@ std::string config::normal_split(const std::string &line, const std::string &spl
     s = s.substr(0 , s.find_first_of(spliter) - 1);
     return s;
 }
+
+int config::check_args()
+{
+    size_t i = 0;
+    
+    while(i < _servers.size())
+    {
+        if(_servers[i].port == -1 || _servers[i].host == "NULL" || _servers[i].bodysize_limit == -1)
+        {;return 1;}
+        
+        size_t j = 0;
+        while(j < _servers[i].locations.size())
+        {
+            if(_servers[i].locations[j].path == "NULL" || _servers[i].locations[j].method == "NULL" || _servers[i].locations[j].root == "NULL" || _servers[i].locations[j].autoindex == "NULL")
+            {   return 1;}
+            j++;
+        }
+        i++;
+    }
+    return 0;
+}
+
 void config::set_defaults(size_t i)
 {
     _servers[i].port = -1;
@@ -265,7 +287,7 @@ config::config(const std::string s)
             
         }
     }
-    if(checker != 0)
+    if(checker != 0 || check_args())
     {
         // std::cout << index << " " << std::endl;
         throw std::invalid_argument( "config file syntax is not proper\n");
