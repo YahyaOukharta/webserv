@@ -304,7 +304,7 @@ class Server
 			{
 				std::string loc_path = it->getPath();
 				if (*(--loc_path.end()) != '/') loc_path.push_back('/');
-				if (loc_path.find(route) == 0)
+				if (route.find(loc_path) == 0)
 				{
 					std::cout << "location "<< loc_path << " matches" << std::endl;
 				}

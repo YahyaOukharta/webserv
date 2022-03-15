@@ -4,6 +4,7 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <cstring>
 #include "Utils.hpp"
 
 # define DEBUG 1
