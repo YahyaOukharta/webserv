@@ -83,6 +83,8 @@ void config::parse_location(std::string &line, const std::string &spliter)
                 {
                     str = s[pos].substr(s[pos].find("path = ") + 7, s[pos].length());
                     str = str.substr(0, str.length());
+                    if(str == "")
+                       {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.path = str;
                 }
                 else
@@ -96,6 +98,8 @@ void config::parse_location(std::string &line, const std::string &spliter)
                     
                     {str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
                     str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.method = str;}
                     
                 }
@@ -109,6 +113,8 @@ void config::parse_location(std::string &line, const std::string &spliter)
                 {
                     {str = s[pos].substr(s[pos].find("root = ") + 7, s[pos].length());
                     str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.root = str;}
                 }
                 else
@@ -121,6 +127,8 @@ void config::parse_location(std::string &line, const std::string &spliter)
                 {
                     {str = s[pos].substr(s[pos].find("autoindex = ") + 12, s[pos].length());
                     str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.autoindex = str;}
                 }
                 else
@@ -183,6 +191,8 @@ void config::parse_buffer(const std::string &s)
                 {
                     {str = s.substr(s.find("host = ") + 7, s.length() - 7);
                     str = str.substr(0, str.length() - 1);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].host = str;}
                 }
                 else
@@ -196,6 +206,8 @@ void config::parse_buffer(const std::string &s)
                     {
                         str = s.substr(s.find("port = ") + 7, s.length() - 7);
                         str = str.substr(0, str.length() - 1);
+                        if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                         _servers[index].port = ft::atoi(str.c_str());
                     }
                 }
@@ -210,6 +222,8 @@ void config::parse_buffer(const std::string &s)
                     
                     {str = s.substr(s.find("default_error_pages = ") + 22, s.length() - 22);
                     str = str.substr(0, str.length() - 1);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].default_error_pages = str;}
                     // std::cout << _servers[index].default_error_pages << std::endl;
                 }
@@ -224,6 +238,8 @@ void config::parse_buffer(const std::string &s)
                    
                     {str = s.substr(s.find("bodysize_limit = ") + 17, s.length() - 17);
                     str = str.substr(0, str.length() - 1);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].bodysize_limit = ft::atoi(str.c_str());}
                 // std::cout << _servers[index].bodysize_limit << std::endl;
                 }
