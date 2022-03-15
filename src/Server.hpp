@@ -290,6 +290,28 @@ class Server
 		int getSocket() const {
 			return sock;
 		}
+
+		Location const& getMatchingLocation(std::string const &path){
+			// 
+			//  /  /images/  /images/hd/image.pmg
+			// /
+			std::vector<Location> const &locs = conf.getLocations();
+			size_t last_slash = path.rfind('/');
+			std::string route = path.substr(0,(last_slash != std::string::npos ? last_slash + 1 : std::string::npos));
+			std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
+
+			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+			{
+				std::string loc_path = it->getPath();
+				if (*(--loc_path.end()) != '/') loc_path.push_back('/');
+				if (loc_path.find(route) == 0)
+				{
+					std::cout << "location "<< loc_path << " matches" << std::endl;
+				}
+			}
+
+			return conf.getLocations()[0];
+		}
 };
 
 //fcntl(fd, F_SETFL, O_NONBLOCK);

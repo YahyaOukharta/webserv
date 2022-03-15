@@ -76,7 +76,7 @@ class ServerConfig
 			_body_size_limit = rhs.getBodySizeLimit();
 			_allowed_methods = rhs.getAllowedMethods();
 			_default_error_page = rhs.getDefaultErrorPage();
-
+			setLocations(rhs.getLocations());
 			return *this;
 		}
 
@@ -101,6 +101,10 @@ class ServerConfig
 		}
 		std::string const &getDefaultErrorPage() const {
 			return _default_error_page;
+		}
+
+		std::vector<Location> const &getLocations() const{
+			return _locations;
 		}
 };
 

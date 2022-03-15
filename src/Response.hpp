@@ -85,20 +85,11 @@ class Implemented {
 			m.push_back("content-encoding");
 			m.push_back("content-language");
 			m.push_back("content-length");
-			//m.push_back("content-type");
+			m.push_back("content-type");
 			return (m);
 		};
 };
-std::string asciitolower(std::string const &s) {
-	std::string ret;
-	for(size_t i = 0; i < s.size(); ++i){
-		char in = s[i];
-		if (in <= 'Z' && in >= 'A')
-        	ret.push_back(in - ('Z' - 'z'));
-		else ret.push_back(in);
-	}
-    return ret;
-}
+
 class Response
 {
 	private:
@@ -113,13 +104,15 @@ class Response
 		std::string body;
 
 		Request req;
+		Server *server;
 	public:
 
-		Response(Request const &_req) : statusCode(0), req(_req){
+		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv){
 			int status = 0;
 			status = handle_system_block();
 			std::cout << statusCode << std::endl;
 			if (status) return;
+			Location l = server->getMatchingLocation(req.getPath());
 		}
 		Response(){}
 		Response( Response const & src );
@@ -148,11 +141,12 @@ class Response
 				return (statusCode = StatusCodes::EXPECTATION_FAILED());
 			}
 			else if (!is_system_block_ok()){
-				return (statusCode = StatusCodes::EXPECTATION_FAILED());
+				return (statusCode = StatusCodes::INTERNAL_SERVER_ERROR());
 			}
 			return (0);
 		}
 
+		// BLOCKS
 		bool handle_request_block() {
 
 			return (0);
@@ -183,6 +177,7 @@ class Response
 		}
 
 		// System block utils
+
 		bool is_service_available(){
 			return (true);
 		} // 503
@@ -201,9 +196,7 @@ class Response
 			std::vector<std::string> impl = Implemented::CONTENT_HEADERS();
 			for (std::map<std::string, std::string>::iterator it = rep_headers.begin(); it!= rep_headers.end(); ++it){
 				if (std::find(impl.begin(), impl.end(), asciitolower(it->first)) == impl.end())
-				{
 					return (false);
-				}
 			}
 			return (true);
 		} // 501
@@ -219,7 +212,9 @@ class Response
 			return (true);
 		} // 500
 		//
+
 		// Request block utils
+
 		int is_method_allowed(); // 405
 		int is_authorized(); // 401
 		int expects_continue(); // 100 ?
@@ -229,9 +224,13 @@ class Response
 		int from_content(); // 400 ? loop ? 
 		int is_method_trace(); // 200 
 		int is_method_options(); // 200
-		int is_request_block_ok(); // 400 
+		int is_request_block_ok(); // 400
+
 		//
 
+
+
+		
 };
 
 

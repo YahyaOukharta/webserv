@@ -17,6 +17,18 @@ class Location
 		int _auto_index; // default off
 		std::string _error_page;
 	public:
+		struct less_than_path
+		{
+			inline bool operator() (const Location& loc1, const Location& loc2)
+			{
+				//return (loc1.getPath() < loc2.getPath());
+				std::string p1 = loc1.getPath();
+				int c1 = std::count(loc1.getPath().begin(), loc1.getPath().end(), '/');
+				std::string p2 = loc2.getPath();
+				int c2 = std::count(loc2.getPath().begin(), loc2.getPath().end(), '/');
+				return c1 < c2;
+			}
+		};
 
 		Location(
 			std::string path,

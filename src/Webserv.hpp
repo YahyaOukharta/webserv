@@ -202,7 +202,7 @@ class Webserv
 							response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
 						//
 						}
-						Response res(req);
+						Response res(req, servers[client_to_srv_idx[fd]]);
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
 						close(fd);

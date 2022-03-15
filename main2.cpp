@@ -16,9 +16,9 @@ int main(int ac, char **av)
         std::cout << "Usage : ./webserv config_file" << std::endl;
         return (1);
     }
-    Webserv srv;
+    ;
     try {
-        srv = Webserv(std::string(av[1]));
+        Webserv srv((std::string(av[1])));
         while(1)
             srv.run();
     }

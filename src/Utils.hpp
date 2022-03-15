@@ -48,7 +48,16 @@ static void trim(std::string &s){
     rtrim(s);
 }
 
-
+std::string asciitolower(std::string const &s) {
+	std::string ret;
+	for(size_t i = 0; i < s.size(); ++i){
+		char in = s[i];
+		if (in <= 'Z' && in >= 'A')
+        	ret.push_back(in - ('Z' - 'z'));
+		else ret.push_back(in);
+	}
+    return ret;
+}
 
 // to do : add here all error messages/codes
 class webserv_exception : public std::exception
@@ -61,5 +70,6 @@ class webserv_exception : public std::exception
         return _msg.c_str();
    }
 };
+
 
 #endif

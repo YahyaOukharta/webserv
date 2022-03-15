@@ -113,6 +113,7 @@ class Parser
 					//std::cout << "  "<< *it2 << std::endl;
 					locs.push_back(parseLocation(*it2, line_counter));
 				}
+				std::sort(locs.begin(), locs.end(), Location::less_than_path());
 				cfg.setLocations(locs);
 				configs.push_back(cfg);
 				std::cout << std::endl;
