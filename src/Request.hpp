@@ -26,8 +26,7 @@ class Request
 		
 		std::map<std::string, std::string> headers; // split to general, request, and representation
 
-
-
+		std::map<std::string, std::string> representation_headers; // split to general, request, and representation
 
 		std::string body;
 
@@ -48,6 +47,7 @@ class Request
 				if (error == 3)
 					throw webserv_exception("Too many '?'");
 			}
+			initRepresentionHeaders();
 			//print();
 		}
 		Request( Request const & src ){
@@ -64,6 +64,7 @@ class Request
 			query = rhs.getQuery();
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
+			initRepresentionHeaders();
 			return *this;
 		}
 
@@ -138,13 +139,23 @@ class Request
 		const std::map<std::string, std::string> &getHeaders() const {
 			return headers;
 		}
+		const std::map<std::string, std::string> &getRepresentationHeaders() const {
+			return representation_headers;
+		}
 		const std::string getHeader(std::string const &key) {
 			return headers[key];
 		}
 		const std::string &getBody() const {
 			return body;
 		}
-
+		void initRepresentionHeaders(){
+			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
+				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
+				if (std::strstr(it->first.c_str(),"Content-") == it->first.c_str()){
+					representation_headers.insert(*it);
+				}
+			}
+		}
 		// debug
 		void print() {
 			std::cout 

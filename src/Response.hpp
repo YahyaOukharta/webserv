@@ -74,7 +74,7 @@ class Implemented {
 		static std::vector<std::string> METHODS(){
 			std::vector<std::string> m;
 			m.push_back("OPTIONS");
-			//m.push_back("GET");
+			m.push_back("GET");
 			m.push_back("POST");
 			m.push_back("DELETE");
 			return (m);
@@ -85,11 +85,20 @@ class Implemented {
 			m.push_back("content-encoding");
 			m.push_back("content-language");
 			m.push_back("content-length");
-			m.push_back("content-type");
+			//m.push_back("content-type");
 			return (m);
 		};
 };
-
+std::string asciitolower(std::string const &s) {
+	std::string ret;
+	for(size_t i = 0; i < s.size(); ++i){
+		char in = s[i];
+		if (in <= 'Z' && in >= 'A')
+        	ret.push_back(in - ('Z' - 'z'));
+		else ret.push_back(in);
+	}
+    return ret;
+}
 class Response
 {
 	private:
@@ -188,6 +197,14 @@ class Response
 			return (std::find(methods.begin(), methods.end(), req.getMethod()) != methods.end());
 		} // 501
 		bool are_content_headers_implemented(){
+			std::map<std::string, std::string> rep_headers = req.getRepresentationHeaders();
+			std::vector<std::string> impl = Implemented::CONTENT_HEADERS();
+			for (std::map<std::string, std::string>::iterator it = rep_headers.begin(); it!= rep_headers.end(); ++it){
+				if (std::find(impl.begin(), impl.end(), asciitolower(it->first)) == impl.end())
+				{
+					return (false);
+				}
+			}
 			return (true);
 		} // 501
 
@@ -216,6 +233,7 @@ class Response
 		//
 
 };
+
 
 std::ostream &			operator<<( std::ostream & o, Response const & i );
 
