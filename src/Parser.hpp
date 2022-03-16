@@ -109,11 +109,8 @@ class Parser
 				std::cout << " Locations : " << std::endl;
 				std::vector<Location> locs;
 				for (str_vec::iterator it2 = servers_locations[it->first].begin(); it2 != servers_locations[it->first].end(); ++it2)
-				{
-					//std::cout << "  "<< *it2 << std::endl;
 					locs.push_back(parseLocation(*it2, line_counter));
-				}
-				std::sort(locs.begin(), locs.end(), Location::less_than_path());
+				std::sort(locs.begin(), locs.end(), Location::greater_than_path()); // sort location by longest path, try to match with longer paths first
 				cfg.setLocations(locs);
 				configs.push_back(cfg);
 				std::cout << std::endl;

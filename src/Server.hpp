@@ -51,7 +51,7 @@ class Server
 		}
 
 		//Config
-		ServerConfig getConfig()const {
+		ServerConfig const &getConfig()const {
 			return conf;
 		}
 		void setConfig(ServerConfig const & c) {
@@ -291,7 +291,7 @@ class Server
 			return sock;
 		}
 
-		Location const& getMatchingLocation(std::string const &path){
+		int getMatchingLocationIndex(std::string const &path){
 			// 
 			//  /  /images/  /images/hd/image.pmg
 			// /
@@ -306,11 +306,10 @@ class Server
 				if (*(--loc_path.end()) != '/') loc_path.push_back('/');
 				if (route.find(loc_path) == 0)
 				{
-					std::cout << "location "<< loc_path << " matches" << std::endl;
+					return it - locs.begin();
 				}
 			}
-
-			return conf.getLocations()[0];
+			return -1;
 		}
 };
 

@@ -112,7 +112,14 @@ class Response
 			status = handle_system_block();
 			std::cout << statusCode << std::endl;
 			if (status) return;
-			Location l = server->getMatchingLocation(req.getPath());
+			int locIndex = server->getMatchingLocationIndex(req.getPath());
+			if (locIndex == -1){
+				statusCode = StatusCodes::NOT_FOUND();
+				std::cout << statusCode << std::endl;
+				return;
+			}
+			Location const & loc = server->getConfig().getLocations()[locIndex];
+			std::cout << "Matchin loc = " << loc.getPath() << std::endl;
 		}
 		Response(){}
 		Response( Response const & src );
