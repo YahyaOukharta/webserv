@@ -170,8 +170,6 @@ void config::parse_buffer(const std::string &s)
             // index_loc = 0;
             _servers.push_back(serv);
             set_defaults(index);
-            
-
             std::cout << "==================>" + _servers[index].name << "<================="<< std::endl;
         }
         else{
@@ -182,7 +180,7 @@ void config::parse_buffer(const std::string &s)
     else{
         str = s;
         ft::rtrim_space(str);
-        if(str[str.length() - 1] != ';')
+        if(str[str.length() - 1] != ';' || (str.find("location = {") != std::string::npos && str[str.length() - 2] != '}'))
         {throw std::invalid_argument( "bad argumet :" + str + "\n");}
         switch(s[0]){
             case 'h':{
@@ -249,10 +247,10 @@ void config::parse_buffer(const std::string &s)
             }
             case 'l': {
                 std::string test = normal_split(s, "=");
-                if(s.find("location = ") != std::string::npos && test == "location")
+                if(s.find("location = {") != std::string::npos && test == "location")
                 {
                     // if(normal_split(s, "=") == "location")
-                    {str = s.substr(s.find("location = ") + 11, s.length() - 11);
+                    {str = s.substr(s.find("location = {") + 12, s.length() - 12);
                     str = str.substr(0, str.length() - 1);
                     parse_location(str, ",");}
                 // _servers[index].location = str;
