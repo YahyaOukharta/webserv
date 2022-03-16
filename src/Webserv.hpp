@@ -132,56 +132,46 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-							std::string buf; // = FileSystem::getFileContent(fd);
 
+							// std::string buf; // = FileSystem::getFileContent(fd);
+							char buff[501] = {0};
+							int rd = recv(fd, buff, 500, 0);
+								std::cout << "rd" << rd << std::endl;
+							if (rd == -1 ){ // recv failed
 
-
-							bool close_con = false;
-							while (1)
-							{
-								char buff[1024] = {0};
-								int rd = recv(fd, buff, 1023, MSG_DONTWAIT);
-								if (rd == -1){ // recv failed
-									if (errno != EWOULDBLOCK){ // we close the connection
-										perror("recv :");
-										close_con = true;
-										break;
-									}
-									else { // EWOULDBLOCK , give back fd to select
-										//perror("recv else:");
-										if (client_to_buf[fd].size())
-										{
-											rd = 0;
-										}
-										else break;
-									}
-									//break;
-								}
-								if (rd == 0)
-								{ // done reading
-									try{
-										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
-										Request req(client_to_buf[fd]);
-										req.print();
-										client_to_req[fd] = req;
-									}
-									catch(webserv_exception const& e){ // bad request
-										std::cout << e.what() << std::endl;
-									}
+									std::cout << "ihh" << std::endl;
+									perror("recv :");
+									close(fd);
 									FD_CLR(fd, &master_rd_set);
-									FD_SET(fd, &master_wr_set);
-									//std::cout << "buf " << client_to_buf[fd] << std::endl;
-									client_to_buf.erase(fd);
-
-									break;
-								}
-								client_to_buf[fd].append(buff);
+									while (FD_ISSET(max_fd, &master_rd_set) == 0)
+										max_fd -= 1;
 							}
-							if (close_con){
-								close(fd);
+							client_to_buf[fd].append(buff);
+							try{
+								Request req(client_to_buf[fd]);
+								if(req.getVersion().size()) rd = 0;
+							}
+							catch(webserv_exception const &e){
+								(void)e;
+							}
+							if (rd == 0 )
+							{ // done reading
+								std::cout << "uhh" << std::endl;
+
+								try{
+									std::cout << "[" << client_to_srv_idx[fd] << "] " ;
+									Request req(client_to_buf[fd]);
+									req.print();
+									client_to_req[fd] = req;
+								}
+								catch(webserv_exception const& e){ // bad request
+									std::cout << e.what() << std::endl;
+									client_to_buf.erase(fd);
+								}
 								FD_CLR(fd, &master_rd_set);
-								while (FD_ISSET(max_fd, &master_rd_set) == 0)
-									max_fd -= 1;
+								FD_SET(fd, &master_wr_set);
+								//std::cout << "buf " << client_to_buf[fd] << std::endl;
+								client_to_buf.erase(fd);
 							}
 						}
 					}
