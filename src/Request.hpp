@@ -7,7 +7,7 @@
 # include <cstring>
 #include "Utils.hpp"
 
-# define DEBUG 1
+# define DEBUG 0
 // # include "Response.hpp"
 
 class Request
