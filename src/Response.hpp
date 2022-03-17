@@ -105,21 +105,23 @@ class Response
 
 		Request req;
 		Server *server;
+		Location const *location;
 	public:
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv){
 			int status = 0;
-			status = handle_system_block();
+			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
-			int locIndex = server->getMatchingLocationIndex(req.getPath());
-			if (locIndex == -1){
-				statusCode = StatusCodes::NOT_FOUND();
-				std::cout << statusCode << std::endl;
-				return;
-			}
-			Location const & loc = server->getConfig().getLocations()[locIndex];
-			std::cout << "Matchin loc = " << loc.getPath() << std::endl;
+
+			init_matching_location(); // Finding matching location
+			if (!location) status = StatusCodes::NOT_FOUND();
+			if (status) return;
+
+			status = handle_request_block(); // Request block checks
+			std::cout << statusCode << std::endl;
+			if (status) return;
+
 		}
 		Response(){}
 		Response( Response const & src );
@@ -127,7 +129,8 @@ class Response
 
 		Response &		operator=( Response const & rhs );
 
-		bool handle_system_block() {
+		// BLOCKS
+		bool handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
 				return (statusCode = StatusCodes::SERVICE_UNAVAILABLE());
 			}
@@ -153,9 +156,34 @@ class Response
 			return (0);
 		}
 
-		// BLOCKS
-		bool handle_request_block() {
 
+
+		bool handle_request_block() { // REQUEST BLOCK
+			if(!is_method_allowed())
+				return ((statusCode = StatusCodes::METHOD_NOT_ALLOWED()));
+			else if (!is_authorized())
+				return ((statusCode = StatusCodes::UNAUTHORIZED()));
+			else if (expects_continue()) // ???????
+				return ((statusCode = StatusCodes::CONTINUE()));
+			else if (has_content()){
+				if (is_content_too_large())
+					return ((statusCode = StatusCodes::REQUEST_ENTITIY_TOO_LARGE()));
+				else if (is_content_type_accepted()){
+					return ((statusCode = StatusCodes::UNSUPPORTED_MEDIA_TYPE()));
+				}
+				else if (from_content()){
+					return ((statusCode = StatusCodes::BAD_REQUEST()));
+				}
+			}
+			if (is_forbidden()){
+				return ((statusCode = StatusCodes::FORBIDDEN()));
+			}
+			else if (is_method_trace() || is_method_options()){
+				return ((statusCode = StatusCodes::OK()));
+			}
+			else if (is_request_block_ok()){
+				return ((statusCode = StatusCodes::INTERNAL_SERVER_ERROR()));
+			}
 			return (0);
 		}
 		bool handle_accept_block() {
@@ -221,14 +249,33 @@ class Response
 		//
 
 		// Request block utils
-
-		int is_method_allowed(); // 405
-		int is_authorized(); // 401
-		int expects_continue(); // 100 ?
-		int has_content(); //
+		void init_matching_location(){
+			int locIndex = server->getMatchingLocationIndex(req.getPath());
+			if (locIndex == -1){
+				location = 0;
+			}
+			else{
+				Location const & loc = server->getConfig().getLocations()[locIndex];
+				location = &loc;
+			}
+		}
+		int is_method_allowed(){
+			std::vector<std::string> allowed_methods = location->getAllowedMethods();
+			return (std::find(allowed_methods.begin(), allowed_methods.end(), req.getMethod()) != allowed_methods.end());
+		} // 405
+		int is_authorized(){
+			return true;
+		} // 401
+		int expects_continue(){
+			return false;
+		} // 100 ?
+		int has_content(){
+			return req.getRepresentationHeaders().size();
+		} //
 		int is_content_too_large(); // 413
 		int is_content_type_accepted(); // 415
 		int from_content(); // 400 ? loop ? 
+		int is_forbidden(); // 403  
 		int is_method_trace(); // 200 
 		int is_method_options(); // 200
 		int is_request_block_ok(); // 400
