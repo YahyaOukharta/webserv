@@ -122,9 +122,9 @@ class Parser
 		static ServerConfig parseServer(str_map server_fields, std::string server_name, int line_counter) {
 
 			std::string host ;  // server host, ie 0.0.0.0
-			int			port;  // server port, ie 8080
+			int			port(0);  // server port, ie 8080
 
-			int 		body_size_limit; // body size limit 
+			int 		body_size_limit(0); // body size limit 
 			std::string default_error_page; // error page
 			std::vector<std::string> allowed_methods; // GET POST ..
 
@@ -158,8 +158,8 @@ class Parser
 			std::string path;
 			std::string root;
 			str_vec allowed_methods;
-			int			body_size_limit;
-			int			auto_index;
+			int			body_size_limit(0);
+			int			auto_index(0);
 			std::string error_page;
 
 			if (loc[0] !='{' || loc[loc.size()-1] !='}')

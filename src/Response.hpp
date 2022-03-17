@@ -168,7 +168,7 @@ class Response
 			else if (has_content()){
 				if (is_content_too_large())
 					return ((statusCode = StatusCodes::REQUEST_ENTITIY_TOO_LARGE()));
-				else if (is_content_type_accepted()){
+				else if (!is_content_type_accepted()){
 					return ((statusCode = StatusCodes::UNSUPPORTED_MEDIA_TYPE()));
 				}
 				else if (from_content()){
@@ -181,7 +181,7 @@ class Response
 			else if (is_method_trace() || is_method_options()){
 				return ((statusCode = StatusCodes::OK()));
 			}
-			else if (is_request_block_ok()){
+			else if (!is_request_block_ok()){
 				return ((statusCode = StatusCodes::INTERNAL_SERVER_ERROR()));
 			}
 			return (0);
@@ -272,13 +272,35 @@ class Response
 		int has_content(){
 			return req.getRepresentationHeaders().size();
 		} //
-		int is_content_too_large(); // 413
-		int is_content_type_accepted(); // 415
-		int from_content(); // 400 ? loop ? 
-		int is_forbidden(); // 403  
-		int is_method_trace(); // 200 
-		int is_method_options(); // 200
-		int is_request_block_ok(); // 400
+		int is_content_too_large(){
+			// use this later req.getRepresentationHeaders().at("Content-length")
+			size_t max_size = location->getBodySizeLimit();
+			if (!max_size) max_size = server->getConfig().getBodySizeLimit();
+			std::cout << "max size = " << max_size << std::endl;
+			if (max_size) 
+				return req.getBody().size() > max_size;
+			return false;
+		} // 413
+
+		
+		int is_content_type_accepted(){ // check Content-type if included in MimeTypes
+			return true;
+		} // 415
+		int from_content(){ // check if request came from same content ...
+			return false;
+		} // 400 ? loop ? 
+		int is_forbidden(){
+			return false;
+		} // 403  
+		int is_method_trace(){
+			return req.getMethod() == "TRACE";
+		} // 200 
+		int is_method_options(){
+			return req.getMethod() == "OPTIONS";
+		}// 200
+		int is_request_block_ok(){
+			return true;
+		} // 400
 
 		//
 
