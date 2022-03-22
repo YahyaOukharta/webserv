@@ -78,7 +78,6 @@ class Request
 				return (1);
 			body = req_split_body[1];
 
-
 			//including first line
 			vec head = split_to_lines(req_split_body[0]);
 

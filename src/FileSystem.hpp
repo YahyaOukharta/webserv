@@ -5,6 +5,7 @@
 # include <string>
 # include <fstream>
 # include <cstring>
+# include <sys/stat.h>
 # define BUFFER_SIZE 1024
 class FileSystem
 {
@@ -19,10 +20,10 @@ class FileSystem
 		FileSystem &		operator=( FileSystem const & rhs );
 
 
-		static int fileExists(std::string path){
+		static bool fileExists(std::string path){
 
-			path.c_str();
-			return (0);
+			struct stat buffer;   
+			return (stat(path.c_str(), &buffer) == 0);
 		}
 
 		static std::string getFileContent(std::string path){
@@ -43,6 +44,7 @@ class FileSystem
 			}
 			return (buf);
 		}
+
 
 };
 

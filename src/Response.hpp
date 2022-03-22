@@ -121,7 +121,7 @@ class Response
 			status = handle_request_block(); // Request block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
-
+			getRessourcePath();
 		}
 		Response(){}
 		Response( Response const & src );
@@ -304,8 +304,12 @@ class Response
 
 		//
 
-
-
+		// Requested ressource root + req
+		std::string getRessourcePath() const {
+			std::string const &root = location->getRoot(); 
+			std::cout << "root:"<< root << " reqPath:"<<req.getPath() << " locPath:"<<location->getPath() << std::endl;
+			return "";
+		}
 		
 };
 

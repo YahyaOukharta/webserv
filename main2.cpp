@@ -13,23 +13,20 @@ int main(int ac, char **av)
     // while(1){
     //     srv.async();
     // }
-    // if (ac != 2){
-    //     std::cout << "Usage : ./webserv config_file" << std::endl;
-    //     return (1);
-    // }
-    // ;
-    // try {
-    //     Webserv srv((std::string(av[1])));
-    //     while(1)
-    //         srv.run();
-    // }
-    // catch(webserv_exception const &e){
-    //     std::cerr << e.what() << std::endl;
-    //     return (1);
-    // }
-    (void)ac;
-    (void)av;
-    MimeTypes::getMimeTypes();
-    std::cout << MimeTypes::extToMime("odp") << std::endl;
+    if (ac != 2){
+        std::cout << "Usage : ./webserv config_file" << std::endl;
+        return (1);
+    }
+    ;
+    try {
+        Webserv srv((std::string(av[1])));
+        while(1)
+            srv.run();
+    }
+    catch(webserv_exception const &e){
+        std::cerr << e.what() << std::endl;
+        return (1);
+    }
+
     return (0);
 }

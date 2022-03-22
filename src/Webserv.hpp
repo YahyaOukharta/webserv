@@ -134,8 +134,8 @@ class Webserv
 						else { // client socket ready for reading
 
 							// std::string buf; // = FileSystem::getFileContent(fd);
-							char buff[501] = {0};
-							int rd = recv(fd, buff, 500, 0);
+							char buff[1024 + 1] = {0};
+							int rd = recv(fd, buff, 1024, 0);
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
 								close(fd);
@@ -150,6 +150,7 @@ class Webserv
 									if(req.getVersion().size()) rd = 0;
 								}
 								catch(webserv_exception const &e){
+									//std::cout << e.what() << std::endl;
 									(void)e;
 								}
 								if (rd == 0 )
