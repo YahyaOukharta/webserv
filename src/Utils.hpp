@@ -14,13 +14,18 @@ std::vector<std::string> split_to_lines(std::string text, std::string delimiter 
 
     size_t last = 0;
     size_t next = 0;
-
+    std::string token;
     while ((next = s.find(delimiter, last)) != std::string::npos) 
     {   
-        res.push_back(s.substr(last, next-last));
+        token = s.substr(last, next-last);
+        if (token.size())
+            res.push_back(token);
         last = next + delimiter.size(); 
     } 
-    res.push_back(s.substr(last));
+    token = s.substr(last);
+    
+    if (token.size())
+        res.push_back(s.substr(last));
     return res;
 }
 
