@@ -33,10 +33,11 @@ class MimeTypes
 			}
 			return m;
 		}
-		static str_vec mimeToExt(std::string mimeType){
+		static str_vec mimeToExt(std::string const &mimeType){
 			return getMimeTypes()[mimeType];
 		}
-		static std::string extToMime(std::string ext){
+		static std::string extToMime(std::string const &ext){
+			if (ext == "") return "text/plain";
 			vec_map m = getMimeTypes();
 			for (vec_map_it it = m.begin(); it != m.end(); ++it){
 				if (std::find(it->second.begin(),it->second.end(), ext) != it->second.end())
@@ -44,8 +45,12 @@ class MimeTypes
 				}
 			return "";
 		}
-
-
+		static std::string getFileExtension(std::string const &filepath){
+			str_vec v = split_to_lines(filepath, "/");
+			v = split_to_lines(v[v.size()-1], ".");
+			if (v.size()) return v[v.size() - 1];
+			else return "";
+		}
 	private:
 		MimeTypes();
 		MimeTypes( MimeTypes const & src );

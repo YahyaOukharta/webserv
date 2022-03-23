@@ -68,6 +68,7 @@ class Request
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
 			initRepresentationHeaders();
+			initRequestHeaders();
 			return *this;
 		}
 
@@ -92,7 +93,7 @@ class Request
 			head.erase(head.begin());
 			for (iter it = head.begin(); it != head.end(); ++it)
 			{
-				vec header = split_to_lines(*it, ":");
+				vec header = split_to_lines(*it, ": ");
 				headers[header[0]] = header[1];
 			}
 			return (0);
@@ -145,7 +146,7 @@ class Request
 			return representation_headers;
 		}
 		const std::map<std::string, std::string> &getRequestHeaders() const {
-			return representation_headers;
+			return request_headers;
 		}
 		const std::string getHeader(std::string const &key) {
 			return headers[key];
@@ -156,7 +157,7 @@ class Request
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
 				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
-				if (std::strstr(it->first.c_str(),"Accept-") == it->first.c_str()){
+				if (std::strstr(it->first.c_str(),"Accept") == it->first.c_str()){
 					request_headers.insert(*it);
 				}
 			}

@@ -4,7 +4,7 @@
 # include <iostream>
 # include <string>
 # include "Request.hpp"
-
+# include "MimeTypes.hpp"
 class StatusCodes
 {
 
@@ -122,8 +122,6 @@ class Response
 			std::cout << statusCode << std::endl;
 			if (status) return;
 	
-			getRessourcePath();
-
 			status = handle_accept_block(); // Accept block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
@@ -135,6 +133,28 @@ class Response
 		Response &		operator=( Response const & rhs );
 
 		// BLOCKS
+
+		bool handle_retrieve_block() {
+
+			return (0);
+		}
+		bool handle_precondition_block() {
+
+			return (0);
+		}
+		bool handle_create_process_block() {
+
+			return (0);
+		}
+		bool handle_response_block() {
+
+			return (0);
+		}
+		bool handle_alternative_block() {
+
+			return (0);
+		}
+
 		bool handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
 				return (statusCode = StatusCodes::SERVICE_UNAVAILABLE());
@@ -160,71 +180,6 @@ class Response
 			}
 			return (0);
 		}
-
-
-
-		bool handle_request_block() { // REQUEST BLOCK
-			if(!is_method_allowed())
-				return ((statusCode = StatusCodes::METHOD_NOT_ALLOWED()));
-			else if (!is_authorized())
-				return ((statusCode = StatusCodes::UNAUTHORIZED()));
-			else if (expects_continue()) // ???????
-				return ((statusCode = StatusCodes::CONTINUE()));
-			else if (has_content()){
-				if (is_content_too_large())
-					return ((statusCode = StatusCodes::REQUEST_ENTITIY_TOO_LARGE()));
-				else if (!is_content_type_accepted()){
-					return ((statusCode = StatusCodes::UNSUPPORTED_MEDIA_TYPE()));
-				}
-				else if (from_content()){
-					return ((statusCode = StatusCodes::BAD_REQUEST()));
-				}
-			}
-			if (is_forbidden()){
-				return ((statusCode = StatusCodes::FORBIDDEN()));
-			}
-			else if (is_method_trace() || is_method_options()){
-				return ((statusCode = StatusCodes::OK()));
-			}
-			else if (!is_request_block_ok()){
-				return ((statusCode = StatusCodes::INTERNAL_SERVER_ERROR()));
-			}
-			return (0);
-		}
-		bool handle_accept_block() {
-			if (ignore_accept_block_mismatches())
-				return (0);
-			if (has_accept() && !accept_matches())
-				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
-			if (has_accept_language() && !accept_language_matches())
-				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
-			if (has_accept_charset() && !accept_charset_matches())
-				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
-			if (has_accept_encoding() && !accept_encoding_matches())
-				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
-			return (0);
-		}
-		bool handle_retrieve_block() {
-
-			return (0);
-		}
-		bool handle_precondition_block() {
-
-			return (0);
-		}
-		bool handle_create_process_block() {
-
-			return (0);
-		}
-		bool handle_response_block() {
-
-			return (0);
-		}
-		bool handle_alternative_block() {
-
-			return (0);
-		}
-
 		// System block utils
 
 		bool is_service_available(){
@@ -261,7 +216,35 @@ class Response
 			return (true);
 		} // 500
 		//
-
+		 // REQUEST BLOCK
+		bool handle_request_block() {
+			if(!is_method_allowed())
+				return ((statusCode = StatusCodes::METHOD_NOT_ALLOWED()));
+			else if (!is_authorized())
+				return ((statusCode = StatusCodes::UNAUTHORIZED()));
+			else if (expects_continue()) // ???????
+				return ((statusCode = StatusCodes::CONTINUE()));
+			else if (has_content()){
+				if (is_content_too_large())
+					return ((statusCode = StatusCodes::REQUEST_ENTITIY_TOO_LARGE()));
+				else if (!is_content_type_accepted()){
+					return ((statusCode = StatusCodes::UNSUPPORTED_MEDIA_TYPE()));
+				}
+				else if (from_content()){
+					return ((statusCode = StatusCodes::BAD_REQUEST()));
+				}
+			}
+			if (is_forbidden()){
+				return ((statusCode = StatusCodes::FORBIDDEN()));
+			}
+			else if (is_method_trace() || is_method_options()){
+				return ((statusCode = StatusCodes::OK()));
+			}
+			else if (!is_request_block_ok()){
+				return ((statusCode = StatusCodes::INTERNAL_SERVER_ERROR()));
+			}
+			return (0);
+		}
 		// Request block utils
 		void init_matching_location(){
 			int locIndex = server->getMatchingLocationIndex(req.getPath());
@@ -314,27 +297,56 @@ class Response
 			return true;
 		} // 400
 
+
+
+		// ACCEPT BLOCK
+		bool handle_accept_block() {
+			if (ignore_accept_block_mismatches())
+				return (0);
+			if (has_accept() && !accept_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_language() && !accept_language_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_charset() && !accept_charset_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_encoding() && !accept_encoding_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			return (0);
+		}
 		// Accept block utils
-		int has_accept(){
-			return true;
+		bool has_accept(){
+			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
+			return accept_headers.count("Accept");
 		}
 		int accept_matches(){
-			return false;
+			std::string const &resPath = getRessourcePath();
+			std::string const &ext = MimeTypes::getFileExtension(resPath);
+ 			std::string const &mimeType = MimeTypes::extToMime(ext);
+
+			std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
+			// std::cout << "ext " << ext << " mimeType " << mimeType << " accepted " <<  accepted_types[0] << std::endl;
+			return (
+				std::find(accepted_types.begin(), accepted_types.end(), mimeType) != accepted_types.end() ||
+				std::find(accepted_types.begin(), accepted_types.end(), "*/*") != accepted_types.end()
+				);
 		}
 		int has_accept_language(){
-			return true;
+			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
+			return accept_headers.count("Accept-Language");
 		}
 		int accept_language_matches(){
 			return true;
 		}
 		int has_accept_charset(){
-			return true;
+			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
+			return accept_headers.count("Accept-Charset");
 		}
 		int accept_charset_matches(){
 			return true;
 		}
 		int has_accept_encoding(){
-			return true;
+			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
+			return accept_headers.count("Accept-Encoding");
 		}
 		int accept_encoding_matches(){
 			return true;
