@@ -7,7 +7,7 @@
 # include <cstring>
 #include "Utils.hpp"
 
-# define DEBUG 0
+# define DEBUG 1
 // # include "Response.hpp"
 
 class Request
@@ -28,6 +28,7 @@ class Request
 		std::map<std::string, std::string> headers; // split to general, request, and representation
 
 		std::map<std::string, std::string> representation_headers; // split to general, request, and representation
+		std::map<std::string, std::string> request_headers; // split to general, request, and representation
 
 		std::string body;
 
@@ -48,7 +49,8 @@ class Request
 				if (error == 3)
 					throw webserv_exception("Too many '?'");
 			}
-			initRepresentionHeaders();
+			initRepresentationHeaders();
+			initRequestHeaders();
 			//print();
 		}
 		Request( Request const & src ){
@@ -65,7 +67,7 @@ class Request
 			query = rhs.getQuery();
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
-			initRepresentionHeaders();
+			initRepresentationHeaders();
 			return *this;
 		}
 
@@ -142,13 +144,25 @@ class Request
 		const std::map<std::string, std::string> &getRepresentationHeaders() const {
 			return representation_headers;
 		}
+		const std::map<std::string, std::string> &getRequestHeaders() const {
+			return representation_headers;
+		}
 		const std::string getHeader(std::string const &key) {
 			return headers[key];
 		}
 		const std::string &getBody() const {
 			return body;
 		}
-		void initRepresentionHeaders(){
+		void initRequestHeaders(){
+			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
+				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
+				if (std::strstr(it->first.c_str(),"Accept-") == it->first.c_str()){
+					request_headers.insert(*it);
+				}
+			}
+		}
+
+		void initRepresentationHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
 				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
 				if (std::strstr(it->first.c_str(),"Content-") == it->first.c_str()){

@@ -27,7 +27,7 @@ class Location
 				int c1 = std::count(loc1.getPath().begin(), loc1.getPath().end(), '/');
 				std::string p2 = loc2.getPath();
 				int c2 = std::count(loc2.getPath().begin(), loc2.getPath().end(), '/');
-				return c1 > c2;
+				return c1 > c2 || loc1.getPath() != "/" ;
 			}
 		};
 

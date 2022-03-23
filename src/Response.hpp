@@ -113,7 +113,7 @@ class Response
 			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
-
+	
 			init_matching_location(); // Finding matching location
 			if (!location) status = StatusCodes::NOT_FOUND();
 			if (status) return;
@@ -121,7 +121,12 @@ class Response
 			status = handle_request_block(); // Request block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
+	
 			getRessourcePath();
+
+			status = handle_accept_block(); // Accept block checks
+			std::cout << statusCode << std::endl;
+			if (status) return;
 		}
 		Response(){}
 		Response( Response const & src );
@@ -187,7 +192,16 @@ class Response
 			return (0);
 		}
 		bool handle_accept_block() {
-
+			if (ignore_accept_block_mismatches())
+				return (0);
+			if (has_accept() && !accept_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_language() && !accept_language_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_charset() && !accept_charset_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
+			if (has_accept_encoding() && !accept_encoding_matches())
+				return ((statusCode = StatusCodes::NOT_ACCEPTABLE()));
 			return (0);
 		}
 		bool handle_retrieve_block() {
@@ -281,8 +295,6 @@ class Response
 				return req.getBody().size() > max_size;
 			return false;
 		} // 413
-
-		
 		int is_content_type_accepted(){ // check Content-type if included in MimeTypes
 			return true;
 		} // 415
@@ -302,15 +314,44 @@ class Response
 			return true;
 		} // 400
 
-		//
-
+		// Accept block utils
+		int has_accept(){
+			return true;
+		}
+		int accept_matches(){
+			return false;
+		}
+		int has_accept_language(){
+			return true;
+		}
+		int accept_language_matches(){
+			return true;
+		}
+		int has_accept_charset(){
+			return true;
+		}
+		int accept_charset_matches(){
+			return true;
+		}
+		int has_accept_encoding(){
+			return true;
+		}
+		int accept_encoding_matches(){
+			return true;
+		}
+		int ignore_accept_block_mismatches(){
+			return false;
+		}
+		
 		// Requested ressource root + req
 		std::string getRessourcePath() const {
 			std::string const &root = location->getRoot(); 
-			std::cout << "root:"<< root << " reqPath:"<<req.getPath() << " locPath:"<<location->getPath() << std::endl;
-			return "";
+			
+			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<location->getPath() << std::endl;
+			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(location->getPath().size());
+			//std::cout << "ressource path : "<< res << std::endl;
+			return res;
 		}
-		
 };
 
 

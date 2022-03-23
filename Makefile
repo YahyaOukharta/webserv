@@ -2,7 +2,7 @@ NAME = webserv
 
 SRCS = main2.cpp 
 
-FLAGS =  -std=c++11 -pedantic -fsanitize=address -g 	-Wall -Wextra -Werror
+FLAGS =  -std=c++98 -pedantic -Wall -Wextra -Werror #-fsanitize=address -g 
 
 COMP=clang++
 ifeq ($(shell uname), Linux)
@@ -26,4 +26,4 @@ re : fclean all
 
 c : re
 	clear
-	./$(NAME) configs/conf.conf
+	./$(NAME) configs/conf.conf 	
