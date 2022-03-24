@@ -44,6 +44,8 @@ void config::set_defaults_2(location *l)
     l->method = "NULL";
     l->root = "NULL";
     l->autoindex = "NULL";
+    l->cgi_path = "NULL";
+    l->extension = "NULL";
 }
 void config::parse_location(std::string &line, const std::string &spliter)
  {
@@ -55,6 +57,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
     std::string str;
 
     set_defaults_2(&l);
+    l.bodysize_limit = _servers[index].bodysize_limit; 
     while ((pos = line.find_first_of(spliter, prev)) != std::string::npos)
     {
         if (pos > prev)
@@ -130,6 +133,52 @@ void config::parse_location(std::string &line, const std::string &spliter)
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.autoindex = str;}
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'c' :{
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  && l.autoindex == "NULL")
+                {
+                    {str = s[pos].substr(s[pos].find("cgi_path = ") + 11, s[pos].length());
+                    str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                    l.cgi_path = str;
+                    }
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'e' :{
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("extension = ") != std::string::npos && test == "extension"  && l.autoindex == "NULL")
+                {
+                    {str = s[pos].substr(s[pos].find("extension = ") + 12, s[pos].length());
+                    str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                    l.extension = str;
+                    }
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'b': {
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("bodysize_limit = ") != std::string::npos && test == "bodysize_limit" && _servers[index].bodysize_limit == l.bodysize_limit)
+                {
+                   
+                    {str = s[pos].substr(s[pos].find("bodysize_limit = ") + 17, s[pos].length() - 17);
+                    str = str.substr(0, str.length() - 1);
+                    if(str == "" || ft::atoi(str.c_str()) <= 0)
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                    l.bodysize_limit = ft::atoi(str.c_str());}
+                // std::cout << _servers[index].bodysize_limit << std::endl;
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -236,7 +285,7 @@ void config::parse_buffer(const std::string &s)
                    
                     {str = s.substr(s.find("bodysize_limit = ") + 17, s.length() - 17);
                     str = str.substr(0, str.length() - 1);
-                    if(str == "")
+                    if(str == "" || ft::atoi(str.c_str()) <= 0)
                         {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].bodysize_limit = ft::atoi(str.c_str());}
                 // std::cout << _servers[index].bodysize_limit << std::endl;
@@ -308,11 +357,13 @@ config::config(const std::string s)
     }
     size_t i = -1;
     // std::cout << _servers[1].locations.size() << std::endl;
-    while(++i < _servers[1].locations.size())
+    while(++i < _servers[0].locations.size())
     {
-        std::cout << _servers[1].locations[i].path + "  " + _servers[1].locations[i].root + "  " + _servers[1].locations[i].autoindex;
+        std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root
+        + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension + " " + _servers[0].locations[i].autoindex +
+        " " << _servers[0].locations[i].bodysize_limit;
         
-        std::cout << "  " + _servers[1].locations[i].method << " ";
+        std::cout << "  " + _servers[0].locations[i].method << " ";
         std::cout << std::endl;
     }
 }

@@ -16,7 +16,7 @@ class config
         private:
         struct location //this going to be a class with there geters
         {
-            std::string name;
+            
             std::string path;
             std::string root;
             std::string index;
@@ -24,9 +24,9 @@ class config
             // std::vector<std::string> methods;  // allowed methodes maybe for later
             std::string autoindex;
             std::string cgi_path;
-            
+            std::string extension;
             std::string upload_path;
-            size_t client_max_body_size;
+            int bodysize_limit;
         };
         struct serveur
         {
