@@ -1,7 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <fcntl.h>
 #include <unistd.h>
-#include <string.h>
-#include <fstream>
 #include <iostream>
+
+
 int main()
 {
     char *test[10];
