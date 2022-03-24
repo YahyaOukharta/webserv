@@ -10,11 +10,15 @@
 
 int main()
 {
+    //needs to be filled with env variables
+    std::vector<const char *> vec;
+    std::string cgi_location = "/usr/local/bin/php-cgi";
+    std::string req_file = "test.php";
     char *test[10];
-    test[0] = (char *)"/usr/local/bin/php-cgi";
-    test[1] = (char *)"test.php";
+    test[0] = (char *)cgi_location.c_str();
+    test[1] = (char *)req_file.c_str();
     test[2] = NULL;
-    execve("/usr/local/bin/php-cgi", test, NULL);
+    execve(test[0], test, NULL);
     return 0;
 
 }
