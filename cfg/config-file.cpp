@@ -364,6 +364,8 @@ config::config(const std::string s)
         " " << _servers[0].locations[i].bodysize_limit;
         
         std::cout << "  " + _servers[0].locations[i].method << " ";
+
+        std::cout << get_all_locations(_servers[0])[0].bodysize_limit;
         std::cout << std::endl;
     }
 }

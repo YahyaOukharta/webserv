@@ -68,7 +68,7 @@ class config
         {
             return s.host;
         }
-        friend std::string get_server_port(const config::serveur &s)
+        friend int get_server_port(const config::serveur &s)
         {
             return s.port;
         }
