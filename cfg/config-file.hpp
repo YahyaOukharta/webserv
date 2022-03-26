@@ -13,7 +13,6 @@ class config
 		config &operator=(const config &obj);
 		~config();
         
-        private:
         struct location //this going to be a class with there geters
         {
             
@@ -55,7 +54,27 @@ class config
         void set_defaults_2(location *l);
         int check_args();
         //getters and setters
-        
+
+        //this will get you all data of all locations of a server
+        friend std::vector<config::location> get_all_locations(const config::serveur &s)
+        {
+            return (s.locations);
+        }
+        friend std::string get_server_name(const config::serveur &s)
+        {
+            return s.name;
+        }
+        friend std::string get_server_host(const config::serveur &s)
+        {
+            return s.host;
+        }
+        friend std::string get_server_port(const config::serveur &s)
+        {
+            return s.port;
+        }
+        //you can add more if needed
 
     //need methodes to facilitate the parsing cant think of any or how now
+    
 };
+
