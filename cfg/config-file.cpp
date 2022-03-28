@@ -369,37 +369,37 @@ config::config(const std::string s)
         std::cout << std::endl;
     }
 }
-void config::count_servers(const std::string &s)
- {
-    std::ifstream       file(s);
-    std::string str;
-    server_count = 0;
-    if (file)
-    {
+// void config::count_servers(const std::string &s)
+//  {
+//     std::ifstream       file(s);
+//     std::string str;
+//     server_count = 0;
+//     if (file)
+//     {
 
-        std::stringstream os;
-        std::string buffer;
+//         std::stringstream os;
+//         std::string buffer;
 
-        os << file.rdbuf();
-        buffer = os.str();
+//         os << file.rdbuf();
+//         buffer = os.str();
 
-        std::stringstream a(buffer);
+//         std::stringstream a(buffer);
 
-        while(std::getline(a, buffer))
-        {
-            ft::ltrim(buffer);
-            ft::rtrim(buffer);
-            if(ft::isSkippable(buffer))
-                continue ;
-            if(buffer[0] == '[')
-            {
-                str = buffer.substr(buffer.find("[") + 1, buffer.find("]") - 1);
-                if(str == "end"){
-                    server_count++;
-                }
-            }
-        }
-    }
- }
+//         while(std::getline(a, buffer))
+//         {
+//             ft::ltrim(buffer);
+//             ft::rtrim(buffer);
+//             if(ft::isSkippable(buffer))
+//                 continue ;
+//             if(buffer[0] == '[')
+//             {
+//                 str = buffer.substr(buffer.find("[") + 1, buffer.find("]") - 1);
+//                 if(str == "end"){
+//                     server_count++;
+//                 }
+//             }
+//         }
+//     }
+//  }
 
 config::~config(){};
