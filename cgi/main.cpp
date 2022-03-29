@@ -42,11 +42,14 @@ int main(int argc, char **argvg)
         close(pipe_fd[0]); // close the read end
         dup2(pipe_fd[1], 1);
 
-        std::string cgi_location = "/usr/local/bin/php-cgi";
-        std::string req_file = "cgi/test.php";
-        char * const args[3] = {const_cast<char *>(cgi_location.c_str()), const_cast<char *>(req_file.c_str()), NULL};
-
-        std::vector<const char *> vec;
+        std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
+        std::string req_file = "test.php";
+        char *args[3];
+       
+        args[0] = (char *)cgi_location.c_str();
+        args[1] = (char *)req_file.c_str();
+        args[2] = NULL;
+       
         std::string method = "GET";
         std::string server_name = "SERVER_NAME"; // The server's hostname or IP address.
         std::string server_software = "Webserv 1.0"; // The name and version of the server software that is answering the client request.
@@ -83,7 +86,8 @@ int main(int argc, char **argvg)
         setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
         setenv("HTTP_REFERER", referer.c_str(), 1);
 
-        if (execve(args[0], args, environ) == -1)
+        std::cout << args[0] << "---" << args <<  std::endl;
+        if (execve(args[0], args, NULL) == -1)
             perror("Could not execve fff");
 
         close(pipe_fd[1]); // close the write end after finishing writing
