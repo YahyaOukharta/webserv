@@ -42,8 +42,10 @@ int main(int argc, char **argvg)
         close(pipe_fd[0]); // close the read end
         dup2(pipe_fd[1], 1);
 
-        std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
-        std::string req_file = "test.php";
+        // std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
+        // std::string req_file = "test.php";
+        std::string cgi_location = "/usr/bin/python";
+        std::string req_file = "post.py";
         char *args[3];
        
         args[0] = (char *)cgi_location.c_str();
