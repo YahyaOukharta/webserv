@@ -26,4 +26,4 @@ re : fclean all
 
 c : re
 	clear
-	./$(NAME) configs/conf.conf 	
+	./$(NAME) configs/default.conf 	

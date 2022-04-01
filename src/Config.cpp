@@ -38,7 +38,8 @@ void Config::set_defaults(size_t i)
     _servers[i].bodysize_limit = -1;
     _servers[i].default_error_pages = "default/path";
 }
-void Config::set_defaults_2(location *l)
+
+void Config::set_defaults_2(Location *l)
 {
     l->path = "NULL";
     l->method = "NULL";
@@ -47,12 +48,13 @@ void Config::set_defaults_2(location *l)
     l->cgi_path = "NULL";
     l->extension = "NULL";
 }
+
 void Config::parse_location(std::string &line, const std::string &spliter)
  {
     ft::ltrim(line);
     ft::rtrim(line);
     std::vector<std::string> s;
-    location l;
+    Location l;
     std::size_t prev = 0, pos;
     std::string str;
 
@@ -193,11 +195,10 @@ void Config::parse_location(std::string &line, const std::string &spliter)
     _servers[index].locations.push_back(l);
  }
 
- 
 void Config::parse_buffer(const std::string &s)
 {
     // std::cout << s << std::endl;
-    serveur serv;
+    Server serv;
     std::string str;
     
     
@@ -316,6 +317,7 @@ void Config::parse_buffer(const std::string &s)
     }
 }
 }
+
 Config::Config(const std::string s)
 {
     //thisi s for allocation of servers later

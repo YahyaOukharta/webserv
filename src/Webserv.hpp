@@ -21,7 +21,6 @@ class Webserv
 	std::vector<Server*> servers;
 	std::map<int, int> client_to_srv_idx;
 
-
 	std::map<int, std::string> client_to_buf; 
 	std::map<int, Request> client_to_req; 
 
@@ -30,9 +29,17 @@ class Webserv
 		Webserv(){
 		}
 
+		// Webserv(std::string const & config_file){
+		// 	std::vector<ServerConfig> configs = Parser::parseFile(config_file);
+		// 	for(std::vector<ServerConfig>::iterator it = configs.begin(); it != configs.end();++it){
+		// 		Server *srv = new Server(*it);
+		// 		srv->initServer();
+		// 		servers.push_back(srv);
+		// 	}
+		// }
 		Webserv(std::string const & config_file){
-			std::vector<ServerConfig> configs = Parser::parseFile(config_file);
-			for(std::vector<ServerConfig>::iterator it = configs.begin(); it != configs.end();++it){
+			Config cfg(config_file);
+			for(std::vector<Config::Server>::iterator it = cfg._servers.begin(); it != cfg._servers.end(); ++it){
 				Server *srv = new Server(*it);
 				srv->initServer();
 				servers.push_back(srv);

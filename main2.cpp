@@ -20,17 +20,19 @@ int main(int ac, char **av)
     }
     ;
 
-    Config cfg(av[1]);
+    try {
+        Webserv srv((std::string(av[1])));
+        while(1)
+            srv.run();
+    }
+    catch(webserv_exception const &e){
+        std::cerr << e.what() << std::endl;
+        return (1);
+    }
 
-    // try {
-    //     Webserv srv((std::string(av[1])));
-    //     while(1)
-    //         srv.run();
+    // for(std::vector<Config::Server>::iterator it = cfg._servers.begin(); it != cfg._servers.end(); ++it){
+    //     Server *srv = new Server(*it);
+    //     srv->initServer();
     // }
-    // catch(webserv_exception const &e){
-    //     std::cerr << e.what() << std::endl;
-    //     return (1);
-    // }
-
     return (0);
 }

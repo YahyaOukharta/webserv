@@ -14,6 +14,8 @@
 
 #include <errno.h>
 #include <cstring>
+
+#include "Config.hpp"
     // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
 
 
@@ -37,6 +39,21 @@ class Server
 		};
 		Server(std::string name, std::string host, int port, int backlog){
 			conf = ServerConfig(name, host, port, backlog);
+		};
+		Server(Config::Server srv_conf){ // hakim
+			conf = ServerConfig(
+				srv_conf.name,
+
+				srv_conf.host,
+				srv_conf.port,
+
+				srv_conf.bodysize_limit,
+				srv_conf.default_error_pages,
+				srv_conf.allowed_methods,
+
+				1000
+			);
+			conf.setLocations(srv_conf.locations);
 		};
 		Server( Server const & src ){
 			*this = src;

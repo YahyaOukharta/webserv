@@ -6,6 +6,8 @@
 
 # include "./Location.hpp"
 #include <vector>
+
+#include "Config.hpp"
 class ServerConfig
 {
 
@@ -51,6 +53,22 @@ class ServerConfig
 		};
 		void setLocations(std::vector<Location> const &locs){
 			_locations = locs;
+		}
+		void setLocations(std::vector<Config::Location> const &locs){
+			_locations.clear();
+			for (std::vector<Config::Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+			{
+				Location loc(
+					it->path,
+					it->root,
+					it->allowed_methods,
+					it->bodysize_limit,
+					1, /// ???? AUTO INDEX SHOULD BE BOOL OR INT
+					it->default_error_pages
+				);
+				_locations.push_back(loc);
+			}
+			std::sort(_locations.begin(), _locations.end(), Location::greater_than_path());
 		}
 
 		ServerConfig(std::string name, std::string host, int port, int backlog){
