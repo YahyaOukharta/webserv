@@ -4,7 +4,27 @@
 class ft {
     public:
     // const std::string WHITESPACE = " \n\r\t\f\v";
+        static std::vector<std::string> split_to_lines(std::string text, std::string delimiter = std::string("\r\n"))
+        {
+            std::vector<std::string> res;
+            std::string s(text);
 
+            size_t last = 0;
+            size_t next = 0;
+            std::string token;
+            while ((next = s.find(delimiter, last)) != std::string::npos) 
+            {   
+                token = s.substr(last, next-last);
+                if (token.size()|| delimiter=="\r\n\r\n")
+                    res.push_back(token);
+                last = next + delimiter.size(); 
+            } 
+            token = s.substr(last);
+            
+            if (token.size()|| delimiter=="\r\n\r\n")
+                res.push_back(s.substr(last));
+            return res;
+        }
         static void ltrim_space(std::string &s,  const std::string& chars = " \t")
         {
             s.erase(0, s.find_first_not_of(chars));

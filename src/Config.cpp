@@ -100,13 +100,15 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 std::string test = normal_split(s[pos], "=");
                 if(s[pos].find("method = ") != std::string::npos && test == "method" && l.method == "NULL")
                 {
-                    
-                    {str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
-                    str = str.substr(0, str.length());
-                    if(str == "")
-                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
-                    l.method = str;}
-                    
+                    {
+                        str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
+                        str = str.substr(0, str.length());
+                        if(str == "")
+                            {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                        l.method = str;
+                        ////// ALLOWED METHODS
+                        l.allowed_methods = ft::split_to_lines(l.method,"/");
+                    }
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -352,6 +354,7 @@ Config::Config(const std::string s)
             
         }
     }
+
     if(checker != 0 || check_args())
     {
         // std::cout << index << " " << std::endl;

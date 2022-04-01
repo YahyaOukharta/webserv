@@ -120,6 +120,7 @@ class Response
 
 			status = handle_request_block(); // Request block checks
 			std::cout << statusCode << std::endl;
+			std::cout << req.getMethod() << std::endl;
 			if (status) return;
 	
 			status = handle_accept_block(); // Accept block checks
@@ -324,7 +325,7 @@ class Response
  			std::string const &mimeType = MimeTypes::extToMime(ext);
 
 			std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
-			// std::cout << "ext " << ext << " mimeType " << mimeType << " accepted " <<  accepted_types[0] << std::endl;
+			std::cout << "ext " << ext << " mimeType " << mimeType << " resPath "<< resPath << std::endl;
 			return (
 				std::find(accepted_types.begin(), accepted_types.end(), mimeType) != accepted_types.end() ||
 				std::find(accepted_types.begin(), accepted_types.end(), "*/*") != accepted_types.end()
@@ -358,9 +359,10 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath() const {
 			std::string const &root = location->getRoot(); 
+			std::string const &path = location->getPath(); 
 			
-			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<location->getPath() << std::endl;
-			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(location->getPath().size());
+			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
+			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
 			//std::cout << "ressource path : "<< res << std::endl;
 			return res;
 		}
