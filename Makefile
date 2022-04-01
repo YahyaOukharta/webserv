@@ -1,6 +1,6 @@
 NAME = webserv
 
-SRCS = main2.cpp 
+SRCS = main2.cpp src/Config.cpp
 
 FLAGS =  -std=c++98 -pedantic -Wall -Wextra -Werror #-fsanitize=address -g 
 
