@@ -16,7 +16,7 @@ std::string to_string(int n)
     return s.str();
 }
 
-int main(int argc, char **argvg)
+int main()
 {
     int pipe_fd[2];
     // pipe_fd[0] - read
@@ -55,7 +55,7 @@ int main(int argc, char **argvg)
         std::string method = "GET";
         std::string server_name = "SERVER_NAME"; // The server's hostname or IP address.
         std::string server_software = "Webserv 1.0"; // The name and version of the server software that is answering the client request.
-        int port = 8080;
+        // int port = 8080;
         std::string file_path = "sfdsf/sdfds/dsfds.fds"; // requested file_path
         std::string path_info = "sfdsf/sdfds/dsfds"; // url until the first "?" 
         std::string query_path = "?sfdsf/sdfds/dsfds"; // url from the first "?"  to the end
@@ -67,10 +67,10 @@ int main(int argc, char **argvg)
         int content_length = 520; // The length of the data (in bytes) req.get("Content-Length")
         std::string accepted_types = "text/html"; // A list of the MIME types that the client can accept. req.get("Accept")
         std::string user_agent = "Mozilla/5.0 ..."; // User agent. req.get("User-Agent")
-        std::string referer = " https://www.cplusplus.com/reference/vector/vector/?kw=vector...."; // The URL of the document that the client points to before accessing the CGI program. req.get("Referer")
+        std::string referer = "http://www.test.com/cgi-bin/test.py?key1=value1&key2=value2"; // The URL of the document that the client points to before accessing the CGI program. req.get("Referer")
         
      
-        setenv("GATEWAY_INTERFACE", "=CGI/1.1", 1);
+        setenv("GATEWAY_INTERFACE", "=CGI/1.1", 1); 
         setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
         setenv("SERVER_PROTOCOL","=HTTP/1.1", 1 );
         setenv("SERVER_PORT", to_string(8000).c_str(), 1);
@@ -119,7 +119,9 @@ int main(int argc, char **argvg)
         }
         close(pipe_fd[0]); // close the read end after finishing reading
     }
-    //need to change all this to just output on a file or a string.
+    
+    
 
+    //need to make the variables dynamic caught from the request && after make a full response with headers and boddy back to the client
     return (0);
 }
