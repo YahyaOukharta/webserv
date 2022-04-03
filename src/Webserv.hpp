@@ -198,6 +198,7 @@ class Webserv
 						//
 						}
 						Response res(req, servers[client_to_srv_idx[fd]]);
+						std::cout << "statusCode = " << res.getStatusCode() << std::endl;
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
 						close(fd);

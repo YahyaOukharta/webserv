@@ -119,13 +119,11 @@ class Response
 			if (status) return;
 
 			status = handle_request_block(); // Request block checks
-			std::cout << statusCode << std::endl;
-			std::cout << req.getMethod() << std::endl;
 			if (status) return;
 	
 			status = handle_accept_block(); // Accept block checks
-			std::cout << statusCode << std::endl;
 			if (status) return;
+
 		}
 		Response(){}
 		Response( Response const & src );
@@ -181,6 +179,7 @@ class Response
 			}
 			return (0);
 		}
+
 		// System block utils
 
 		bool is_service_available(){
@@ -274,7 +273,6 @@ class Response
 			// use this later req.getRepresentationHeaders().at("Content-length")
 			size_t max_size = location->getBodySizeLimit();
 			if (!max_size) max_size = server->getConfig().getBodySizeLimit();
-			std::cout << "max size = " << max_size << std::endl;
 			if (max_size) 
 				return req.getBody().size() > max_size;
 			return false;
@@ -319,13 +317,41 @@ class Response
 			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
 			return accept_headers.count("Accept");
 		}
-		int accept_matches(){
+		struct greater_than_qvalue
+		{
+			inline bool operator() (const std::string& type1, const std::string& type2)
+			{
+				float qvalue1 = std::stof(split_to_lines(type1, ";q=")[1]);
+				float qvalue2 = std::stof(split_to_lines(type2, ";q=")[1]);
+				return qvalue1 > qvalue2;
+			}
+		};
+		std::vector<std::string> parseAcceptedTypes() const {
+			std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
+			std::vector<std::string> ret, to_sort;
+
+			for (std::vector<std::string>::iterator it = accepted_types.begin(); it != accepted_types.end(); ++it){
+				std::string const &type = *it;
+				if (std::find(type.begin(), type.end(), ';') == type.end())
+					ret.push_back(type);
+				else  to_sort.push_back(type);
+			}
+
+			std::sort(to_sort.begin(), to_sort.end(), greater_than_qvalue());
+			for (std::vector<std::string>::iterator it = to_sort.begin(); it != to_sort.end(); ++it){
+				ret.push_back(split_to_lines(*it, ";")[0]);
+			}
+			return ret;
+		}
+		int accept_matches(){ /// add subtypes 
 			std::string const &resPath = getRessourcePath();
 			std::string const &ext = MimeTypes::getFileExtension(resPath);
  			std::string const &mimeType = MimeTypes::extToMime(ext);
 
-			std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
-			std::cout << "ext " << ext << " mimeType " << mimeType << " resPath "<< resPath << std::endl;
+			//std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
+			std::vector<std::string> accepted_types = parseAcceptedTypes();
+
+			//std::cout << "ext " << ext << " mimeType " << mimeType << " resPath "<< resPath << std::endl;
 			return (
 				std::find(accepted_types.begin(), accepted_types.end(), mimeType) != accepted_types.end() ||
 				std::find(accepted_types.begin(), accepted_types.end(), "*/*") != accepted_types.end()
@@ -360,11 +386,19 @@ class Response
 		std::string getRessourcePath() const {
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
-			
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
 			//std::cout << "ressource path : "<< res << std::endl;
 			return res;
+		}
+
+
+
+
+
+		// GETTERS
+		int getStatusCode() const {
+			return statusCode;
 		}
 };
 

@@ -256,7 +256,7 @@ void Config::parse_buffer(const std::string &s)
                     {
                         str = s.substr(s.find("port = ") + 7, s.length() - 7);
                         str = str.substr(0, str.length() - 1);
-                        if(str == "" || ft::atoi(str.c_str()) <= 0 || ft::atoi(str.c_str()) > 9999)
+                        if(str == "" || ft::atoi(str.c_str()) <= 0 || ft::atoi(str.c_str()) > 65353) // port range
                         {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                         _servers[index].port = ft::atoi(str.c_str());
                     }
