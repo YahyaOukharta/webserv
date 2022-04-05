@@ -34,6 +34,7 @@ void config::set_defaults(size_t i)
 {
     _servers[i].port = -1;
     _servers[i].host = "NULL";
+    _servers[i].index = "NULL";
     _servers[i].root = "NULL";
     _servers[i].bodysize_limit = -1;
     _servers[i].default_error_pages = "default/path";
@@ -58,6 +59,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
 
     set_defaults_2(&l);
     l.bodysize_limit = _servers[index].bodysize_limit; 
+    l.index = _servers[index].index;
     while ((pos = line.find_first_of(spliter, prev)) != std::string::npos)
     {
         if (pos > prev)
@@ -140,7 +142,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'c' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  && l.autoindex == "NULL")
+                if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  && l.cgi_path == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("cgi_path = ") + 11, s[pos].length());
                     str = str.substr(0, str.length());
@@ -155,7 +157,7 @@ void config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'e' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("extension = ") != std::string::npos && test == "extension"  && l.autoindex == "NULL")
+                if(s[pos].find("extension = ") != std::string::npos && test == "extension"  && l.extension == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("extension = ") + 12, s[pos].length());
                     str = str.substr(0, str.length());
@@ -179,6 +181,20 @@ void config::parse_location(std::string &line, const std::string &spliter)
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.bodysize_limit = ft::atoi(str.c_str());}
                 // std::cout << _servers[index].bodysize_limit << std::endl;
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'i': {
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("index = ") != std::string::npos && test == "index" && _servers[index].index == l.index)
+                {
+                   
+                    {str = s[pos].substr(s[pos].find("index = ") + 8, s[pos].length() - 8);
+                    str = str.substr(0, str.length() - 1);
+                    _servers[index].index = str;}
+                    // std::cout << _servers[index].index << std::endl;
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -289,6 +305,20 @@ void config::parse_buffer(const std::string &s)
                         {throw std::invalid_argument( "bad argumet :" + s + "\n");}
                     _servers[index].bodysize_limit = ft::atoi(str.c_str());}
                 // std::cout << _servers[index].bodysize_limit << std::endl;
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s + "\n");}
+                break;
+            }
+            case 'i': {
+                std::string test = normal_split(s, "=");
+                if(s.find("index = ") != std::string::npos && test == "index" && _servers[index].index == "NULL")
+                {
+                   
+                    {str = s.substr(s.find("index = ") + 8, s.length() - 8);
+                    str = str.substr(0, str.length() - 1);
+                    _servers[index].index = str;}
+                    // std::cout << _servers[index].index << std::endl;
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s + "\n");}

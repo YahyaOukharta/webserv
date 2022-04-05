@@ -35,6 +35,7 @@ class config
             int bodysize_limit;
             std::string root;
             std::string default_error_pages;
+            std::string index;
             // std::map<int, std::string> error_pages; //int for error number string for path for later
             std::vector<location> locations; // containes all locations of a server
             
