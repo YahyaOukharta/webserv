@@ -35,7 +35,7 @@ class StatusCodes
 		static int SEE_OTHER(){ return 303; }
 		static int NOT_MODIFIED(){ return 304; }
 		static int USE_PROXY(){ return 305; }
-		static int UNUSED(){ return 306; } // Deprecated status code, not used in http/1.1
+		static int UNUSED(){ return 306; }a // Deprecated status code, not used in http/1.1
 		static int TEMPORARY_REDIRECT(){ return 307; }
 
 		// 4xx Client Error
@@ -133,10 +133,7 @@ class Response
 
 		// BLOCKS
 
-		bool handle_retrieve_block() {
 
-			return (0);
-		}
 		bool handle_precondition_block() {
 
 			return (0);
@@ -149,10 +146,7 @@ class Response
 
 			return (0);
 		}
-		bool handle_alternative_block() {
 
-			return (0);
-		}
 
 		bool handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
@@ -392,10 +386,69 @@ class Response
 			return res;
 		}
 
+		// retrieve block  
+		int handle_retrieve_block(){
+			
+			return 0;
+		}
+
+		int missing(){ // ressource missing 
+			return false;
+		}
+
+////	START MISSING TRUE 
+		// retrieve after missing block  
+		int handle_retrieve_when_missing_block(){
+
+			return 0;
+		}
+
+		int moved(){ // ressource moved 
+			return false;
+		}
+
+		int moved_permanently(){ // redirect  308
+			return false;
+		}
+		int moved_temporarily(){ // redirect 307
+			return false;
+		}
+		int gone_permanently(){ // redirect broken? 410
+			return false;
+		}
 
 
+		// handle create block
+		int handle_create_block(){
+			return 0;
+		}
 
+		int is_method_create(){ // is method post  404
+			return false;
+		}
+		int create_path(){ // upload path defined, else 500
+			return false;
+		}
+		int create(){ // here process upload, 500 if fails
+			return false;
+		}
 
+		// handle response after missing block 
+
+		int handle_response_when_missing_block(){
+
+			return 0;
+		}
+		int is_create_done(){ // 202 accepted
+			return false;
+		}
+		int create_see_other(){ // 201 created, 303 if else 
+			return false;
+		}
+////	END MISSING TRUE 
+////	START MISSING FALSE
+
+////	END MISSING FALSE
 		// GETTERS
 		int getStatusCode() const {
 			return statusCode;
