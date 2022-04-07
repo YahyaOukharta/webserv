@@ -261,20 +261,20 @@ class Response
 				location = &loc;
 			}
 		}
-		int is_method_allowed(){
+		bool is_method_allowed(){
 			std::vector<std::string> allowed_methods = location->getAllowedMethods();
 			return (std::find(allowed_methods.begin(), allowed_methods.end(), req.getMethod()) != allowed_methods.end());
 		} // 405
-		int is_authorized(){
+		bool is_authorized(){
 			return true;
 		} // 401
-		int expects_continue(){
+		bool expects_continue(){
 			return false;
 		} // 100 ?
-		int has_content(){
+		bool has_content(){
 			return req.getRepresentationHeaders().size();
 		} //
-		int is_content_too_large(){
+		bool is_content_too_large(){
 			// use this later req.getRepresentationHeaders().at("Content-length")
 			size_t max_size = location->getBodySizeLimit();
 			if (!max_size) max_size = server->getConfig().getBodySizeLimit();
@@ -282,29 +282,29 @@ class Response
 				return req.getBody().size() > max_size;
 			return false;
 		} // 413
-		int is_content_type_accepted(){ // check Content-type if included in MimeTypes
+		bool is_content_type_accepted(){ // check Content-type if included in MimeTypes
 			return true;
 		} // 415
-		int from_content(){ // check if request came from same content ...
+		bool from_content(){ // check if request came from same content ...
 			return false;
 		} // 400 ? loop ? 
-		int is_forbidden(){
+		bool is_forbidden(){
 			return false;
 		} // 403  
-		int is_method_trace(){
+		bool is_method_trace(){
 			return req.getMethod() == "TRACE";
 		} // 200 
-		int is_method_options(){
+		bool is_method_options(){
 			return req.getMethod() == "OPTIONS";
 		}// 200
-		int is_request_block_ok(){
+		bool is_request_block_ok(){
 			return true;
 		} // 400
 
 
 
 		// ACCEPT BLOCK
-		bool handle_accept_block() {
+		int handle_accept_block() {
 			if (ignore_accept_block_mismatches())
 				return (0);
 			if (has_accept() && !accept_matches())
@@ -348,7 +348,7 @@ class Response
 			}
 			return ret;
 		}
-		int accept_matches(){ /// add subtypes 
+		bool accept_matches(){ /// add subtypes 
 			std::string const &resPath = getRessourcePath();
 			std::string const &ext = MimeTypes::getFileExtension(resPath);
  			std::string const &mimeType = MimeTypes::extToMime(ext);
@@ -362,28 +362,28 @@ class Response
 				std::find(accepted_types.begin(), accepted_types.end(), "*/*") != accepted_types.end()
 				);
 		}
-		int has_accept_language(){
+		bool has_accept_language(){
 			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
 			return accept_headers.count("Accept-Language");
 		}
-		int accept_language_matches(){
+		bool accept_language_matches(){
 			return true;
 		}
-		int has_accept_charset(){
+		bool has_accept_charset(){
 			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
 			return accept_headers.count("Accept-Charset");
 		}
-		int accept_charset_matches(){
+		bool accept_charset_matches(){
 			return true;
 		}
-		int has_accept_encoding(){
+		bool has_accept_encoding(){
 			std::map<std::string, std::string> const &accept_headers = req.getRequestHeaders();
 			return accept_headers.count("Accept-Encoding");
 		}
-		int accept_encoding_matches(){
+		bool accept_encoding_matches(){
 			return true;
 		}
-		int ignore_accept_block_mismatches(){
+		bool ignore_accept_block_mismatches(){
 			return false;
 		}
 		
@@ -402,7 +402,7 @@ class Response
 			return missing();
 		}
 
-		int missing(){ // ressource missing 
+		bool missing(){ // ressource missing 
 			std::string const & resPath = getRessourcePath();
 			return !FileSystem::fileExists(resPath);
 		}
@@ -423,44 +423,55 @@ class Response
 			}
 			return 0;
 		}
-		int moved(){ // ressource moved
+		bool moved(){ // ressource moved
 			return false;
 		}
-		int moved_permanently(){ // redirect  308
+		bool moved_permanently(){ // redirect  308
 			return false;
 		}
-		int moved_temporarily(){ // redirect 307
+		bool moved_temporarily(){ // redirect 307
 			return false;
 		}
-		int gone_permanently(){ // redirect broken? 410
+		bool gone_permanently(){ // redirect broken? 410
 			return false;
 		}
 
 
 		// handle create block
 		int handle_create_block(){
+			if (!is_method_create())
+				return statusCode = StatusCodes::NOT_FOUND();
+			if (!create_path())
+				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR(); // upload not allowed on route
+			if (!create())
+				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR(); // couldnt upload
 			return 0;
 		}
-		int is_method_create(){ // is method post  404 // auto index ?
+		bool is_method_create(){ // is method post  404 // auto index ?
+			return req.getMethod() == "POST";
+		}
+		bool create_path(){ // upload path defined, else 500
 			return false;
 		}
-		int create_path(){ // upload path defined, else 500
-			return false;
-		}
-		int create(){ // here process upload, 500 if fails
+		bool create(){ // here process upload, 500 if fails
 			return false;
 		}
 
 		// handle response after missing block 
 
 		int handle_response_when_missing_block(){
-
-			return 0;
+			if (!is_create_done())
+				return statusCode = StatusCodes::ACCEPTED();
+			if (create_see_other())
+				return statusCode = StatusCodes::SEE_OTHER();
+			else
+				return statusCode = StatusCodes::CREATED();
+			// END OF DIAGRAM FOR MISSING
 		}
-		int is_create_done(){ // 202 accepted
+		bool is_create_done(){ // 202 accepted
 			return false;
 		}
-		int create_see_other(){ // 201 created, 303 if else 
+		bool create_see_other(){ // 201 created, 303 if else 
 			return false;
 		}
 ////	END MISSING TRUE
@@ -471,80 +482,101 @@ class Response
 
 			return (0);
 		}
-		int has_if_match(){
+		bool has_if_match(){
 			return (0);
 		}
-		int if_match_matches(){ // 412
+		bool if_match_matches(){ // 412
 			return (0);
 		}
-		int has_if_unmodified_since(){
+		bool has_if_unmodified_since(){
 			return (0);
 		}
-		int if_unmodified_since_matches(){ // 412
+		bool if_unmodified_since_matches(){ // 412
 			return (0);
 		}
-		int has_if_none_match(){
+		bool has_if_none_match(){
 			return (0);
 		}
-		int if_none_match_matches(){
+		bool if_none_match_matches(){
 			return (0);
 		}
-		int has_if_modified_since(){
+		bool has_if_modified_since(){
 			return (0);
 		}
-		int if_modified_since_matches(){
+		bool if_modified_since_matches(){
 			return (0);
 		}
-		int is_precondition_safe(){ // true 304 / false 412
+		bool is_precondition_safe(){ // true 304 / false 412
 			return (0);
 		}
 
 		// handle process block
 		int handle_process_block(){
+			if(is_method_head_get())
+				return (0);
+			if (is_method_delete() && !process_delete())
+				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+			else{
+				if (!is_method_process())
+					return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+				if (process_has_conflict())
+					return statusCode = StatusCodes::CONFLICT();
+				if (!process()) // 
+					return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+			}
 			return (0);
 		}
-		int is_method_head_get(){
+		bool is_method_head_get(){
+			return req.getMethod() == "GET";
+		}
+		bool is_method_delete(){
+			return req.getMethod() == "DELETE";
+		}
+		bool process_delete(){ // 500
 			return (0);
 		}
-		int is_method_delete(){
+		bool is_method_put(){
 			return (0);
 		}
-		int process_delete(){ // 500
-			return (0);
-		}
-		int is_method_put(){
-			return (0);
-		}
-		int process_partial_put(){
+		bool process_partial_put(){
 			 // 400
 			 return (0);
 		}
-		int is_method_process(){ // 500
-			// is post 
+		bool is_method_process(){ // 500
+			return req.getMethod() == "POST";
+		}
+		bool process_has_conflict(){ // 409
 			return (0);
 		}
-		int process_has_conflict(){ // 409
-			return (0);
-		}
-		int process(){ // 500
+		bool process(){ // 500
 			return (0);
 		}
 
 		//handle response block
 		int handle_response_when_not_missing_block(){
+			if (!is_method_head_get() && !is_process_done())
+				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+			if(see_other())
+				return statusCode = StatusCodes::SEE_OTHER();
+			if(has_multiple_choices())
+				return statusCode = StatusCodes::MULTIPLE_CHOICES();
+			if(to_content())
+				return statusCode = StatusCodes::OK();
+			else
+				return statusCode = StatusCodes::NO_CONTENT();
 			return (0);
 		}
-		int is_process_done(){ // 202
+		bool is_process_done(){ // 202
 			return (0);
 		}
-		int see_other(){ // 303
+		bool see_other(){ // 303
 			return (0);
 		}
-		int has_multiple_choices(){ //300
+		bool has_multiple_choices(){ //300
 			return (0);
 		}
-		int to_content(){ //true 200 / false 204 
-			return (0);
+		bool to_content(){ //true 200 / false 204 
+			return (1);
 		}
 
 
