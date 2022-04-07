@@ -35,7 +35,7 @@ class StatusCodes
 		static int SEE_OTHER(){ return 303; }
 		static int NOT_MODIFIED(){ return 304; }
 		static int USE_PROXY(){ return 305; }
-		static int UNUSED(){ return 306; }a // Deprecated status code, not used in http/1.1
+		static int UNUSED(){ return 306; } // Deprecated status code, not used in http/1.1
 		static int TEMPORARY_REDIRECT(){ return 307; }
 
 		// 4xx Client Error
@@ -133,11 +133,6 @@ class Response
 
 		// BLOCKS
 
-
-		bool handle_precondition_block() {
-
-			return (0);
-		}
 		bool handle_create_process_block() {
 
 			return (0);
@@ -397,6 +392,9 @@ class Response
 		}
 
 ////	START MISSING TRUE 
+
+		//precondition block here
+
 		// retrieve after missing block  
 		int handle_retrieve_when_missing_block(){
 
@@ -445,8 +443,87 @@ class Response
 		int create_see_other(){ // 201 created, 303 if else 
 			return false;
 		}
-////	END MISSING TRUE 
+////	END MISSING TRUE
 ////	START MISSING FALSE
+
+		// handle precondition block 
+		int handle_precondition_block(){
+			return (0);
+		}
+		int has_if_match(){
+			return (0);
+		}
+		int if_match_matches(){ // 412
+			return (0);
+		}
+		int has_if_unmodified_since(){
+			return (0);
+		}
+		int if_unmodified_since_matches(){ // 412
+			return (0);
+		}
+		int has_if_none_match(){
+			return (0);
+		}
+		int if_none_match_matches(){
+			return (0);
+		}
+		int has_if_modified_since(){
+			return (0);
+		}
+		int if_modified_since_matches(){
+			return (0);
+		}
+		int is_precondition_safe(){ // true 304 / false 412
+			return (0);
+		}
+
+		// handle process block
+		int handle_process_block(){
+			return (0);
+		}
+		int is_method_head_get(){
+			return (0);
+		}
+		int is_method_delete(){
+			return (0);
+		}
+		int process_delete(){ // 500
+			return (0);
+		}
+		int is_method_put(){
+			return (0);
+		}
+		int process_partial_put(){
+			 // 400
+			 return (0);
+		}
+		int is_method_process(){ // 500
+			// is post 
+			return (0);
+		}
+		int process_has_conflict(){ // 409
+			return (0);
+		}
+		int process(){ // 500
+			return (0);
+		}
+
+		//handle response block
+		int is_process_done(){ // 202
+			return (0);
+		}
+		int see_other(){ // 303
+			return (0);
+		}
+		int has_multiple_choices(){ //300
+			return (0);
+		}
+		int to_content(){ //true 200 / false 204 
+			return (0);
+		}
+
+
 
 ////	END MISSING FALSE
 		// GETTERS
