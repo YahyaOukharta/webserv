@@ -39,6 +39,9 @@ int main()
     }
     else if(fork_id == 0) // child process
     {
+        // if R is GET 
+        // if R is POST dup file disc of body to input
+        //pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
         close(pipe_fd[0]); // close the read end
         dup2(pipe_fd[1], 1);
 
@@ -51,7 +54,7 @@ int main()
         args[0] = (char *)cgi_location.c_str();
         args[1] = (char *)req_file.c_str();
         args[2] = NULL;
-       
+        //https://www.cs.ait.ac.th/~on/O/oreilly/perl/perlnut/ch09_04.htm
         std::string method = "GET";
         std::string server_name = "SERVER_NAME"; // The server's hostname or IP address.
         std::string server_software = "Webserv 1.0"; // The name and version of the server software that is answering the client request.
@@ -88,7 +91,7 @@ int main()
         setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
         setenv("HTTP_REFERER", referer.c_str(), 1);
 
-        std::cout << args[0] << "---" << args <<  std::endl;
+        // std::cout << args[0] << "---" << args <<  std::endl;
         if (execve(args[0], args, NULL) == -1)
             perror("Could not execve fff");
 
@@ -119,8 +122,6 @@ int main()
         }
         close(pipe_fd[0]); // close the read end after finishing reading
     }
-    
-    
 
     //need to make the variables dynamic caught from the request && after make a full response with headers and boddy back to the client
     return (0);
