@@ -37,6 +37,7 @@ class StatusCodes
 		static int USE_PROXY(){ return 305; }
 		static int UNUSED(){ return 306; } // Deprecated status code, not used in http/1.1
 		static int TEMPORARY_REDIRECT(){ return 307; }
+		static int PERMANENT_REDIRECT(){ return 308; }
 
 		// 4xx Client Error
 		static int BAD_REQUEST(){ return 400; }
@@ -124,6 +125,31 @@ class Response
 			status = handle_accept_block(); // Accept block checks
 			if (status) return;
 
+			bool is_ressource_missing = handle_retrieve_block();
+			std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
+			if(is_ressource_missing){
+				// ressource missing
+				status = handle_retrieve_when_missing_block();
+				if(status) return;
+
+				status = handle_create_block();
+				if(status) return;
+
+				status = handle_response_when_missing_block();
+				if(status) return;
+			}
+			else {
+				// ressource not missing 
+				status = handle_precondition_block();
+				if (status) return;
+				
+				status = handle_process_block();
+				if (status) return;
+
+				status = handle_response_when_not_missing_block();
+				if (status) return;
+
+			}
 		}
 		Response(){}
 		Response( Response const & src );
@@ -132,16 +158,6 @@ class Response
 		Response &		operator=( Response const & rhs );
 
 		// BLOCKS
-
-		bool handle_create_process_block() {
-
-			return (0);
-		}
-		bool handle_response_block() {
-
-			return (0);
-		}
-
 
 		bool handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
@@ -383,12 +399,12 @@ class Response
 
 		// retrieve block  
 		int handle_retrieve_block(){
-			
-			return 0;
+			return missing();
 		}
 
 		int missing(){ // ressource missing 
-			return false;
+			std::string const & resPath = getRessourcePath();
+			return !FileSystem::fileExists(resPath);
 		}
 
 ////	START MISSING TRUE 
@@ -397,14 +413,19 @@ class Response
 
 		// retrieve after missing block  
 		int handle_retrieve_when_missing_block(){
-
+			if (moved()){
+				if (moved_permanently())
+					return StatusCodes::PERMANENT_REDIRECT();
+				if (moved_temporarily())
+					return StatusCodes::TEMPORARY_REDIRECT();
+				if (gone_permanently())
+					return StatusCodes::TEMPORARY_REDIRECT();
+			}
 			return 0;
 		}
-
-		int moved(){ // ressource moved 
+		int moved(){ // ressource moved
 			return false;
 		}
-
 		int moved_permanently(){ // redirect  308
 			return false;
 		}
@@ -420,8 +441,7 @@ class Response
 		int handle_create_block(){
 			return 0;
 		}
-
-		int is_method_create(){ // is method post  404
+		int is_method_create(){ // is method post  404 // auto index ?
 			return false;
 		}
 		int create_path(){ // upload path defined, else 500
@@ -448,6 +468,7 @@ class Response
 
 		// handle precondition block 
 		int handle_precondition_block(){
+
 			return (0);
 		}
 		int has_if_match(){
@@ -510,6 +531,9 @@ class Response
 		}
 
 		//handle response block
+		int handle_response_when_not_missing_block(){
+			return (0);
+		}
 		int is_process_done(){ // 202
 			return (0);
 		}

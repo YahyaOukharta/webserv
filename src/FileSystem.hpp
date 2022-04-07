@@ -20,13 +20,13 @@ class FileSystem
 		FileSystem &		operator=( FileSystem const & rhs );
 
 
-		static bool fileExists(std::string path){
+		static bool fileExists(std::string const &path){
 
 			struct stat buffer;   
 			return (stat(path.c_str(), &buffer) == 0);
 		}
 
-		static std::string getFileContent(std::string path){
+		static std::string getFileContent(std::string const &path){
 			std::ifstream ifs(path.c_str());
   			std::string content( (std::istreambuf_iterator<char>(ifs) ),
                        (std::istreambuf_iterator<char>()    ) );
