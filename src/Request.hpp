@@ -7,7 +7,7 @@
 # include <cstring>
 #include "Utils.hpp"
 
-# define DEBUG 1
+# define DEBUG 0
 // # include "Response.hpp"
 
 class Request
@@ -172,7 +172,7 @@ class Request
 			}
 		}
 		// debug
-		void print() {
+		void print() const {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
@@ -182,7 +182,7 @@ class Request
 			if (DEBUG)
 			{
 				std::cout << "\nHeaders:" << std::endl;
-				for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+				for(std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it){
 					std::cout << " " << it->first << " " << it->second << std::endl;
 				}
 				std::cout << "\nBody:\n" <<body<< std::endl;

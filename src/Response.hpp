@@ -5,6 +5,7 @@
 # include <string>
 # include "Request.hpp"
 # include "MimeTypes.hpp"
+# include "Cgi.hpp"
 
 class StatusCodes
 {
@@ -126,6 +127,7 @@ class Response
 			status = handle_accept_block(); // Accept block checks
 			if (status) return;
 
+			
 			bool is_ressource_missing = handle_retrieve_block();
 			std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
 			if(is_ressource_missing){
@@ -140,6 +142,10 @@ class Response
 				if(status) return;
 			}
 			else {
+
+				Cgi cgi(req , server,  getRessourcePath());
+				cgi.compile();
+				exit(0);
 				// ressource not missing 
 				status = handle_precondition_block();
 				if (status) return;
