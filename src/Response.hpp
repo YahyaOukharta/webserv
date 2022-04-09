@@ -98,9 +98,9 @@ class Response
 		int 		statusCode;
 		std::string	statusString;
 
-		std::map<std::string, std::string> general_headers;
-		std::map<std::string, std::string> representation_headers;
-		std::map<std::string, std::string> response_headers;
+		std::map<std::string, std::string> general_headers; // Date, Server
+		std::map<std::string, std::string> representation_headers; // Content-*
+		std::map<std::string, std::string> response_headers; // Transfer encoding ? Location ? 
 
 		std::string body;
 
@@ -116,7 +116,8 @@ class Response
 			if (status) return;
 	
 			init_matching_location(); // Finding matching location
-			if (!location) status = StatusCodes::NOT_FOUND();
+			if (!location) statusCode = StatusCodes::NOT_FOUND();
+			status = statusCode;
 			if (status) return;
 
 			status = handle_request_block(); // Request block checks
@@ -402,7 +403,7 @@ class Response
 			return missing();
 		}
 
-		bool missing(){ // ressource missing 
+		bool missing(){ // ressource missing || ressource for upload || redirect 
 			std::string const & resPath = getRessourcePath();
 			return !FileSystem::fileExists(resPath);
 		}
