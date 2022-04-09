@@ -5,6 +5,7 @@
 # include <string>
 # include "Request.hpp"
 # include "MimeTypes.hpp"
+
 class StatusCodes
 {
 
@@ -100,7 +101,7 @@ class Response
 
 		std::map<std::string, std::string> general_headers; // Date, Server
 		std::map<std::string, std::string> representation_headers; // Content-*
-		std::map<std::string, std::string> response_headers; // Transfer encoding ? Location ? 
+		std::map<std::string, std::string> response_headers; // Transfer encoding ? Location ? Allow (when method unsupported)
 
 		std::string body;
 
@@ -114,7 +115,6 @@ class Response
 			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
 			if (status) return;
-	
 			init_matching_location(); // Finding matching location
 			if (!location) statusCode = StatusCodes::NOT_FOUND();
 			status = statusCode;
@@ -583,10 +583,30 @@ class Response
 
 
 ////	END MISSING FALSE
+
+		//HEADERS
+		void initGeneralHeaders(){
+			general_headers.clear();
+			general_headers.insert(std::pair<std::string,std::string>("Date",getDate()));
+			general_headers.insert(std::pair<std::string,std::string>("Server","Webserv"));
+		}
+		void initRepresentationHeaders(){////
+			representation_headers.clear();
+			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
+			representation_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+		}
+
+		void initResponseHeaders(){
+			response_headers.clear();
+			response_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
+			response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+		}
+
 		// GETTERS
 		int getStatusCode() const {
 			return statusCode;
 		}
+
 };
 
 

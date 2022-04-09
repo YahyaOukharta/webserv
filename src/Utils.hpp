@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <locale>
+#include <stdio.h>
+#include <time.h>
 
 std::vector<std::string> split_to_lines(std::string text, std::string delimiter = std::string("\r\n"))
 {
@@ -75,6 +77,17 @@ class webserv_exception : public std::exception
         return _msg.c_str();
    }
 };
+
+
+
+std::string getDate() {
+  char buf[1000];
+  time_t now = time(0);
+  struct tm tm = *gmtime(&now);
+  strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+
+  return buf;
+}
 
 
 #endif
