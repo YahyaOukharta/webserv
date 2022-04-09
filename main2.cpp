@@ -1,7 +1,6 @@
 // #include "src/ServerConfig.hpp"
-#include "src/Server.hpp"
-#include "src/FileSystem.hpp"
-#include "src/Parser.hpp"
+# include "src/Webserv.hpp"
+
 int main(int ac, char **av)
 {
     (void)ac;
@@ -15,6 +14,5 @@ int main(int ac, char **av)
         srv.async();
     }
 
-    Parser::parseFile("./configs/conf.conf");
     return (0);
 }

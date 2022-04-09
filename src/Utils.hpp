@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <locale>
+#include <stdio.h>
+#include <time.h>
 
 std::vector<std::string> split_to_lines(std::string text, std::string delimiter = std::string("\r\n"))
 {
@@ -14,13 +16,18 @@ std::vector<std::string> split_to_lines(std::string text, std::string delimiter 
 
     size_t last = 0;
     size_t next = 0;
-
+    std::string token;
     while ((next = s.find(delimiter, last)) != std::string::npos) 
     {   
-        res.push_back(s.substr(last, next-last));
+        token = s.substr(last, next-last);
+        if (token.size()|| delimiter=="\r\n\r\n")
+            res.push_back(token);
         last = next + delimiter.size(); 
     } 
-    res.push_back(s.substr(last));
+    token = s.substr(last);
+    
+    if (token.size()|| delimiter=="\r\n\r\n")
+        res.push_back(s.substr(last));
     return res;
 }
 
@@ -43,12 +50,21 @@ static void rtrim(std::string &s)
 }
 
 
-static void trim(std::string &s){
+void trim(std::string &s){
     ltrim2(s);
     rtrim(s);
 }
 
-
+std::string asciitolower(std::string const &s) {
+	std::string ret;
+	for(size_t i = 0; i < s.size(); ++i){
+		char in = s[i];
+		if (in <= 'Z' && in >= 'A')
+        	ret.push_back(in - ('Z' - 'z'));
+		else ret.push_back(in);
+	}
+    return ret;
+}
 
 // to do : add here all error messages/codes
 class webserv_exception : public std::exception
@@ -61,5 +77,17 @@ class webserv_exception : public std::exception
         return _msg.c_str();
    }
 };
+
+
+
+std::string getDate() {
+  char buf[1000];
+  time_t now = time(0);
+  struct tm tm = *gmtime(&now);
+  strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+
+  return buf;
+}
+
 
 #endif

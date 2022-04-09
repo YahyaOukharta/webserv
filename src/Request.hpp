@@ -4,10 +4,12 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <cstring>
 #include "Utils.hpp"
 
-# define DEBUG 1
-#include "Response.hpp"
+# define DEBUG 0
+// # include "Response.hpp"
+
 class Request
 {
 
@@ -23,9 +25,10 @@ class Request
 		std::string path;  //   /ee/aa/
 		std::string query; //	?hello=1&dkd=22
 		
-		std::map<std::string, std::string> headers;
+		std::map<std::string, std::string> headers; // split to general, request, and representation
 
-
+		std::map<std::string, std::string> representation_headers; // split to general, request, and representation
+		std::map<std::string, std::string> request_headers; // split to general, request, and representation
 
 		std::string body;
 
@@ -46,12 +49,28 @@ class Request
 				if (error == 3)
 					throw webserv_exception("Too many '?'");
 			}
-			print();
+			initRepresentationHeaders();
+			initRequestHeaders();
+			//print();
 		}
-		Request( Request const & src );
+		Request( Request const & src ){
+			*this = src;
+		}
 		~Request(){}
 
-		Request &		operator=( Request const & rhs );
+		Request &		operator=( Request const & rhs )
+		{
+			protocol = rhs.getProtocol();
+			version = rhs.getVersion();			
+			method = rhs.getMethod();
+			path = rhs.getPath();
+			query = rhs.getQuery();
+			headers = rhs.getHeaders();
+			body = rhs.getBody();
+			initRepresentationHeaders();
+			initRequestHeaders();
+			return *this;
+		}
 
 		// parsing
 
@@ -61,7 +80,6 @@ class Request
 			if (req_split_body.size() != 2)
 				return (1);
 			body = req_split_body[1];
-
 
 			//including first line
 			vec head = split_to_lines(req_split_body[0]);
@@ -75,7 +93,7 @@ class Request
 			head.erase(head.begin());
 			for (iter it = head.begin(); it != head.end(); ++it)
 			{
-				vec header = split_to_lines(*it, ":");
+				vec header = split_to_lines(*it, ": ");
 				headers[header[0]] = header[1];
 			}
 			return (0);
@@ -105,6 +123,13 @@ class Request
 		}
 
 		// getters
+		const std::string &getProtocol() const {
+			return protocol;
+		}
+		const std::string &getVersion() const {
+			return version;
+		}
+
 		const std::string &getMethod() const {
 			return method;
 		}
@@ -117,15 +142,37 @@ class Request
 		const std::map<std::string, std::string> &getHeaders() const {
 			return headers;
 		}
+		const std::map<std::string, std::string> &getRepresentationHeaders() const {
+			return representation_headers;
+		}
+		const std::map<std::string, std::string> &getRequestHeaders() const {
+			return request_headers;
+		}
 		const std::string getHeader(std::string const &key) {
 			return headers[key];
 		}
 		const std::string &getBody() const {
 			return body;
 		}
+		void initRequestHeaders(){
+			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
+				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
+				if (std::strstr(it->first.c_str(),"Accept") == it->first.c_str()){
+					request_headers.insert(*it);
+				}
+			}
+		}
 
+		void initRepresentationHeaders(){
+			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
+				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
+				if (std::strstr(it->first.c_str(),"Content-") == it->first.c_str()){
+					representation_headers.insert(*it);
+				}
+			}
+		}
 		// debug
-		void print() {
+		void print() const {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
@@ -135,11 +182,11 @@ class Request
 			if (DEBUG)
 			{
 				std::cout << "\nHeaders:" << std::endl;
-				for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+				for(std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it){
 					std::cout << " " << it->first << " " << it->second << std::endl;
 				}
 				std::cout << "\nBody:\n" <<body<< std::endl;
-				Response a;
+				//
 				return;
 			}
 			std::cout << headers.size() << " headers   ";
