@@ -38,6 +38,7 @@ class Config
             int port;
             int bodysize_limit;
             std::string root;
+            std::string index;
             std::vector<std::string> allowed_methods;  // allowed methodes maybe for later
             std::string default_error_pages;
             // std::map<int, std::string> error_pages; //int for error number string for path for later
