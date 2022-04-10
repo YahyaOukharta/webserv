@@ -92,7 +92,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("path = ") != std::string::npos && test == "path" && l.path == "NULL")
                 {
                     str = s[pos].substr(s[pos].find("path = ") + 7, s[pos].length());
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "")
                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.path = str;
@@ -107,12 +107,15 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                     {
                         str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
-                        str = str.substr(0, str.length());
+                        // str = str.substr(0, str.length());
                         if(str == "")
                             {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                         l.method = str;
                         ////// ALLOWED METHODS
                         l.allowed_methods = ft::split_to_lines(l.method,"/");
+                        // std::cout << "split " << l.allowed_methods.size() << std::endl;
+                        std::cout << l.method << " " << l.allowed_methods[0] << std::endl;
+
                     }
                 }
                 else
@@ -124,16 +127,18 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("root = ") != std::string::npos && test == "root" && l.root == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("root = ") + 7, s[pos].length());
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.root = str;}
                 }
-                else if(s[pos].find("redirect = ") != std::string::npos && test == "redirect")
+                else if(s[pos].find("redirect = ") != std::string::npos && test == "redirect"  && l.redirect == "NULL")
                 {
                    
                     {str = s[pos].substr(s[pos].find("redirect = ") + 11, s[pos].length() - 11);
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.redirect = str;}
                     // std::cout << l.redirect << std::endl;
                 }
@@ -146,7 +151,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("autoindex = ") != std::string::npos && test == "autoindex"  && l.autoindex == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("autoindex = ") + 12, s[pos].length());
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.autoindex = str;}
@@ -160,7 +165,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  && l.autoindex == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("cgi_path = ") + 11, s[pos].length());
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.cgi_path = str;
@@ -175,7 +180,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("extension = ") != std::string::npos && test == "extension"  && l.autoindex == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("extension = ") + 12, s[pos].length());
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.extension = str;
@@ -191,7 +196,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                    
                     {str = s[pos].substr(s[pos].find("bodysize_limit = ") + 17, s[pos].length() - 17);
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     if(str == "" || ft::atoi(str.c_str()) <= 0)
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.bodysize_limit = ft::atoi(str.c_str());}
@@ -207,7 +212,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                    
                     {str = s[pos].substr(s[pos].find("index = ") + 8, s[pos].length() - 8);
-                    str = str.substr(0, str.length());
+                    // str = str.substr(0, str.length());
                     l.index = str;}
                     // std::cout << l.index << std::endl;
                 }
@@ -421,7 +426,7 @@ Config::Config(const std::string s)
     {
         std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root
         + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension
-        + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index << " " << _servers[0].locations[i].redirect;
+        + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index << " " << _servers[0].locations[i].redirect << " " << _servers[0].locations[i].upload_path;
         
         std::cout << "  " + _servers[0].locations[i].method << " ";
 
