@@ -226,7 +226,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                    
                     {str = s[pos].substr(s[pos].find("upload_path = ") + 14, s[pos].length() - 14);
-                    str = str.substr(0, str.length() - 1);
+                    // str = str.substr(0, str.length());
                     l.upload_path = str;}
                     // std::cout << _servers[index].index << std::endl;
                 }
