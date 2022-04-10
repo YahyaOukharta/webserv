@@ -48,7 +48,9 @@ void Config::set_defaults_2(Location *l)
     l->autoindex = "NULL";
     l->cgi_path = "NULL";
     l->extension = "NULL";
+    l->redirect = "NULL";
     l->bodysize_limit = _servers[index].bodysize_limit;
+    l->upload_path = "NULL";
     l->index = _servers[index].index;
 }
 
@@ -127,6 +129,14 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.root = str;}
                 }
+                else if(s[pos].find("redirect = ") != std::string::npos && test == "redirect")
+                {
+                   
+                    {str = s[pos].substr(s[pos].find("redirect = ") + 11, s[pos].length() - 11);
+                    str = str.substr(0, str.length());
+                    l.redirect = str;}
+                    // std::cout << l.redirect << std::endl;
+                }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                 break;
@@ -200,6 +210,20 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                     str = str.substr(0, str.length());
                     l.index = str;}
                     // std::cout << l.index << std::endl;
+                }
+                else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'u': {
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("upload_path = ") != std::string::npos && test == "upload_path")
+                {
+                   
+                    {str = s[pos].substr(s[pos].find("upload_path = ") + 14, s[pos].length() - 14);
+                    str = str.substr(0, str.length() - 1);
+                    l.upload_path = str;}
+                    // std::cout << _servers[index].index << std::endl;
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -396,7 +420,8 @@ Config::Config(const std::string s)
     while(++i < _servers[0].locations.size())
     {
         std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root
-        + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index;
+        + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension
+        + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index << " " << _servers[0].locations[i].redirect;
         
         std::cout << "  " + _servers[0].locations[i].method << " ";
 

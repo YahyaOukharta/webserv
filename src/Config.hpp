@@ -27,6 +27,7 @@ class Config
             std::string cgi_path;
             std::string extension;
             std::string upload_path;
+            std::string redirect;
             std::string default_error_pages;
             int bodysize_limit;
         };
