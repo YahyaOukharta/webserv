@@ -50,7 +50,7 @@ class Server
 				srv_conf.bodysize_limit,
 				srv_conf.default_error_pages,
 				srv_conf.allowed_methods,
-
+				ft::split_to_lines(srv_conf.index, "/"),
 				1000
 			);
 			conf.setLocations(srv_conf.locations);

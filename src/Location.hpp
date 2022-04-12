@@ -16,7 +16,9 @@ class Location
 		std::vector<std::string> _allowed_methods;
 
 		int _auto_index; // default off
+		std::vector<std::string> _index;
 		std::string _error_page;
+
 	public:
 		struct greater_than_path
 		{
@@ -37,7 +39,10 @@ class Location
 			std::vector<std::string> allowed_methods,
 			int body_size_limit,
 			int auto_index,
-			std::string error_page
+			std::string error_page,
+			std::vector<std::string> index
+
+
 		){
 			_path = path;
 			_root = root;
@@ -45,7 +50,7 @@ class Location
 			_body_size_limit = body_size_limit;
 			_auto_index = auto_index;
 			_error_page = error_page;
-	
+			_index = index;
 		}
 		Location( Location const & src ){
 			*this = src;
@@ -60,6 +65,7 @@ class Location
 			_body_size_limit = rhs.getBodySizeLimit();
 			_auto_index = rhs.getAutoIndex();
 			_error_page = rhs.getErrorPage();
+			_index = rhs.getIndex();
 			return *this;
 		}
 
@@ -77,6 +83,9 @@ class Location
 		}
 		std::vector<std::string> const &getAllowedMethods()const{
 			return _allowed_methods;
+		}
+		std::vector<std::string> const &getIndex()const{
+			return _index;
 		}
 		std::string const &getErrorPage()const {
 			return _error_page;

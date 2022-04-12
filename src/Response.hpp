@@ -110,7 +110,7 @@ class Response
 		Location const *location;
 	public:
 
-		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv){
+		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0){
 			int status = 0;
 			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
@@ -394,8 +394,33 @@ class Response
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
+			
+			if (res[res.size()-1] == '/')
+			{
+				std::vector<std::string> index = location ? location->getIndex() : server->getConfig().getIndex();
+				std::vector<std::string>::const_iterator it = index.begin();
+				for(;it != index.end(); ++it){
+					if (FileSystem::fileExists(res + *it))
+					{
+						res.append(*it);
+						break;
+					}
+				}
+				if (res[res.size() - 1] == '/')
+				{
+					if( (location && location->getAutoIndex()))
+						res = "auto index here";
+					else
+						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+				}
+			}
+			else if (statusCode && !FileSystem::fileExists(res)){
+
+				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+			}
 			return res;
 		}
+
 
 		// retrieve block  
 		int handle_retrieve_block(){
@@ -591,13 +616,16 @@ class Response
 
 		void initRepresentationHeaders(){//// normal file, missing file, cgi, autoindex 
 			std::string resPath;
-			if (statusCode >= 200 && statusCode < 300)
+
+			//if (statusCode >= 200 && statusCode < 300)
 				resPath = getRessourcePath();
-			else resPath = server->getConfig().getDefaultErrorPage();
+				std::cout << "final res path " << resPath << std::endl;
+			//else if ()
 
 			representation_headers.clear();
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
+
 		}
 
 		void initResponseHeaders(){
@@ -634,6 +662,7 @@ class Response
 			res.append(nl);
 			return res;
 		}
+
 };
 
 

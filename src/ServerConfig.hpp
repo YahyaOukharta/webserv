@@ -20,6 +20,8 @@ class ServerConfig
 		int 		_body_size_limit; // body size limit 
 		std::string _default_error_page; // error page
 		std::vector<std::string> _allowed_methods; // GET POST ..
+		std::vector<std::string> _index; // GET POST ..
+
 
 		std::vector<Location> _locations;
 
@@ -39,6 +41,7 @@ class ServerConfig
 			int 		body_size_limit,
 			std::string default_error_page,
 			std::vector<std::string> allowed_methods,
+			std::vector<std::string> index,
 
 			int backlog
 		){
@@ -50,6 +53,7 @@ class ServerConfig
 			_body_size_limit = body_size_limit;
 			_allowed_methods = allowed_methods;
 			_default_error_page = default_error_page;
+			_index = index;
 		};
 		void setLocations(std::vector<Location> const &locs){
 			_locations = locs;
@@ -64,7 +68,8 @@ class ServerConfig
 					it->allowed_methods,
 					it->bodysize_limit,
 					it->autoindex == "on" ? 1 : 0, /// ???? AUTO INDEX SHOULD BE BOOL OR INT
-					it->default_error_pages
+					it->default_error_pages,
+					ft::split_to_lines(it->index, "/")
 				);
 				_locations.push_back(loc);
 			}
@@ -94,6 +99,7 @@ class ServerConfig
 			_body_size_limit = rhs.getBodySizeLimit();
 			_allowed_methods = rhs.getAllowedMethods();
 			_default_error_page = rhs.getDefaultErrorPage();
+			_index = rhs.getIndex();
 			setLocations(rhs.getLocations());
 			return *this;
 		}
@@ -116,6 +122,9 @@ class ServerConfig
 		}
 		std::vector<std::string> const &getAllowedMethods() const {
 			return _allowed_methods;
+		}
+		std::vector<std::string> const &getIndex() const{
+			return _index;
 		}
 		std::string const &getDefaultErrorPage() const {
 			return _default_error_page;

@@ -5,7 +5,7 @@
 # include <string>
 
 # include "Server.hpp"
-# include "Parser.hpp"
+// # include "Parser.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
 #include "FileSystem.hpp"
@@ -192,15 +192,15 @@ class Webserv
 
 						}
 						else{
-							std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
-							response = ("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
-							response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
+							Response res(req, servers[client_to_srv_idx[fd]]);
+							response.append(res.getResponseBufferWithoutBody());
+							response.append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
 						//
 						}
 
-						Response res(req, servers[client_to_srv_idx[fd]]);
-						std::cout << "statusCode = " << res.getStatusCode() << std::endl;
-						std::cout << res.getResponseBufferWithoutBody() << std::endl;
+						// Response res(req, servers[client_to_srv_idx[fd]]);
+						// std::cout << "statusCode = " << res.getStatusCode() << std::endl;
+						// std::cout << res.getResponseBufferWithoutBody() << std::endl;
 
 						client_to_srv_idx.erase(fd);
 						send(fd, response.c_str(), response.size(), 0);
