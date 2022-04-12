@@ -24,9 +24,9 @@ public:
 
 	Cgi &operator=(Cgi const &rhs);
 
-	int compile()
+	int compile(std::string fileName)
 	{
-		int fd = open("test", O_RDWR | O_CREAT, 0777);
+		int fd = open(fileName, O_RDWR | O_CREAT, 0777);
 		int fork_id = fork();
 		if(fork_id == -1)
 		{
