@@ -624,7 +624,10 @@ class Response
 
 			representation_headers.clear();
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
+			
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
+			
+			//representation_headers.insert(std::pair<std::string,std::string>("Transfer-Encoding","chunked"));
 
 		}
 

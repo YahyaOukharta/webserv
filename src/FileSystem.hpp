@@ -39,7 +39,7 @@ class FileSystem
 			int ret;
 			while((ret = read(fd, line, BUFFER_SIZE)) > 0)
 			{				
-				buf.append(line);
+				buf.append(line, ret);
 				memset(line,0, BUFFER_SIZE);
 			}
 			return (buf);
