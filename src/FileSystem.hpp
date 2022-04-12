@@ -44,7 +44,15 @@ class FileSystem
 			}
 			return (buf);
 		}
-
+		static size_t getFileSize(std::string filename) // path to file
+		{
+			FILE *p_file = NULL;
+			p_file = fopen(filename.c_str(),"rb");
+			fseek(p_file,0,SEEK_END);
+			size_t size = ftell(p_file);
+			fclose(p_file);
+			return size;
+		}
 
 };
 

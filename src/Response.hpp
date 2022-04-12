@@ -394,7 +394,6 @@ class Response
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
-			//std::cout << "ressource path : "<< res << std::endl;
 			return res;
 		}
 
@@ -405,6 +404,7 @@ class Response
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
 			std::string const & resPath = getRessourcePath();
+			std::cout << "ressource path : "<< resPath << std::endl;
 			return !FileSystem::fileExists(resPath);
 		}
 
@@ -580,8 +580,6 @@ class Response
 			return (1);
 		}
 
-
-
 ////	END MISSING FALSE
 
 		//HEADERS
@@ -590,10 +588,16 @@ class Response
 			general_headers.insert(std::pair<std::string,std::string>("Date",getDate()));
 			general_headers.insert(std::pair<std::string,std::string>("Server","Webserv"));
 		}
-		void initRepresentationHeaders(){////
+
+		void initRepresentationHeaders(){//// normal file, missing file, cgi, autoindex 
+			std::string resPath;
+			if (statusCode >= 200 && statusCode < 300)
+				resPath = getRessourcePath();
+			else resPath = server->getConfig().getDefaultErrorPage();
+
 			representation_headers.clear();
-			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
-			representation_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
+			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
 		}
 
 		void initResponseHeaders(){
@@ -607,6 +611,29 @@ class Response
 			return statusCode;
 		}
 
+		std::string getResponseBufferWithoutBody() {
+
+			initGeneralHeaders();
+			initRepresentationHeaders();
+
+			std::string res = "";
+			std::string nl = "\r\n";
+
+			res.append("HTTP/1.1 ");
+			res.append(std::to_string(statusCode));
+			res.append(nl);
+
+			std::map<std::string, std::string>::const_iterator it = general_headers.begin();
+			for(;it != general_headers.end(); ++it){
+				res.append(it->first + ": " + it->second + nl);
+			}
+			it = representation_headers.begin();
+			for(;it != representation_headers.end(); ++it){
+				res.append(it->first + ": " + it->second + nl);
+			}
+			res.append(nl);
+			return res;
+		}
 };
 
 

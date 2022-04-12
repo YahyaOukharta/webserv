@@ -63,7 +63,7 @@ class ServerConfig
 					it->root,
 					it->allowed_methods,
 					it->bodysize_limit,
-					1, /// ???? AUTO INDEX SHOULD BE BOOL OR INT
+					it->autoindex == "on" ? 1 : 0, /// ???? AUTO INDEX SHOULD BE BOOL OR INT
 					it->default_error_pages
 				);
 				_locations.push_back(loc);
