@@ -17,6 +17,7 @@ private:
 public:
 	Cgi(Request const &_req,Server const* _srv, std::string const &_resPath) : req(_req), server(_srv), resPath(_resPath)
 	{
+
 	}
 	Cgi(Cgi const &src);
 	~Cgi() {}
@@ -25,113 +26,78 @@ public:
 
 	int compile()
 	{
-		int pipe_fd[2];
-		// pipe_fd[0] - read
-		// pipe_fd[1] - wrtie
-		// file descriptor 0 : stdin
-		// file descriptor 1 : stdout
-		// file descriptor 2 : stderr
-
-		if (pipe(pipe_fd) == -1)
-		{
-			std::cout << "error on pipe pipe" << std::endl;
-			return (1);
-		}
-
+		int fd = open("test", O_RDWR | O_CREAT, 0777);
 		int fork_id = fork();
-		if (fork_id == -1) // child process
+		if(fork_id == -1)
 		{
-			std::cout << "error on fork forking" << std::endl;
+			std::cout << "error on fork forking" << std::endl; 
 			return (1);
 		}
-		else if (fork_id == 0) // child process
+		else if(fork_id == 0) // child process
 		{
 			// if R is GET
 			// if R is POST dup file disc of body to input
-			// pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
-			close(pipe_fd[0]); // close the read end
-			dup2(pipe_fd[1], 1);
+			//pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
+			dup2(fd, 1);//if this fail it an internal error with an appropriate err number
 
-			// std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
-			// std::string req_file = "test.php";
-			std::string cgi_location = "/usr/bin/python";
-			std::string req_file = "post.py";
-			char *args[3];
+				//if else here to determine which interpreter we will be using after getting extension from request
+				// std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
+				// std::string req_file = "test.php";
 
-			args[0] = (char *)cgi_location.c_str();
-			args[1] = (char *)req_file.c_str();
-			args[2] = NULL;
-			// https://www.cs.ait.ac.th/~on/O/oreilly/perl/perlnut/ch09_04.htm
-			std::string method = "GET";
-			std::string server_name = "SERVER_NAME";	 // The server's hostname or IP address.
-			std::string server_software = "Webserv 1.0"; // The name and version of the server software that is answering the client request.
-			// int port = 8080;
-			std::string file_path = "sfdsf/sdfds/dsfds.fds";									 // requested file_path
-			std::string path_info = "sfdsf/sdfds/dsfds";										 // url until the first "?"
-			std::string query_path = req.getQuery();//"first_name=yahya&last_name=oukharta";										 // url from the first "?"  to the end
-			std::string document_root = "/var/sfdsf/sdfds/home/";								 // The directory from which Web documents are served.
-			std::string script_name = "/var/file.php";											 // The path to the executed file
-			std::string remote_host = "/var/file.php";											 // The remote hostname of the user making the request, from where the request is made req.get('Host'), example : www.google.com
-			std::string remote_address = "875.65.158.33";										 // The remote IP address of the user making the request.
-			std::string content_type = "text/html";												 // The request content type req.get("Content-Type")
-			int content_length = 520;															 // The length of the data (in bytes) req.get("Content-Length")
-			std::string accepted_types = "text/html";											 // A list of the MIME types that the client can accept. req.get("Accept")
-			std::string user_agent = "Mozilla/5.0 ...";											 // User agent. req.get("User-Agent")
-			std::string referer = "http://www.test.com/cgi-bin/test.py?key1=value1&key2=value2"; // The URL of the document that the client points to before accessing the CGI program. req.get("Referer")
+				std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
+				std::string req_file = "test.php";
+				char *args[3];
 
-			setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
-			setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
-			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-			setenv("SERVER_PORT", std::to_string(8000).c_str(), 1);
-			setenv("REQUEST_METHOD", "GET", 1);
-			setenv("PATH_INFO", "/Users/mac/Desktop/webserv/cgi", 1);
-			setenv("PATH_TRANSLATED", file_path.c_str(), 1);
-			setenv("QUERY_STRING", query_path.c_str(), 1);
-			setenv("DOCUMENT_ROOT", document_root.c_str(), 1);
-			setenv("SCRIPT_NAME", script_name.c_str(), 1);
-			setenv("REMOTE_HOST", remote_host.c_str(), 1);
-			setenv("REMOTE_ADDR", remote_address.c_str(), 1);
-			setenv("CONTENT_TYPE", content_type.c_str(), 1);
-			setenv("CONTENT_LENGTH", std::to_string(content_length).c_str(), 1);
-			setenv("HTTP_ACCEPT", accepted_types.c_str(), 1);
-			setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
-			setenv("HTTP_REFERER", referer.c_str(), 1);
+				args[0] = (char *)cgi_location.c_str();
+				args[1] = (char *)req_file.c_str();
+				args[2] = NULL;
+			
+				setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
+				setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
+				setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
+				setenv("SERVER_PORT", std::to_string(_srv.get_server_port()).c_str(), 1);
+				setenv("REQUEST_METHOD", req.getMethod(), 1);
+				setenv("PATH_INFO", "/Users/mac/Desktop/webserv/cgi", 1); //need path info from request
+				// setenv("PATH_TRANSLATED", file_path.c_str(), 1);
+				setenv("QUERY_STRING", req.getQuery(), 1);
+				// setenv("DOCUMENT_ROOT", document_root.c_str(), 1);
+				setenv("SCRIPT_NAME", script_name.c_str(), 1); //need script name from request
+				// setenv("REMOTE_HOST", remote_host.c_str(), 1);
+				setenv("REMOTE_ADDR", _srv.get_server_host(), 1);
+				setenv("CONTENT_TYPE", content_type.c_str(), 1); //need content typr from request
+				setenv("CONTENT_LENGTH", std::to_string(content_length).c_str(), 1);  //need content lengh from request
+				// setenv("HTTP_ACCEPT", accepted_types.c_str(), 1);
+				// setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
+				setenv("HTTP_REFERER", referer.c_str(), 1);
 
-			// std::cout << args[0] << "---" << args <<  std::endl;
-			if (execve(args[0], args, environ) == -1)
-				perror("Could not execve fff");
-
-			close(pipe_fd[1]); // close the write end after finishing writing
-		}
-		else // parent process
-		{
-			int wstatus;
-			wait(&wstatus);
-			if (WIFEXITED(wstatus))
+				if (execve(args[0], args, environ) == -1)
+					perror("Could not execve fff");//this needs to be changed for and exit with an error number i guess
+			}
+			else // parent process
 			{
-				int status_code = WEXITSTATUS(wstatus);
-				if (status_code != 0)
+				int wstatus;
+				waitpid(fork_id, &wstatus, 0);
+				if (WIFEXITED(wstatus))
 				{
-					std::cout << "Failure with status code : " << status_code << std::endl;
-					return (1);
+					int status_code = WEXITSTATUS(wstatus);
+					if (status_code != 0)
+					{
+						std::cout << "Failure with status code : " << status_code << std::endl;
+						return (1);
+					}
+				}
+
+				int nbytes;
+				char cgi_buff[1024] = {0};
+				//to reset cursor to first byte of the file
+				lseek(fd, 0, SEEK_SET);
+				while ((nbytes = read(fd, cgi_buff, 1024)) > 0)
+				{
+					std::cout << "Got some data from file : " << cgi_buff << std::endl;
 				}
 			}
-
-			close(pipe_fd[1]); // close the write end because we don't need it
-			int nbytes;
-			char cgi_buff[1024] = {0};
-
-			// Read the data from pipe_fd[0], and search for EOF or content_length
-			while ((nbytes = read(pipe_fd[0], cgi_buff, 1024)) > 0)
-			{
-				std::cout << "Got some data from pipe : " << cgi_buff << std::endl;
-			}
-			close(pipe_fd[0]); // close the read end after finishing reading
-		}
-		return 0;
+			return 0;
 	}
-
-
 };
 
 std::ostream &operator<<(std::ostream &o, Cgi const &i);
