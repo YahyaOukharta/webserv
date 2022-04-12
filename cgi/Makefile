@@ -2,7 +2,7 @@ NAME = a.out
 
 SRCS = main.cpp 
 
-FLAGS =  -std=c++98 -fsanitize=address -g 	-Wall -Wextra -Werror
+FLAGS =  -std=c++98 # 	-Wall -Wextra -Werror
 
 COMP=clang++
 ifeq ($(shell uname), Linux)
