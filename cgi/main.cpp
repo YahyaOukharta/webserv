@@ -18,34 +18,21 @@ std::string to_string(int n)
 
 int main()
 {
-    int pipe_fd[2];
-    // pipe_fd[0] - read
-    // pipe_fd[1] - wrtie
-    // file descriptor 0 : stdin
-    // file descriptor 1 : stdout
-    // file descriptor 2 : stderr
-
-    // if(pipe(pipe_fd) == -1)
-    // {
-    //     std::cout << "error on pipe pipe" << std::endl;
-    //     return (1);
-    // }
 	int fd = open("test", O_RDWR | O_CREAT, 0777);
     int fork_id = fork();
-    if(fork_id == -1) // child process
+    if(fork_id == -1)
     {
         std::cout << "error on fork forking" << std::endl;
         return (1);
     }
     else if(fork_id == 0) // child process
     {
-        // if R is GET 
+        // if R is GET
         // if R is POST dup file disc of body to input
         //pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
-        // close(pipe_fd[0]); // close the read end
         dup2(fd, 1);
 
-      // std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
+      		// std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
 			// std::string req_file = "test.php";
 			std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
 			std::string req_file = "test.php";
@@ -90,11 +77,8 @@ int main()
 			setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
 			setenv("HTTP_REFERER", referer.c_str(), 1);
 
-			// std::cout << args[0] << "---" << args <<  std::endl;
 			if (execve(args[0], args, NULL) == -1)
 				perror("Could not execve fff");
-
-			// close(pipe_fd[1]); // close the write end after finishing writing
 		}
 		else // parent process
 		{
@@ -110,18 +94,15 @@ int main()
 				}
 			}
 
-			// close(pipe_fd[1]); // close the write end because we don't need it
 			int nbytes;
 			char cgi_buff[1024] = {0};
 
-			// Read the data from pipe_fd[0], and search for EOF or content_length
 			lseek(fd, 0, SEEK_SET);
 			while ((nbytes = read(fd, cgi_buff, 1024)) > 0)
 			{
 				std::cout << "Got some data from pipe : " << cgi_buff << std::endl;
 			}
-			std::cout  << nbytes << '\n';
-			// close(pipe_fd[0]); // close the read end after finishing reading
+			close(fd);
 		}
 		return 0;
 	

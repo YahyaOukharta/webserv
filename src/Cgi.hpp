@@ -96,6 +96,7 @@ public:
 					std::cout << "Got some data from file : " << cgi_buff << std::endl;
 				}
 			}
+			close(fd);
 			return 0;
 	}
 };
