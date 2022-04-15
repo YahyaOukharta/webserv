@@ -34,8 +34,8 @@ int main()
 
       		// std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
 			// std::string req_file = "test.php";
-			std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
-			std::string req_file = "test.php";
+			std::string cgi_location = "/usr/bin/python";
+			std::string req_file = "script.py";
 			char *args[3];
 
 			args[0] = (char *)cgi_location.c_str();
@@ -48,14 +48,14 @@ int main()
 			// int port = 8080;
 			std::string file_path = "sfdsf/sdfds/dsfds.fds";									 // requested file_path
 			std::string path_info = "sfdsf/sdfds/dsfds";										 // url until the first "?"
-			std::string query_path = "first_name=hakim&last_name=nassif";//"first_name=yahya&last_name=oukharta";										 // url from the first "?"  to the end
+			// std::string query_path = "first_name=hakim&last_name=nassif";//"first_name=yahya&last_name=oukharta";										 // url from the first "?"  to the end
 			std::string document_root = "/var/sfdsf/sdfds/home/";								 // The directory from which Web documents are served.
 			std::string script_name = "/var/file.php";											 // The path to the executed file
 			std::string remote_host = "/var/file.php";											 // The remote hostname of the user making the request, from where the request is made req.get('Host'), example : www.google.com
 			std::string remote_address = "875.65.158.33";										 // The remote IP address of the user making the request.
-			std::string content_type = "text/html";												 // The request content type req.get("Content-Type")
-			int content_length = 520;															 // The length of the data (in bytes) req.get("Content-Length")
-			std::string accepted_types = "text/html";											 // A list of the MIME types that the client can accept. req.get("Accept")
+			std::string content_type = "application/x-www-form-urlencoded";												 // The request content type req.get("Content-Type")
+			int content_length = 33;															 // The length of the data (in bytes) req.get("Content-Length")
+			// std::string accepted_types = "text/html";											 // A list of the MIME types that the client can accept. req.get("Accept")
 			std::string user_agent = "Mozilla/5.0 ...";											 // User agent. req.get("User-Agent")
 			std::string referer = "http://www.test.com/cgi-bin/test.py?key1=value1&key2=value2"; // The URL of the document that the client points to before accessing the CGI program. req.get("Referer")
 
@@ -63,21 +63,21 @@ int main()
 			setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
 			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
 			setenv("SERVER_PORT", std::to_string(8000).c_str(), 1);
-			setenv("REQUEST_METHOD", "GET", 1);
+			setenv("REQUEST_METHOD", "POST", 1);
 			setenv("PATH_INFO", "/Users/mac/Desktop/webserv/cgi", 1);
 			setenv("PATH_TRANSLATED", file_path.c_str(), 1);
-			setenv("QUERY_STRING", query_path.c_str(), 1);
+			// setenv("QUERY_STRING", query_path.c_str(), 1);
 			setenv("DOCUMENT_ROOT", document_root.c_str(), 1);
 			setenv("SCRIPT_NAME", script_name.c_str(), 1);
 			setenv("REMOTE_HOST", remote_host.c_str(), 1);
 			setenv("REMOTE_ADDR", remote_address.c_str(), 1);
 			setenv("CONTENT_TYPE", content_type.c_str(), 1);
 			setenv("CONTENT_LENGTH", std::to_string(content_length).c_str(), 1);
-			setenv("HTTP_ACCEPT", accepted_types.c_str(), 1);
+			// setenv("HTTP_ACCEPT", accepted_types.c_str(), 1);
 			setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
 			setenv("HTTP_REFERER", referer.c_str(), 1);
 
-			if (execve(args[0], args, NULL) == -1)
+			if (execve(args[0], args, environ) == -1)
 				perror("Could not execve fff");
 		}
 		else // parent process
