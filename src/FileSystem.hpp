@@ -6,6 +6,7 @@
 # include <fstream>
 # include <cstring>
 # include <sys/stat.h>
+# include <unistd.h>
 # define BUFFER_SIZE 1024
 class FileSystem
 {

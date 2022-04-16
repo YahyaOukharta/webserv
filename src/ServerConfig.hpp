@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "Config.hpp"
+
+#include "FileSystem.hpp"
+#include "Utils.hpp"
 class ServerConfig
 {
 
@@ -71,8 +74,12 @@ class ServerConfig
 					it->default_error_pages,
 					ft::split_to_lines(it->index, "/")
 				);
+				
+				if(loc.getErrorPage() != "" && !FileSystem::fileExists(loc.getErrorPage()))
+					throw webserv_exception(std::string("Invalid path for location error_page ") + loc.getErrorPage());
 				_locations.push_back(loc);
 			}
+			
 			std::sort(_locations.begin(), _locations.end(), Location::greater_than_path());
 		}
 

@@ -53,6 +53,8 @@ class Server
 				ft::split_to_lines(srv_conf.index, "/"),
 				1000
 			);
+			if(!FileSystem::fileExists(conf.getDefaultErrorPage()))
+				throw webserv_exception(std::string("Invalid path for error_page ") + conf.getDefaultErrorPage());
 			conf.setLocations(srv_conf.locations);
 		};
 		Server( Server const & src ){
