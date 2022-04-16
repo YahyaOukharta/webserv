@@ -6,6 +6,7 @@
 # include <fstream>
 # include <cstring>
 # include <sys/stat.h>
+# include <unistd.h>
 # define BUFFER_SIZE 1024
 class FileSystem
 {
@@ -39,12 +40,20 @@ class FileSystem
 			int ret;
 			while((ret = read(fd, line, BUFFER_SIZE)) > 0)
 			{				
-				buf.append(line);
+				buf.append(line, ret);
 				memset(line,0, BUFFER_SIZE);
 			}
 			return (buf);
 		}
-
+		static size_t getFileSize(std::string filename) // path to file
+		{
+			FILE *p_file = NULL;
+			p_file = fopen(filename.c_str(),"rb");
+			fseek(p_file,0,SEEK_END);
+			size_t size = ftell(p_file);
+			fclose(p_file);
+			return size;
+		}
 
 };
 

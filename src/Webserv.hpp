@@ -5,7 +5,7 @@
 # include <string>
 
 # include "Server.hpp"
-# include "Parser.hpp"
+// # include "Parser.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
 #include "FileSystem.hpp"
@@ -23,6 +23,8 @@ class Webserv
 
 	std::map<int, std::string> client_to_buf; 
 	std::map<int, Request> client_to_req; 
+
+	std::map<int, std::string> client_to_res_buf;
 
 	public:
 
@@ -151,7 +153,7 @@ class Webserv
 									max_fd -= 1;
 							}
 							else{
-								client_to_buf[fd].append(buff);
+								client_to_buf[fd].append(buff, rd);
 								try{
 									Request req(client_to_buf[fd]);
 									if(req.getVersion().size()) rd = 0;
@@ -181,31 +183,60 @@ class Webserv
 						}
 					}
 					else if(FD_ISSET(fd, &working_wr_set)){
-						Request req = client_to_req[fd];
-						std::string response;
+						// Request req = client_to_req[fd];
+						// std::string response;
 
-						client_to_req.erase(fd);
-						// response
-						if(req.getVersion()=="")
+						// client_to_req.erase(fd);
+						// // response
+						// if(req.getVersion()=="")
+						// {
+						// 	response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
+
+						// }
+						// else if(!client_to_res_buf[fd].size()){
+						// 	Response res(req, servers[client_to_srv_idx[fd]]);
+						// 	response.append(res.getResponseBufferWithoutBody());
+						// 	response.append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
+						// //
+						// }
+
+						// // Response res(req, servers[client_to_srv_idx[fd]]);
+						// // std::cout << "statusCode = " << res.getStatusCode() << std::endl;
+						// // std::cout << res.getResponseBufferWithoutBody() << std::endl;
+
+						// client_to_srv_idx.erase(fd);
+						// size_t ret = send(fd, response.c_str(), response.size(), 0);
+						// std::cout << ret <<" sent, "<<response.size()<< " total" << std::endl;
+						// close(fd);
+
+						// 
+						if (client_to_req[fd].getVersion() != "")
 						{
-							response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
-
+							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
+							//std::cout << "res " << res.getStatusCode() << std::endl;
+							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
+							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
+							
+							client_to_req.erase(fd);
 						}
-						else{
-							std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
-							response = ("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
-							response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
+						ssize_t ret = send(fd, client_to_res_buf[fd].c_str(), client_to_res_buf[fd].size(), 0);
+						//std::cout << "sent " << ret << " , total " << client_to_res_buf[fd].size() << " , " ;
+						client_to_res_buf[fd].erase(client_to_res_buf[fd].begin(), client_to_res_buf[fd].begin() + ret);
+						//std::cout << " left " << client_to_res_buf[fd].size() << std::endl ;
+
+						if (ret == -1 || !client_to_res_buf[fd].size())
+						{
+							client_to_res_buf.erase(fd);
+							close(fd);
+							FD_CLR(fd, &master_wr_set);
+							while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
+								max_fd--;
+						}
 						//
-						}
-						Response res(req, servers[client_to_srv_idx[fd]]);
-						std::cout << "statusCode = " << res.getStatusCode() << std::endl;
-						client_to_srv_idx.erase(fd);
-						send(fd, response.c_str(), response.size(), 0);
-						close(fd);
 
-						FD_CLR(fd, &master_wr_set);
-						while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
-							max_fd--;
+						// FD_CLR(fd, &master_wr_set);
+						// while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
+						// 	max_fd--;
 					}
 				}
 			}

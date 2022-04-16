@@ -8,7 +8,7 @@
 #include "Utils.hpp"
 
 # define DEBUG 0
-// # include "Response.hpp"
+//# include "Response.hpp"
 
 class Request
 {
@@ -148,8 +148,9 @@ class Request
 		const std::map<std::string, std::string> &getRequestHeaders() const {
 			return request_headers;
 		}
-		const std::string getHeader(std::string const &key) {
-			return headers[key];
+		const std::string getHeader(std::string const &key)const {
+			
+			return headers.count(key) ? headers.at(key) : "";
 		}
 		const std::string &getBody() const {
 			return body;

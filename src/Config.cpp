@@ -422,6 +422,7 @@ Config::Config(const std::string s)
     }
     size_t i = -1;
     std::cout << "==================>" + _servers[0].name << "<================="<< std::endl;
+     std::cout << "==================>" + _servers[0].default_error_pages << "<================="<< std::endl;
     while(++i < _servers[0].locations.size())
     {
         std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root

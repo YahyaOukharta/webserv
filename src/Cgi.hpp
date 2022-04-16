@@ -5,7 +5,7 @@
 #include <string>
 #include "Request.hpp"
 #include "Server.hpp"
-
+#include <sys/wait.h>
 extern char**	 environ;
 
 class Cgi
@@ -13,7 +13,7 @@ class Cgi
 private:
 	Request const &req;
 	Server const *server;
-	std::string const &resPath;
+	std::string const resPath;
 public:
 	Cgi(Request const &_req,Server const* _srv, std::string const &_resPath) : req(_req), server(_srv), resPath(_resPath)
 	{
@@ -24,9 +24,12 @@ public:
 
 	Cgi &operator=(Cgi const &rhs);
 
-	int compile(std::string fileName)
+	int compile()
 	{
-		int fd = open(fileName, O_RDWR | O_CREAT, 0777);
+		
+		int fd = open("/tmp/compiled_php", O_RDWR | O_CREAT | O_TRUNC, 0777);
+		std::cout << resPath << std::endl;
+
 		int fork_id = fork();
 		if(fork_id == -1)
 		{
@@ -43,32 +46,31 @@ public:
 				//if else here to determine which interpreter we will be using after getting extension from request
 				// std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
 				// std::string req_file = "test.php";
-
-				std::string cgi_location = "/Users/anassif/Desktop/brew/bin/php-cgi";
-				std::string req_file = "test.php";
-				char *args[3];
-
+				
+				std::string cgi_location = "/usr/bin/php";
+				std::string req_file = resPath;
+				char *args[4];
 				args[0] = (char *)cgi_location.c_str();
 				args[1] = (char *)req_file.c_str();
 				args[2] = NULL;
-			
+
 				setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 				setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
 				setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-				setenv("SERVER_PORT", std::to_string(_srv.get_server_port()).c_str(), 1);
-				setenv("REQUEST_METHOD", req.getMethod(), 1);
+				setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
+				setenv("REQUEST_METHOD", req.getMethod().c_str(), 1);
 				setenv("PATH_INFO", "/Users/mac/Desktop/webserv/cgi", 1); //need path info from request
 				// setenv("PATH_TRANSLATED", file_path.c_str(), 1);
-				setenv("QUERY_STRING", req.getQuery(), 1);
+				setenv("QUERY_STRING", req.getQuery().c_str(), 1);
 				// setenv("DOCUMENT_ROOT", document_root.c_str(), 1);
-				setenv("SCRIPT_NAME", script_name.c_str(), 1); //need script name from request
+				setenv("SCRIPT_NAME", req_file.c_str(), 1); //need script name from request
 				// setenv("REMOTE_HOST", remote_host.c_str(), 1);
-				setenv("REMOTE_ADDR", _srv.get_server_host(), 1);
-				setenv("CONTENT_TYPE", content_type.c_str(), 1); //need content typr from request
-				setenv("CONTENT_LENGTH", std::to_string(content_length).c_str(), 1);  //need content lengh from request
+				setenv("REMOTE_ADDR", server->getConfig().getHost().c_str(), 1);
+				setenv("CONTENT_TYPE", req.getHeader("Content-Length").c_str(), 1); //need content typr from request
+				setenv("CONTENT_LENGTH", req.getHeader("Content-Length").c_str(), 1);  //need content lengh from request
 				// setenv("HTTP_ACCEPT", accepted_types.c_str(), 1);
 				// setenv("HTTP_USER_AGENT", user_agent.c_str(), 1);
-				setenv("HTTP_REFERER", referer.c_str(), 1);
+				//setenv("HTTP_REFERER", referer.c_str(), 1);
 
 				if (execve(args[0], args, environ) == -1)
 					perror("Could not execve fff");//this needs to be changed for and exit with an error number i guess
