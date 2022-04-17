@@ -78,8 +78,6 @@ class webserv_exception : public std::exception
    }
 };
 
-
-
 std::string getDate() {
   char buf[1000];
   time_t now = time(0);
@@ -89,5 +87,47 @@ std::string getDate() {
   return buf;
 }
 
+// Chadi's Functions
+
+std::vector<std::string>		split(std::string str, char delem)
+{
+	std::vector<std::string>					lines;
+	std::stringstream	ss(str);
+
+	std::string			s;
+	while(std::getline(ss, s, delem))
+		lines.push_back(s);
+	
+	return lines;
+}
+
+std::vector<std::string>		split_first(std::string str, char delem)
+{
+	std::vector<std::string>		ret;
+
+	std::string s = str.substr(0, str.find(delem));
+	ret.push_back(s);
+
+	if (s.size() < str.size())
+		ret.push_back(str.substr(s.size() + 1, str.size()));
+
+	return ret;
+}
+
+std::string		trim(std::string str, std::string t)
+{
+	size_t	right = str.find_last_not_of(t);
+	size_t	left = str.find_first_not_of(t);
+
+	// Trim Right
+	if (right != std::string::npos)
+		str.erase(right + 1);
+	
+	// Trim Left
+	if (left != std::string::npos)
+		str.erase(0, left);
+
+	return str;
+}
 
 #endif

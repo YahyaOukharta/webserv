@@ -18,19 +18,21 @@ class Request
 		typedef std::vector<std::string>::iterator iter;
 
 	private:
-		std::string protocol; // HTTP
-		std::string version;  // 1.1
+		std::string							protocol; // HTTP
+		std::string							version;  // 1.1
 
-		std::string method; // GET POST OPTIONS ...
-		std::string path;  //   /ee/aa/
-		std::string query; //	?hello=1&dkd=22
+		std::string							method; // GET POST OPTIONS ...
+		std::string							path;  //   /ee/aa/
+		std::string							query; //	?hello=1&dkd=22
 		
-		std::map<std::string, std::string> headers; // split to general, request, and representation
+		std::map<std::string, std::string>	headers; // split to general, request, and representation
 
-		std::map<std::string, std::string> representation_headers; // split to general, request, and representation
-		std::map<std::string, std::string> request_headers; // split to general, request, and representation
+		std::map<std::string, std::string>	representation_headers; // split to general, request, and representation
+		std::map<std::string, std::string>	request_headers; // split to general, request, and representation
 
-		std::string body;
+		std::string							body;
+
+		std::string							boundary;
 
 
 	public:
@@ -74,29 +76,98 @@ class Request
 
 		// parsing
 
-		int parse_request(std::string raw_req){
+		// int parse_request(std::string raw_req){
 
-			vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
-			if (req_split_body.size() != 2)
-				return (1);
-			body = req_split_body[1];
+		// 	vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
+		// 	if (req_split_body.size() != 2)
+		// 		return (1);
+		// 	body = req_split_body[1];
 
-			//including first line
-			vec head = split_to_lines(req_split_body[0]);
+		// 	//including first line
+		// 	vec head = split_to_lines(req_split_body[0]);
 
-			//parse first line
-			std::string first_line = head[0]; // line 1
-			int ret = parse_first_line(first_line);
+		// 	//parse first line
+		// 	std::string first_line = head[0]; // line 1
+		// 	int ret = parse_first_line(first_line);
+		// 	if (ret) return ret;
+
+		// 	//parse headers
+		// 	head.erase(head.begin());
+		// 	for (iter it = head.begin(); it != head.end(); ++it)
+		// 	{
+		// 		vec header = split_to_lines(*it, ": ");
+		// 		headers[header[0]] = header[1];
+		// 	}
+		// 	return (0);
+		// }
+		
+		int		parse_request(std::string buffer)
+		{
+			// int		i = 0;
+			vec		split_ret;
+			vec		lines = split_first(buffer, '\n');
+			
+			// Initializing method, path and query
+			
+			// split_ret = split(lines[0], ' ');
+			// method = split_ret[0];
+
+			// split_ret = split_first(split_ret[1], '?');
+			// path = split_ret[0];
+			// query = split_ret.size() > 1 ? split_ret[1] : "";
+
+			int ret = parse_first_line(lines[0]);
 			if (ret) return ret;
+			size_t i = skip_buff(buffer, 0);
+			
+			// Initializing Headers
 
-			//parse headers
-			head.erase(head.begin());
-			for (iter it = head.begin(); it != head.end(); ++it)
+			// i += 2;
+			while (i < buffer.length())
 			{
-				vec header = split_to_lines(*it, ": ");
-				headers[header[0]] = header[1];
+				if (buffer[i] == '\r' && buffer[i + 1] == '\n')
+				{
+					split_ret = split_first(headers["Content-Type"], ';');
+					if (split_ret.size() < 2)
+					{
+						i = skip_buff(buffer, i);
+						break;
+					}
+					// Trimming the string to compare it to the boundary later
+					boundary = trim(split_first(split_ret[1], '=')[1], "-");
+
+					headers["Content-Type"] = split_ret[0]; // To not enter this condition again
+					i = skip_buff(buffer, i);
+					i = skip_buff(buffer, i);
+					continue ;
+				}
+
+				lines = split_first(buffer.substr(i, buffer.length()), '\n');
+				split_ret = split_first(lines[0], ':');
+				headers[split_ret[0]] = split_ret[1];
+				i = skip_buff(buffer, i);
 			}
-			return (0);
+
+			// Initializing Body
+
+			for (; i < buffer.length(); i++)
+			{
+				if (buffer[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buffer.substr(i, buffer.find("\n", i)), "-\n\r")))
+					break;
+				body += buffer[i];
+			}
+
+			std::cout << "body size = " << body.length() << std::endl;
+
+			return 0;
+		}
+
+		size_t	skip_buff(std::string buf, size_t i)
+		{
+			for (; buf[i] != '\r'; i++)
+				;
+
+			return (i += 2);
 		}
 
 		int parse_first_line(std::string first_line)
