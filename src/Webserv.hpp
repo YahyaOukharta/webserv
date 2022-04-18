@@ -141,8 +141,6 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-
-							// std::string buf; // = FileSystem::getFileContent(fd);
 							char buff[1024 + 1] = {0};
 							int rd = recv(fd, buff, 1024, 0);
 							if (rd == -1 ){ // recv failed
@@ -162,7 +160,7 @@ class Webserv
 									//std::cout << e.what() << std::endl;
 									(void)e;
 								}
-								if (rd == 0 )
+								if (rd == 0)
 								{ // done reading
 									try{
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
@@ -176,53 +174,22 @@ class Webserv
 									}
 									FD_CLR(fd, &master_rd_set);
 									FD_SET(fd, &master_wr_set);
-									//std::cout << "buf " << client_to_buf[fd] << std::endl;
 									client_to_buf.erase(fd);
 								}
 							}
 						}
 					}
 					else if(FD_ISSET(fd, &working_wr_set)){
-						// Request req = client_to_req[fd];
-						// std::string response;
-
-						// client_to_req.erase(fd);
-						// // response
-						// if(req.getVersion()=="")
-						// {
-						// 	response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
-
-						// }
-						// else if(!client_to_res_buf[fd].size()){
-						// 	Response res(req, servers[client_to_srv_idx[fd]]);
-						// 	response.append(res.getResponseBufferWithoutBody());
-						// 	response.append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
-						// //
-						// }
-
-						// // Response res(req, servers[client_to_srv_idx[fd]]);
-						// // std::cout << "statusCode = " << res.getStatusCode() << std::endl;
-						// // std::cout << res.getResponseBufferWithoutBody() << std::endl;
-
-						// client_to_srv_idx.erase(fd);
-						// size_t ret = send(fd, response.c_str(), response.size(), 0);
-						// std::cout << ret <<" sent, "<<response.size()<< " total" << std::endl;
-						// close(fd);
-
-						// 
 						if (client_to_req[fd].getVersion() != "")
 						{
 							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
-							//std::cout << "res " << res.getStatusCode() << std::endl;
 							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
 							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
 							
 							client_to_req.erase(fd);
 						}
 						ssize_t ret = send(fd, client_to_res_buf[fd].c_str(), client_to_res_buf[fd].size(), 0);
-						//std::cout << "sent " << ret << " , total " << client_to_res_buf[fd].size() << " , " ;
 						client_to_res_buf[fd].erase(client_to_res_buf[fd].begin(), client_to_res_buf[fd].begin() + ret);
-						//std::cout << " left " << client_to_res_buf[fd].size() << std::endl ;
 
 						if (ret == -1 || !client_to_res_buf[fd].size())
 						{
@@ -232,11 +199,6 @@ class Webserv
 							while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
 								max_fd--;
 						}
-						//
-
-						// FD_CLR(fd, &master_wr_set);
-						// while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
-						// 	max_fd--;
 					}
 				}
 			}

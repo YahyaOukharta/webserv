@@ -116,7 +116,8 @@ class Response
 			std::cout << statusCode << std::endl;
 			if (status) return;
 			init_matching_location(); // Finding matching location
-			if (!location) statusCode = StatusCodes::NOT_FOUND();
+			if (!location)	statusCode = StatusCodes::NOT_FOUND();
+			std::cout << "ROOT = " << location->getRoot() << std::endl;
 			status = statusCode;
 			if (status) return;
 
@@ -387,12 +388,14 @@ class Response
 		bool ignore_accept_block_mismatches(){
 			return false;
 		}
-		
+
 		// Requested ressource root + req
 		std::string getRessourcePath() const {
+			std::cout << "location = " << &location << std::endl;
+			std::cout << "root = " << location->getRoot() << " path = " << location->getPath() << std::endl;
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
-			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
+			// std::cout << "root: " << root << " locPath: " << path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
 			
 			if (res[res.size()-1] == '/')
@@ -416,7 +419,7 @@ class Response
 			}
 			else if (statusCode && !FileSystem::fileExists(res)){
 
-				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+				res = location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			}
 			return res;
 		}
@@ -480,8 +483,29 @@ class Response
 			return false;
 		}
 		bool create(){ // here process upload, 500 if fails
+
 			return false;
 		}
+
+		// std::string		getFileName()
+		// {
+		// 	std::map<std::string, std::string>::iterator	it = _req_headers.find("Content-Disposition");
+			
+		// 	std::string										extention;
+		// 	std::vector<std::string>						ret = MimeTypes::mimeToExt(trim(_req_headers["Content-Type"], " \n\r"));
+		// 	if (ret.size() > 0)
+		// 		extention = ret[0];
+		// 	std::cout << "extention = " << extention << std::endl;
+		// 	std::string										fileName = "file." + extention;
+		// 	if (it != _req_headers.end())
+		// 	{
+		// 		std::string str = it->second.erase(0, it->second.find_first_of(";") + 1);
+		// 		fileName = split_first(split_first(str, ';')[1], '=')[1];
+		// 		fileName = trim(fileName, "\"\n\r");
+		// 	}
+
+		// 	return fileName;
+		// }
 
 		// handle response after missing block 
 
