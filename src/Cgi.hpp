@@ -31,7 +31,6 @@ public:
 		int t1 = time(NULL);
 		std::string fileName = "/tmp/compiled_" + std::to_string(t1);
 		int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
-		std::cout << fileName << std::endl;
 
 		int fork_id = fork();
 		if(fork_id == -1)
@@ -47,6 +46,12 @@ public:
 			//pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
 			dup2(fd, 1);//if this fail it an internal error with an appropriate err number
 
+			if(req.getMethod() == "POST")
+			{
+				int body_fd = open(req.getBodyFilename().c_str(), O_RDONLY);
+				dup2(body_fd, 0);
+			}
+
 			std::string cgi_location = location->getCgiPath();
 			std::string req_file = resPath;
 			char *args[4];
@@ -61,7 +66,7 @@ public:
 			setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
 			setenv("REQUEST_METHOD", "POST", 1);
 			setenv("SCRIPT_FILENAME", req_file.c_str(), 1);
-			setenv("PATH_INFO", "/Users/anassif/Desktop/cgi-branch/cgi", 1); //need path info from request
+			setenv("PATH_INFO","localhost:13371/wp/", 1); //need path info from request
 			// setenv("PATH_TRANSLATED", file_path.c_str(), 1);
 			setenv("QUERY_STRING", req.getQuery().c_str(), 1);
 			// setenv("DOCUMENT_ROOT", document_root.c_str(), 1);

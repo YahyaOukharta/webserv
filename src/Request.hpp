@@ -6,7 +6,7 @@
 # include <map>
 # include <cstring>
 #include "Utils.hpp"
-
+# include <fcntl.h>
 # define DEBUG 0
 //# include "Response.hpp"
 
@@ -31,7 +31,7 @@ class Request
 		std::map<std::string, std::string> request_headers; // split to general, request, and representation
 
 		std::string body;
-
+		std::string body_filename;
 
 	public:
 
@@ -48,9 +48,19 @@ class Request
 					throw webserv_exception("Unsupported method");
 				// if (error == 3)
 				// 	throw webserv_exception("Too many '?'");
+
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
+			if (method=="POST")
+			{
+				int t1 = time(NULL);
+				std::string fileName = "/tmp/body_" + std::to_string(t1);
+				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+				write(fd, body.c_str(), body.size());
+				body_filename = fileName;
+			}
+
 			//print();
 		}
 		Request( Request const & src ){
@@ -67,6 +77,7 @@ class Request
 			query = rhs.getQuery();
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
+			body_filename = rhs.getBodyFilename();
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -153,6 +164,9 @@ class Request
 		}
 		const std::string &getBody() const {
 			return body;
+		}
+		const std::string &getBodyFilename() const {
+			return body_filename;
 		}
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
