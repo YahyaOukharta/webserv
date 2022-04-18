@@ -1,8 +1,4 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
- <?php echo '<p>Hello World</p>'; ?> 
- </body>
-</html>
+<?php
+ print_r($_GET);
+ header('Location: '."https://google.com/");
+?>

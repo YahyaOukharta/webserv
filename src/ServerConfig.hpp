@@ -72,7 +72,9 @@ class ServerConfig
 					it->bodysize_limit,
 					it->autoindex == "on" ? 1 : 0, /// ???? AUTO INDEX SHOULD BE BOOL OR INT
 					it->default_error_pages,
-					ft::split_to_lines(it->index, "/")
+					ft::split_to_lines(it->index, "/"),
+					it->cgi_path,
+					it->extension
 				);
 				
 				if(loc.getErrorPage() != "" && !FileSystem::fileExists(loc.getErrorPage()))

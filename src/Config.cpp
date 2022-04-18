@@ -162,7 +162,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'c' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  && l.autoindex == "NULL")
+                if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  )
                 {
                     {str = s[pos].substr(s[pos].find("cgi_path = ") + 11, s[pos].length());
                     // str = str.substr(0, str.length());
@@ -177,7 +177,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
             }
             case 'e' :{
                 std::string test = normal_split(s[pos], "=");
-                if(s[pos].find("extension = ") != std::string::npos && test == "extension"  && l.autoindex == "NULL")
+                if(s[pos].find("extension = ") != std::string::npos && test == "extension"  )
                 {
                     {str = s[pos].substr(s[pos].find("extension = ") + 12, s[pos].length());
                     // str = str.substr(0, str.length());
