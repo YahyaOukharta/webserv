@@ -5,7 +5,7 @@
 # include <string>
 # include "Request.hpp"
 # include "MimeTypes.hpp"
-
+# include "Cgi.hpp" 
 class StatusCodes
 {
 
@@ -108,6 +108,9 @@ class Response
 		Request req;
 		Server *server;
 		Location const *location;
+
+		std::string final_res_path;
+		bool isCgi;
 	public:
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0){
@@ -389,7 +392,7 @@ class Response
 		}
 		
 		// Requested ressource root + req
-		std::string getRessourcePath() const {
+		std::string getRessourcePath()  {
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
@@ -417,6 +420,13 @@ class Response
 			else if (statusCode && !FileSystem::fileExists(res)){
 
 				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+			}
+
+			if (statusCode && MimeTypes::getFileExtension(res) == location->getCgiExtension()){
+				isCgi = 1;
+				Cgi cgi(req, server, location,  res);
+				std::string filename = cgi.compile();
+				return filename;
 			}
 			return res;
 		}
@@ -618,13 +628,26 @@ class Response
 			std::string resPath;
 
 			//if (statusCode >= 200 && statusCode < 300)
-				resPath = getRessourcePath();
-				std::cout << "final res path " << resPath << std::endl;
-			//else if ()
+			resPath = getRessourcePath();
+			std::cout << "final res path " << resPath << std::endl;
+		//else if ()
+
+			if(isCgi)
+			{
+				//int nbytes;
+				char cgi_buff[1024] = {0};
+				// //to reset cursor to first byte of the file
+				int fd = open(resPath.c_str(), O_RDWR , 0777);
+				int ret = read(fd, cgi_buff, 1024);
+				std::string line(cgi_buff);
+				if (line.find("Status: ")!= std::string::npos){
+					statusCode = ft::atoi(cgi_buff + line.find("Status: ") + 8);
+				}
+			}
 
 			representation_headers.clear();
-			representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
-			
+			if(!isCgi)
+				representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
 			
 			//representation_headers.insert(std::pair<std::string,std::string>("Transfer-Encoding","chunked"));
@@ -633,8 +656,8 @@ class Response
 
 		void initResponseHeaders(){
 			response_headers.clear();
-			response_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
-			response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+			// response_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
+			// response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
 		}
 
 		// GETTERS
@@ -662,7 +685,10 @@ class Response
 			for(;it != representation_headers.end(); ++it){
 				res.append(it->first + ": " + it->second + nl);
 			}
-			res.append(nl);
+			if(!(isCgi))
+			{	
+				res.append(nl);
+			}
 			return res;
 		}
 

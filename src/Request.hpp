@@ -46,8 +46,8 @@ class Request
 					throw webserv_exception("Bad request");
 				if (error == 2)
 					throw webserv_exception("Unsupported method");
-				if (error == 3)
-					throw webserv_exception("Too many '?'");
+				// if (error == 3)
+				// 	throw webserv_exception("Too many '?'");
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
@@ -148,8 +148,8 @@ class Request
 		const std::map<std::string, std::string> &getRequestHeaders() const {
 			return request_headers;
 		}
-		const std::string getHeader(std::string const &key) {
-			return headers[key];
+		const std::string getHeader(std::string const &key) const {
+			return headers.count(key) ? headers.at(key) : "";
 		}
 		const std::string &getBody() const {
 			return body;
