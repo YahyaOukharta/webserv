@@ -113,7 +113,7 @@ class Response
 		bool isCgi;
 	public:
 
-		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0){
+		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
 			int status = 0;
 			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
