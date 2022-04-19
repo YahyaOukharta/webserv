@@ -141,7 +141,7 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-							char buff[1024 + 1] = {0};
+							char buff[1024 + 1];
 							int rd = recv(fd, buff, 1024, 0);
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
@@ -150,18 +150,21 @@ class Webserv
 								while (FD_ISSET(max_fd, &master_rd_set) == 0)
 									max_fd -= 1;
 							}
-							else{
-								client_to_buf[fd].append(buff, rd);
-								try{
-									Request req(client_to_buf[fd]);
-									if(req.getVersion().size()) rd = 0;
-								}
-								catch(webserv_exception const &e){
-									//std::cout << e.what() << std::endl;
-									(void)e;
-								}
-								if (rd == 0)
-								{ // done reading
+							client_to_buf[fd].append(buff, rd);
+							if (rd == 0 || (rd = recv(fd, buff, 1024, 0)) <= 0)
+							{
+								std::cout << "in req\n";
+								// client_to_buf[fd].append(buff, rd);
+								// try{
+								// 	Request req(client_to_buf[fd]);
+								// 	if(req.getVersion().size()) rd = 0;
+								// }
+								// catch(webserv_exception const &e){
+								// 	//std::cout << e.what() << std::endl;
+								// 	(void)e;
+								// }
+								// if (rd == 0)
+								// { // done reading
 									try{
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_buf[fd]);
@@ -175,7 +178,12 @@ class Webserv
 									FD_CLR(fd, &master_rd_set);
 									FD_SET(fd, &master_wr_set);
 									client_to_buf.erase(fd);
-								}
+								// }
+							}
+							else
+							{
+								std::cout << "APPENDING\n";
+								client_to_buf[fd].append(buff, rd);
 							}
 						}
 					}
