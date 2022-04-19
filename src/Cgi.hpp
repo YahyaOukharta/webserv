@@ -59,23 +59,26 @@ public:
 			args[1] = (char *)req_file.c_str();
 			args[2] = NULL;
 
+			std::vector<std::string> spl = ft::split_to_lines(req_file, "/");
 			
 			setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 			setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
 			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
 			setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
 			setenv("REQUEST_METHOD", "POST", 1);
+
 			setenv("SCRIPT_FILENAME", req_file.c_str(), 1);
-			setenv("PATH_INFO","localhost:13371/wp/", 1); //need path info from request
-			// setenv("PATH_TRANSLATED", file_path.c_str(), 1);
+			setenv("PATH_INFO",(req.getPath().substr(location->getPath().size())).c_str(), 1); //need path info from request
+			setenv("PATH_TRANSLATED", resPath.c_str(), 1);
 			setenv("QUERY_STRING", req.getQuery().c_str(), 1);
-			// setenv("DOCUMENT_ROOT", document_root.c_str(), 1);
-			// setenv("SCRIPT_NAME", req_file.c_str(), 1); //need script name from request
+			// setenv("DOCUMENT_ROOT", ("" + location->getPath()).c_str(), 1);
+			setenv("SCRIPT_NAME", (("localhost:13371"+location->getPath())).c_str(), 1); //need script name from request
+
 			// setenv("REMOTE_HOST", remote_host.c_str(), 1);
 			setenv("REMOTE_ADDR", server->getConfig().getHost().c_str(), 1);
 			setenv("CONTENT_TYPE", req.getHeader("Content-Type").c_str(), 1); //need content typr from request
 			setenv("CONTENT_LENGTH", req.getHeader("Content-Length").c_str(), 1);  //need content lengh from request
-			// setenv("REDIRECT_STATUS", "200", 1);
+			setenv("REDIRECT_STATUS", "200", 1);
 			setenv("HTTP_ACCEPT", req.getHeader("Accept").c_str(), 1);
 			setenv("HTTP_USER_AGENT", req.getHeader("User-Agent").c_str(), 1);
 			setenv("HTTP_REFERER", req.getHeader("Referer").c_str(), 1);
@@ -90,6 +93,9 @@ public:
 				waitpid(fork_id, &wstatus, 0);
 				if (WIFEXITED(wstatus))
 				{
+
+
+					
 					int status_code = WEXITSTATUS(wstatus);
 					if (status_code != 0)
 					{
