@@ -585,7 +585,7 @@ class Response
 			return (0);
 		}
 		bool process(){ // 500
-			return (0);
+			return (1);
 		}
 
 		//handle response block
@@ -603,7 +603,7 @@ class Response
 			return (0);
 		}
 		bool is_process_done(){ // 202
-			return (0);
+			return (1);
 		}
 		bool see_other(){ // 303
 			return (0);
