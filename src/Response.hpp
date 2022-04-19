@@ -114,26 +114,29 @@ class Response
 			int status = 0;
 			status = handle_system_block(); // System block checks
 			std::cout << statusCode << std::endl;
-			if (status) return;
+			
+			// if (status) return;
+			
 			init_matching_location(); // Finding matching location
-			if (!location)	statusCode = StatusCodes::NOT_FOUND();
-			std::cout << "ROOT = " << location->getRoot() << std::endl;
-			status = statusCode;
-			if (status) return;
 
-			status = handle_request_block(); // Request block checks
-			if (status) return;
+			if (!location)	statusCode = StatusCodes::NOT_FOUND();
+			
+			// status = statusCode;
+			// if (status) return;
+
+			// status = handle_request_block(); // Request block checks
+			// if (status) return;
 	
-			status = handle_accept_block(); // Accept block checks
-			if (status) return;
+			// status = handle_accept_block(); // Accept block checks
+			// if (status) return;
 
 			bool is_ressource_missing = handle_retrieve_block();
-			std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
+			std::cout << "\n\nRessource " << (is_ressource_missing ? "":"not ") << "missing\n" << std::endl;
 			if(is_ressource_missing){
 				// ressource missing
 				status = handle_retrieve_when_missing_block();
 				if(status) return;
-
+				std::cout << "OKOKOK\n" << std::endl;
 				status = handle_create_block();
 				if(status) return;
 
@@ -391,11 +394,10 @@ class Response
 
 		// Requested ressource root + req
 		std::string getRessourcePath() const {
-			std::cout << "location = " << &location << std::endl;
-			std::cout << "root = " << location->getRoot() << " path = " << location->getPath() << std::endl;
-			std::string const &root = location->getRoot(); 
+			std::string const &root = location->getRoot();
 			std::string const &path = location->getPath(); 
-			// std::cout << "root: " << root << " locPath: " << path << std::endl;
+
+			std::cout << "root: " << root << " locPath: " << path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
 			
 			if (res[res.size()-1] == '/')
@@ -431,6 +433,9 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
+			
+			if (req.getMethod() == "POST") // temporary
+				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
 			return !FileSystem::fileExists(resPath);
@@ -470,8 +475,8 @@ class Response
 		int handle_create_block(){
 			if (!is_method_create())
 				return statusCode = StatusCodes::NOT_FOUND();
-			if (!create_path())
-				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR(); // upload not allowed on route
+			// if (!create_path())
+			// 	return statusCode = StatusCodes::INTERNAL_SERVER_ERROR(); // upload not allowed on route
 			if (!create())
 				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR(); // couldnt upload
 			return 0;
@@ -483,7 +488,7 @@ class Response
 			return false;
 		}
 		bool create(){ // here process upload, 500 if fails
-
+			std::cout << "HEERE\n";
 			return false;
 		}
 
