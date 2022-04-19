@@ -5,6 +5,7 @@
 # include <string>
 # include "Request.hpp"
 # include "MimeTypes.hpp"
+# include "Upload.hpp"
 
 class StatusCodes
 {
@@ -488,7 +489,8 @@ class Response
 			return false;
 		}
 		bool create(){ // here process upload, 500 if fails
-			std::cout << "HEERE\n";
+			std::cout << "CREATE\n";
+			Upload	up(req, *location);
 			return false;
 		}
 
