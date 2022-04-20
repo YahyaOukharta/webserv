@@ -119,11 +119,11 @@ public:
 				// 	throw "500 Internal Server Error";
 				// }
 
-				// int nbytes;
 				// char cgi_buff[1024] = {0};
 				// // //to reset cursor to first byte of the file
 				// lseek(fd, 0, SEEK_SET);
-				// nbytes = read(fd, cgi_buff, 1024);
+				// read(fd, cgi_buff, 1023);
+				// std::cout << cgi_buff << std::endl;
 				// std::string line(cgi_buff);
 				// if (line.find("Status: ")!= std::string::npos)
 				

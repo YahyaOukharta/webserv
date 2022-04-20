@@ -15,7 +15,7 @@ int Config::check_args()
     
     while(i < _servers.size())
     {
-        if(_servers[i].port == -1 || _servers[i].host == "NULL" || _servers[i].bodysize_limit == -1)
+        if(_servers[i].port == -1 || _servers[i].host == "NULL" )
         {;return 1;}
         
         size_t j = 0;

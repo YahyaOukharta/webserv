@@ -109,14 +109,14 @@ class Response
 		Server *server;
 		Location const *location;
 
-		std::string final_res_path;
+		std::string process_output_filename;
 		bool isCgi;
 	public:
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
 			int status = 0;
 			status = handle_system_block(); // System block checks
-			std::cout << statusCode << std::endl;
+			//std::cout << statusCode << std::endl;
 			if (status) return;
 			init_matching_location(); // Finding matching location
 			if (!location) statusCode = StatusCodes::NOT_FOUND();
@@ -130,7 +130,7 @@ class Response
 			if (status) return;
 
 			bool is_ressource_missing = handle_retrieve_block();
-			std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
+			//std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
 			if(is_ressource_missing){
 				// ressource missing
 				status = handle_retrieve_when_missing_block();
@@ -417,16 +417,21 @@ class Response
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 				}
 			}
-			else if (statusCode && !FileSystem::fileExists(res)){
+			else if (statusCode >= 400 || !FileSystem::fileExists(res)){
 
 				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			}
 
-			if (statusCode && MimeTypes::getFileExtension(res) == location->getCgiExtension()){
+			if (statusCode && MimeTypes::getFileExtension(res) == location->getCgiExtension() && req.getMethod()=="GET"){
 				isCgi = 1;
 				Cgi cgi(req, server, location,  res);
 				std::string filename = cgi.compile();
 				return filename;
+			}
+			if(process_output_filename != "") // POST HANDLED IN process() block 
+			{
+				isCgi=1;
+				return process_output_filename;
 			}
 			return res;
 		}
@@ -585,7 +590,18 @@ class Response
 			return (0);
 		}
 		bool process(){ // 500
-			return (1);
+			std::string res = getRessourcePath();
+			if(MimeTypes::getFileExtension(res) == location->getCgiExtension()){
+				isCgi = 1;
+				Cgi cgi(req, server, location,  res);
+				std::string filename = cgi.compile();
+				if (filename != "")
+				{
+					process_output_filename = filename;
+					return (1);
+				}
+			}
+			return (0);
 		}
 
 		//handle response block
@@ -627,21 +643,22 @@ class Response
 		void initRepresentationHeaders(){//// normal file, missing file, cgi, autoindex 
 			std::string resPath;
 
-			//if (statusCode >= 200 && statusCode < 300)
 			resPath = getRessourcePath();
-			std::cout << "final res path " << resPath << std::endl;
-		//else if ()
+			// std::cout << "final res path " << resPath << std::endl;
 
-			if(isCgi)
+			if(isCgi || process_output_filename!="")
 			{
 				//int nbytes;
 				char cgi_buff[1024] = {0};
 				// //to reset cursor to first byte of the file
 				int fd = open(resPath.c_str(), O_RDWR , 0777);
-				read(fd, cgi_buff, 1024);
-				std::string line(cgi_buff);
-				if (line.find("Status: ")!= std::string::npos){
-					statusCode = ft::atoi(cgi_buff + line.find("Status: ") + 8);
+				std::string cgi_output;
+				int n;
+				while((n = read(fd, cgi_buff, 1024)) > 0){
+					cgi_output.append(cgi_buff, n);
+				}
+				if (cgi_output.find("Status: ")!= std::string::npos){
+					statusCode = ft::atoi(cgi_output.c_str() + cgi_output.find("Status: ") + 8);
 				}
 			}
 

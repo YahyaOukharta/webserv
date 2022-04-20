@@ -167,7 +167,6 @@ class Webserv
 									try{
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_buf[fd]);
-										req.print();
 										client_to_req[fd] = req;
 									}
 									catch(webserv_exception const& e){ // bad request
@@ -212,9 +211,12 @@ class Webserv
 						// 
 						if (client_to_req[fd].getVersion() != "")
 						{
+							client_to_req[fd].print();
+							
 							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
-							//std::cout << "res " << res.getStatusCode() << std::endl;
+
 							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
+							std::cout << "this mf " <<res.getRessourcePath() << std::endl;
 							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
 							
 							client_to_req.erase(fd);
