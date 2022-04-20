@@ -137,7 +137,6 @@ class Response
 				// ressource missing
 				status = handle_retrieve_when_missing_block();
 				if(status) return;
-				std::cout << "OKOKOK\n" << std::endl;
 				status = handle_create_block();
 				if(status) return;
 
@@ -491,7 +490,8 @@ class Response
 		bool create(){ // here process upload, 500 if fails
 			std::cout << "CREATE\n";
 			Upload	up(req, *location);
-			return false;
+			statusCode = StatusCodes::CREATED();
+			return true;
 		}
 
 		// std::string		getFileName()
