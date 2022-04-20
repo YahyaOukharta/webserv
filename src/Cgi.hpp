@@ -65,7 +65,7 @@ public:
 			setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
 			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
 			setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
-			setenv("REQUEST_METHOD", "POST", 1);
+			setenv("REQUEST_METHOD", req.getMethod().c_str(), 1);
 
 			setenv("SCRIPT_FILENAME", req_file.c_str(), 1);
 			setenv("PATH_INFO",(req.getPath().substr(location->getPath().size())).c_str(), 1); //need path info from request
