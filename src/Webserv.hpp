@@ -169,6 +169,7 @@ class Webserv
 								// if (rd == 0)
 								// { // done reading
 									try{
+										std::cout << "in try\n";
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_buf[fd]);
 										req.print();
