@@ -9,6 +9,7 @@
 # include "Request.hpp"
 # include "Response.hpp"
 #include "FileSystem.hpp"
+# define MAX_RECV 1048576
 
 class Webserv
 {
@@ -141,8 +142,11 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-							char buff[1024 + 1];
-							int rd = recv(fd, buff, 1024, 0);
+							char buff[MAX_RECV];
+							int rd = recv(fd, buff, sizeof buff, 0);
+
+							std::cout << "[RD = " << rd << "]\n";
+							client_to_buf[fd].append(buff, rd);
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
 								close(fd);
@@ -150,8 +154,7 @@ class Webserv
 								while (FD_ISSET(max_fd, &master_rd_set) == 0)
 									max_fd -= 1;
 							}
-							client_to_buf[fd].append(buff, rd);
-							if (rd == 0 || (rd = recv(fd, buff, 1024, 0)) <= 0)
+							else if (rd == 0 || (rd = recv(fd, buff, 1024, 0)) <= 0)
 							{
 								std::cout << "in req\n";
 								// client_to_buf[fd].append(buff, rd);
