@@ -82,7 +82,7 @@ public:
 			setenv("HTTP_ACCEPT", req.getHeader("Accept").c_str(), 1);
 			setenv("HTTP_USER_AGENT", req.getHeader("User-Agent").c_str(), 1);
 			setenv("HTTP_REFERER", req.getHeader("Referer").c_str(), 1);
-
+			setenv("HTTP_COOKIE", req.getHeader("Cookie").c_str(), 1);
 			if (execve(args[0], args, environ) == -1)
 				throw "500 Internal Server Error";
 			}
