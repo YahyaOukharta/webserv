@@ -1,8 +1,8 @@
-NAME = webserv
+NAME = a.out
 
-SRCS = main2.cpp src/Config.cpp
+SRCS = main.cpp 
 
-FLAGS =  -std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address -g 
+FLAGS =  -std=c++98 # 	-Wall -Wextra -Werror
 
 COMP=clang++
 ifeq ($(shell uname), Linux)
@@ -11,7 +11,7 @@ endif
 
 all : $(NAME)
 
-$(NAME) : $(SRCS)
+$(NAME) :
 	$(COMP) -o $(NAME) $(FLAGS) $(SRCS)
 
 clean :
@@ -26,4 +26,4 @@ re : fclean all
 
 c : re
 	clear
-	./$(NAME) configs/default.conf
+	./$(NAME)

@@ -6,9 +6,9 @@
 # include <map>
 # include <cstring>
 #include "Utils.hpp"
-
+# include <fcntl.h>
 # define DEBUG 0
-// # include "Response.hpp"
+//# include "Response.hpp"
 
 class Request
 {
@@ -30,10 +30,10 @@ class Request
 		std::map<std::string, std::string>	representation_headers; // split to general, request, and representation
 		std::map<std::string, std::string>	request_headers; // split to general, request, and representation
 
-		std::string							body;
-
 		std::string							boundary;
 
+		std::string body;
+		std::string body_filename;
 
 	public:
 
@@ -48,11 +48,21 @@ class Request
 					throw webserv_exception("Bad request");
 				if (error == 2)
 					throw webserv_exception("Unsupported method");
-				if (error == 3)
-					throw webserv_exception("Too many '?'");
+				// if (error == 3)
+				// 	throw webserv_exception("Too many '?'");
+
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
+			if (method=="POST")
+			{
+				int t1 = time(NULL);
+				std::string fileName = "/tmp/body_" + std::to_string(t1);
+				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+				write(fd, body.c_str(), body.size());
+				body_filename = fileName;
+			}
+
 			//print();
 		}
 		Request( Request const & src ){
@@ -69,6 +79,7 @@ class Request
 			query = rhs.getQuery();
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
+			body_filename = rhs.getBodyFilename();
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -219,11 +230,14 @@ class Request
 		const std::map<std::string, std::string> &getRequestHeaders() const {
 			return request_headers;
 		}
-		const std::string getHeader(std::string const &key) {
-			return headers[key];
+		const std::string getHeader(std::string const &key) const {
+			return headers.count(key) ? headers.at(key) : "";
 		}
 		const std::string &getBody() const {
 			return body;
+		}
+		const std::string &getBodyFilename() const {
+			return body_filename;
 		}
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
@@ -243,7 +257,7 @@ class Request
 			}
 		}
 		// debug
-		void print() {
+		void print() const {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
@@ -253,7 +267,7 @@ class Request
 			if (DEBUG)
 			{
 				std::cout << "\nHeaders:" << std::endl;
-				for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+				for(std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it){
 					std::cout << " " << it->first << " " << it->second << std::endl;
 				}
 				std::cout << "\nBody:\n" <<body<< std::endl;

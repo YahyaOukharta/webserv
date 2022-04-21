@@ -154,7 +154,7 @@ class Webserv
 								while (FD_ISSET(max_fd, &master_rd_set) == 0)
 									max_fd -= 1;
 							}
-							else if (rd == 0 || (rd = recv(fd, buff, 1024, 0)) <= 0)
+							else if (rd == 0 || (rd = recv(fd, buff, sizeof buff, 0)) <= 0)
 							{
 								std::cout << "in req\n";
 								// client_to_buf[fd].append(buff, rd);
@@ -172,7 +172,6 @@ class Webserv
 										std::cout << "in try\n";
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_buf[fd]);
-										req.print();
 										client_to_req[fd] = req;
 									}
 									catch(webserv_exception const& e){ // bad request
@@ -194,8 +193,11 @@ class Webserv
 					else if(FD_ISSET(fd, &working_wr_set)){
 						if (client_to_req[fd].getVersion() != "")
 						{
+							client_to_req[fd].print();
+							
 							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
 							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
+							std::cout << "this mf " <<res.getRessourcePath() << std::endl;
 							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
 							
 							client_to_req.erase(fd);

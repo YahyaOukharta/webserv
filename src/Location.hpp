@@ -19,6 +19,8 @@ class Location
 		std::vector<std::string> _index;
 		std::string _error_page;
 
+		std::string _cgi_path, _cgi_extension;
+	
 	public:
 		struct greater_than_path
 		{
@@ -40,9 +42,9 @@ class Location
 			int body_size_limit,
 			int auto_index,
 			std::string error_page,
-			std::vector<std::string> index
-
-
+			std::vector<std::string> index,
+			std::string cgi_path,
+			std::string cgi_extension
 		){
 			_path = path;
 			_root = root;
@@ -51,6 +53,8 @@ class Location
 			_auto_index = auto_index;
 			_error_page = error_page;
 			_index = index;
+			_cgi_path = cgi_path;
+			_cgi_extension = cgi_extension;
 		}
 		Location( Location const & src ){
 			*this = src;
@@ -66,6 +70,8 @@ class Location
 			_auto_index = rhs.getAutoIndex();
 			_error_page = rhs.getErrorPage();
 			_index = rhs.getIndex();
+			_cgi_path = rhs.getCgiPath();
+			_cgi_extension = rhs.getCgiExtension();
 			return *this;
 		}
 
@@ -89,6 +95,12 @@ class Location
 		}
 		std::string const &getErrorPage()const {
 			return _error_page;
+		}
+		std::string const &getCgiPath()const {
+			return _cgi_path;
+		}
+		std::string const &getCgiExtension()const {
+			return _cgi_extension;
 		}
 };
 
