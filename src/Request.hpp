@@ -46,8 +46,11 @@ class Request
 					throw webserv_exception("Bad request");
 				if (error == 2)
 					throw webserv_exception("Unsupported method");
-				// if (error == 3)
-				// 	throw webserv_exception("Too many '?'");
+				if (error == 3)
+					throw webserv_exception("Too many '?'");
+				if (error == 4)
+					throw webserv_exception("Not done yet");
+
 
 			}
 			initRepresentationHeaders();
@@ -84,13 +87,14 @@ class Request
 		}
 
 		// parsing
-
+	
 		int parse_request(std::string raw_req){
 
 			vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
-			if (req_split_body.size() != 2)
+
+			if (req_split_body.size() < 2)
 				return (1);
-			body = req_split_body[1];
+			body = raw_req.substr(req_split_body[0].size()+4);
 
 			//including first line
 			vec head = split_to_lines(req_split_body[0]);
@@ -107,6 +111,8 @@ class Request
 				vec header = split_to_lines(*it, ": ");
 				headers[header[0]] = header[1];
 			}
+			if (body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+				return (4);
 			return (0);
 		}
 

@@ -118,6 +118,7 @@ class Webserv
 				}
 				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){
 					if (FD_ISSET(fd, &working_rd_set)){ // fd is ready for writing
+						
 						select_ret--;
 						int srv_index;
 						if ((srv_index = getServerIndexWithSock(fd)) != -1){ // server socket ready for reading
@@ -143,8 +144,8 @@ class Webserv
 						else { // client socket ready for reading
 
 							// std::string buf; // = FileSystem::getFileContent(fd);
-							char buff[1024 + 1] = {0};
-							int rd = recv(fd, buff, 1024, 0);
+							char buff[102400] = {0};
+							int rd = recv(fd, buff, 102400, 0);
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
 								close(fd);
@@ -153,7 +154,7 @@ class Webserv
 									max_fd -= 1;
 							}
 							else{
-								client_to_buf[fd].append(buff, rd);
+ 								client_to_buf[fd].append(buff, rd);
 								try{
 									Request req(client_to_buf[fd]);
 									if(req.getVersion().size()) rd = 0;
@@ -165,7 +166,7 @@ class Webserv
 								if (rd == 0 )
 								{ // done reading
 									try{
-										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
+										std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_buf[fd]);
 										client_to_req[fd] = req;
 									}
@@ -216,7 +217,6 @@ class Webserv
 							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
 
 							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
-							std::cout << "this mf " <<res.getRessourcePath() << std::endl;
 							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
 							
 							client_to_req.erase(fd);
