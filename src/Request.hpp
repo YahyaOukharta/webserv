@@ -32,8 +32,8 @@ class Request
 
 		std::string							boundary;
 
-		std::string body;
-		std::string body_filename;
+		std::string							body;
+		std::string							body_filename;
 
 	public:
 
@@ -119,13 +119,6 @@ class Request
 			vec		lines = split_first(buffer, '\n');
 			
 			// Initializing method, path and query
-			
-			// split_ret = split(lines[0], ' ');
-			// method = split_ret[0];
-
-			// split_ret = split_first(split_ret[1], '?');
-			// path = split_ret[0];
-			// query = split_ret.size() > 1 ? split_ret[1] : "";
 
 			int ret = parse_first_line(lines[0]);
 			if (ret) return ret;
@@ -133,7 +126,6 @@ class Request
 			
 			// Initializing Headers
 
-			// i += 2;
 			while (i < buffer.length())
 			{
 				if (buffer[i] == '\r' && buffer[i + 1] == '\n')
@@ -146,6 +138,7 @@ class Request
 					}
 					// Trimming the string to compare it to the boundary later
 					boundary = trim(split_first(split_ret[1], '=')[1], "-");
+					std::cout << "BOUNDARY = " << boundary << std::endl;
 
 					headers["Content-Type"] = split_ret[0]; // To not enter this condition again
 					i = skip_buff(buffer, i);
@@ -164,7 +157,10 @@ class Request
 			for (; i < buffer.length(); i++)
 			{
 				if (buffer[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buffer.substr(i, buffer.find("\n", i)), "-\n\r")))
+				{
+					std::cout << "buff boundary = " << trim(buffer.substr(i, buffer.find("\n", i)), "-\n\r") << std::endl;
 					break;
+				}
 				body += buffer[i];
 			}
 
@@ -239,6 +235,8 @@ class Request
 		const std::string &getBodyFilename() const {
 			return body_filename;
 		}
+		const std::string &getBoundary() const {	return boundary;	}
+
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
 				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){

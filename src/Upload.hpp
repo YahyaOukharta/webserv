@@ -11,6 +11,7 @@ class Upload
 	private:
 		std::map<std::string, std::string>		_req_headers;
 		Location								_location;
+		std::string								boundary;
 
 	public:
 		Upload(){}
@@ -22,6 +23,7 @@ class Upload
 		{
 			_req_headers = req.getHeaders();
 			_location = loc;
+			boundary = req.getBoundary();
 
 			std::string	fileName = getFileName();
 			std::string name = req.getPath() == "/" ? _location.getRoot() + "/" + fileName : _location.getRoot() + req.getPath() + "/" + fileName;
@@ -63,7 +65,27 @@ class Upload
 			std::ofstream	file(name);
 
 			file << buff;
+			// std::string		content;
+
+			// for (size_t i = 0; i < buff.length(); i++)
+			// {
+			// 	content += buff[i];
+			// 	if (buff[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buff.substr(i, buff.find("\n", i)), "-\n\r")))
+			// 	{
+			// 		file << content;
+
+			// 		break;
+			// 	}
+			// }
 
 			file.close();
+		}
+
+		size_t	skip_buff(std::string buf, size_t i)
+		{
+			for (; buf[i] != '\r'; i++)
+				;
+
+			return (i += 2);
 		}
 };
