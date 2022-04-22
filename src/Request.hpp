@@ -52,6 +52,7 @@ class Request
 				// 	throw webserv_exception("Too many '?'");
 
 			}
+			std::cout << "boundary = " << boundary << std::endl;
 			initRepresentationHeaders();
 			initRequestHeaders();
 			if (method=="POST")
@@ -138,7 +139,6 @@ class Request
 					}
 					// Trimming the string to compare it to the boundary later
 					boundary = trim(split_first(split_ret[1], '=')[1], "-");
-					std::cout << "BOUNDARY = " << boundary << std::endl;
 
 					headers["Content-Type"] = split_ret[0]; // To not enter this condition again
 					i = skip_buff(buffer, i);
@@ -158,7 +158,6 @@ class Request
 			{
 				if (buffer[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buffer.substr(i, buffer.find("\n", i)), "-\n\r")))
 				{
-					std::cout << "buff boundary = " << trim(buffer.substr(i, buffer.find("\n", i)), "-\n\r") << std::endl;
 					break;
 				}
 				body += buffer[i];
@@ -175,6 +174,14 @@ class Request
 				;
 
 			return (i += 2);
+		}
+
+		size_t	not_from_boundary(std::string str, size_t i)
+		{
+			for (; i < str.size(); i++)
+				if (str[i] != '-' && (str[i] > '9' || str[i] < '0'))
+					break;
+			return i;
 		}
 
 		int parse_first_line(std::string first_line)
@@ -235,7 +242,7 @@ class Request
 		const std::string &getBodyFilename() const {
 			return body_filename;
 		}
-		const std::string &getBoundary() const {	return boundary;	}
+		std::string getBoundary() const {	return boundary;	}
 
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
