@@ -52,17 +52,17 @@ class Request
 				// 	throw webserv_exception("Too many '?'");
 
 			}
-			std::cout << "boundary = " << boundary << std::endl;
+			std::cout << "Boundary = " << boundary << std::endl;
 			initRepresentationHeaders();
 			initRequestHeaders();
-			if (method=="POST")
-			{
-				int t1 = time(NULL);
-				std::string fileName = "/tmp/body_" + std::to_string(t1);
-				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
-				write(fd, body.c_str(), body.size());
-				body_filename = fileName;
-			}
+			// if (method=="POST")
+			// {
+			// 	int t1 = time(NULL);
+			// 	std::string fileName = "/tmp/body_" + std::to_string(t1);
+			// 	int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+			// 	write(fd, body.c_str(), body.size());
+			// 	body_filename = fileName;
+			// }
 
 			//print();
 		}
@@ -81,6 +81,7 @@ class Request
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
 			body_filename = rhs.getBodyFilename();
+			boundary = rhs.getBoundary();
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -242,7 +243,9 @@ class Request
 		const std::string &getBodyFilename() const {
 			return body_filename;
 		}
-		std::string getBoundary() const {	return boundary;	}
+		const std::string &getBoundary() const {
+			return boundary;
+		}
 
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){

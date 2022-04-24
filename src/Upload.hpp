@@ -13,6 +13,7 @@ class Upload
 		std::map<std::string, std::string>		_req_headers;
 		Location								_location;
 		std::string								boundary;
+		Request									_req;
 
 	public:
 		Upload(){}
@@ -22,9 +23,11 @@ class Upload
 		}
 		Upload(Request const &req, Location const &loc)
 		{
+			_req = req;
 			_req_headers = req.getHeaders();
 			_location = loc;
 			boundary = req.getBoundary();
+
 
 			std::cout << "BOUNDARY = " << boundary << std::endl;
 
@@ -40,7 +43,7 @@ class Upload
 
 			return *this;
 		}
-		~Upload(){}
+		~Upload() {}
 
 		std::string		getFileName(std::string str = "")
 		{
@@ -56,6 +59,7 @@ class Upload
 			
 			if (str.length() > 1)
 			{
+				std::cout << "\nstr = " << str << std::endl;
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
 				fileName = trim(fileName, "\"\n\r");
@@ -79,25 +83,25 @@ class Upload
 
 			for (size_t i = 0; i < buff.length(); i++)
 			{
-				content += buff[i];
 				if (buff[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r")))
 				{
-					std::cout << "\nHEEEEEERERERR\n";
 					file << content;
 					file.close();
 					i = skip_buff(buff, i);
 					
 					std::string str = buff.substr(i, buff.find("\n", i) - i);
-					name = getFileName(split_first(buff, ':')[1]);
-					std::cout << "\nNAME = " << name << std::endl;
+					name = getFileName(split_first(str, ':')[1]);
 					if (name == "")
 						return ;
+					name = _req.getPath() == "/" ? _location.getRoot() + "/" + name : _location.getRoot() + _req.getPath() + "/" + name;
+
 					// break;
 					content = "";
 					file.open(name);
 					i = skip_buff(buff, i);
-					i = skip_buff(buff, i);
+					i = skip_buff(buff, skip_buff(buff, i));
 				}
+				content += buff[i];
 			}
 			file << content;
 			file.close();

@@ -115,8 +115,3 @@ int main(int argc, char** argv) {
 	return (0);
 }
 
------------------------------27825621862701931282312614925
-Content-Disposition: form-data; name="myfile2"; filename=""
-Content-Type: application/octet-stream
-
-
