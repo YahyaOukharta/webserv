@@ -68,6 +68,7 @@
         "__tree": "cpp",
         "map": "cpp",
         "iomanip": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "filesystem": "cpp"
     }
 }

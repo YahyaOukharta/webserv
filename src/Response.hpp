@@ -587,7 +587,7 @@ class Response
 		int handle_process_block(){
 			if(is_method_head_get())
 				return (0);
-			if (is_method_delete() && !process_delete())
+			if (is_method_delete() && process_delete())
 				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
 			else{
 				if (!is_method_process())
@@ -606,7 +606,8 @@ class Response
 			return req.getMethod() == "DELETE";
 		}
 		bool process_delete(){ // 500
-			return (0);
+			std::cout << "DELETE\n";
+			return Delete();
 		}
 		bool is_method_put(){
 			return (0);
@@ -739,6 +740,29 @@ class Response
 				res.append(nl);
 			}
 			return res;
+		}
+
+		bool	Delete()
+		{
+			std::string	root = location->getRoot();
+			std::string filename = root.erase(root.length() - 1) + req.getPath();
+			struct	stat	buff;
+			int ret;
+			std::cout << "filename = " << filename << std::endl;
+
+			if ((ret = stat(filename.c_str(), &buff)) < 0 || !(buff.st_mode & S_IWUSR))
+			{
+				std::cout << "ret = " << ret << std::endl;
+				std::cout << "not deleted\n";
+				return false;
+			}
+			if (remove(filename.c_str()) < 0)
+			{
+				perror("remove failed");
+				return false;
+			}
+
+			return true;			
 		}
 
 };

@@ -171,6 +171,7 @@ class Webserv
 									try{
 										std::cout << "in try\n";
 										std::cout << "[" << client_to_srv_idx[fd] << "] " ;
+										std::cout << "raw request = " << client_to_buf[fd] << std::endl;
 										Request req(client_to_buf[fd]);
 										client_to_req[fd] = req;
 									}
