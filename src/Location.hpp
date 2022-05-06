@@ -20,6 +20,10 @@ class Location
 		std::string _error_page;
 
 		std::string _cgi_path, _cgi_extension;
+		
+		std::string _upload_path;
+		std::string _redirect;
+
 	
 	public:
 		struct greater_than_path
@@ -44,7 +48,9 @@ class Location
 			std::string error_page,
 			std::vector<std::string> index,
 			std::string cgi_path,
-			std::string cgi_extension
+			std::string cgi_extension,
+			std::string upload_path,
+			std::string redirect
 		){
 			_path = path;
 			_root = root;
@@ -55,6 +61,8 @@ class Location
 			_index = index;
 			_cgi_path = cgi_path;
 			_cgi_extension = cgi_extension;
+			_upload_path = upload_path;
+			_redirect = redirect;
 		}
 		Location( Location const & src ){
 			*this = src;
@@ -72,6 +80,8 @@ class Location
 			_index = rhs.getIndex();
 			_cgi_path = rhs.getCgiPath();
 			_cgi_extension = rhs.getCgiExtension();
+			_upload_path = rhs.getUploadPath();
+			_redirect = rhs.getRedirect();
 			return *this;
 		}
 
@@ -101,6 +111,12 @@ class Location
 		}
 		std::string const &getCgiExtension()const {
 			return _cgi_extension;
+		}
+		std::string const &getUploadPath()const {
+			return _upload_path;
+		}
+		std::string const &getRedirect()const {
+			return _redirect;
 		}
 };
 

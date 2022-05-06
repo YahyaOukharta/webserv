@@ -74,7 +74,9 @@ class ServerConfig
 					it->default_error_pages,
 					ft::split_to_lines(it->index, "/"),
 					it->cgi_path,
-					it->extension
+					it->extension,
+					it->upload_path,
+					it->redirect
 				);
 				
 				if(loc.getErrorPage() != "" && !FileSystem::fileExists(loc.getErrorPage()))

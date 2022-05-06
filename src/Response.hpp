@@ -114,44 +114,43 @@ class Response
 	public:
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
-			int status = 0;
-			status = handle_system_block(); // System block checks
+			statusCode = handle_system_block(); // System block checks
 			//std::cout << statusCode << std::endl;
-			if (status) return;
+			if (statusCode) return;
 			init_matching_location(); // Finding matching location
 			if (!location) statusCode = StatusCodes::NOT_FOUND();
-			status = statusCode;
-			if (status) return;
+			if (statusCode) return;
 
-			status = handle_request_block(); // Request block checks
-			if (status) return;
+			statusCode = handle_request_block(); // Request block checks
+			if (statusCode) return;
 	
-			status = handle_accept_block(); // Accept block checks
-			if (status) return;
+			statusCode = handle_accept_block(); // Accept block checks
+			if (statusCode) return;
 
 			bool is_ressource_missing = handle_retrieve_block();
 			//std::cout << "Ressource " << (is_ressource_missing ? "":"not ") << "missing" << std::endl;
 			if(is_ressource_missing){
 				// ressource missing
-				status = handle_retrieve_when_missing_block();
-				if(status) return;
+				statusCode = handle_retrieve_when_missing_block();
+				std::cout << statusCode << std::endl;
+				if(statusCode) return;
 
-				status = handle_create_block();
-				if(status) return;
+				statusCode = handle_create_block();
+				if(statusCode) return;
 
-				status = handle_response_when_missing_block();
-				if(status) return;
+				statusCode = handle_response_when_missing_block();
+				if(statusCode) return;
 			}
 			else {
 				// ressource not missing 
-				status = handle_precondition_block();
-				if (status) return;
+				statusCode = handle_precondition_block();
+				if (statusCode) return;
 				
-				status = handle_process_block();
-				if (status) return;
+				statusCode = handle_process_block();
+				if (statusCode) return;
 
-				status = handle_response_when_not_missing_block();
-				if (status) return;
+				statusCode = handle_response_when_not_missing_block();
+				if (statusCode) return;
 
 			}
 		}
@@ -443,6 +442,8 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
+			if (location->getRedirect() != "NULL" || location->getUploadPath() != "NULL" )
+				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
 			return !FileSystem::fileExists(resPath);
@@ -456,7 +457,8 @@ class Response
 		int handle_retrieve_when_missing_block(){
 			if (moved()){
 				if (moved_permanently())
-					return StatusCodes::PERMANENT_REDIRECT();
+					return StatusCodes::MOVED_PERMANENTLY();
+					//return StatusCodes::PERMANENT_REDIRECT();
 				if (moved_temporarily())
 					return StatusCodes::TEMPORARY_REDIRECT();
 				if (gone_permanently())
@@ -465,10 +467,10 @@ class Response
 			return 0;
 		}
 		bool moved(){ // ressource moved
-			return false;
+			return location->getRedirect() != "NULL" ;
 		}
 		bool moved_permanently(){ // redirect  308
-			return false;
+			return true;
 		}
 		bool moved_temporarily(){ // redirect 307
 			return false;
@@ -673,7 +675,9 @@ class Response
 
 		void initResponseHeaders(){
 			response_headers.clear();
-			// response_headers.insert(std::pair<std::string,std::string>("Content-Type",getDate()));
+
+			if(statusCode == StatusCodes::MOVED_PERMANENTLY())
+				response_headers.insert(std::pair<std::string,std::string>("Location",location->getRedirect()));
 			// response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
 		}
 
@@ -686,6 +690,7 @@ class Response
 
 			initGeneralHeaders();
 			initRepresentationHeaders();
+			initResponseHeaders();
 
 			std::string res = "";
 			std::string nl = "\r\n";
@@ -700,6 +705,10 @@ class Response
 			}
 			it = representation_headers.begin();
 			for(;it != representation_headers.end(); ++it){
+				res.append(it->first + ": " + it->second + nl);
+			}
+			it = response_headers.begin();
+			for(;it != response_headers.end(); ++it){
 				res.append(it->first + ": " + it->second + nl);
 			}
 			if(!(isCgi))
