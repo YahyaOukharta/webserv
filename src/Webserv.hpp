@@ -21,10 +21,11 @@ class Webserv
 	std::vector<Server*> servers;
 	std::map<int, int> client_to_srv_idx;
 
-	std::map<int, std::string> client_to_buf; 
+	std::map<int, std::string> client_to_req_buf; 
 	std::map<int, Request> client_to_req; 
 
 	std::map<int, std::string> client_to_res_buf;
+	std::map<int, Response> client_to_res;
 
 	public:
 
@@ -154,9 +155,9 @@ class Webserv
 									max_fd -= 1;
 							}
 							else{
- 								client_to_buf[fd].append(buff, rd);
+ 								client_to_req_buf[fd].append(buff, rd);
 								try{
-									Request req(client_to_buf[fd]);
+									Request req(client_to_req_buf[fd]);
 									if(req.getVersion().size()) rd = 0;
 								}
 								catch(webserv_exception const &e){
@@ -167,17 +168,19 @@ class Webserv
 								{ // done reading
 									try{
 										std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
-										Request req(client_to_buf[fd]);
+										Request req(client_to_req_buf[fd]);
 										client_to_req[fd] = req;
+										req.print();
+
 									}
 									catch(webserv_exception const& e){ // bad request
 										std::cout << e.what() << std::endl;
-										client_to_buf.erase(fd);
+										client_to_req_buf.erase(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
 									FD_SET(fd, &master_wr_set);
-									//std::cout << "buf " << client_to_buf[fd] << std::endl;
-									client_to_buf.erase(fd);
+									//std::cout << "buf " << client_to_req_buf[fd] << std::endl;
+									client_to_req_buf.erase(fd);
 								}
 							}
 						}
@@ -212,13 +215,19 @@ class Webserv
 						// 
 						if (client_to_req[fd].getVersion() != "")
 						{
-							client_to_req[fd].print();
-							
-							Response res(client_to_req[fd], servers[client_to_srv_idx[fd]]);
-
-							client_to_res_buf[fd].append(res.getResponseBufferWithoutBody());
-							client_to_res_buf[fd].append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
-							
+							if (!client_to_res.count(fd))
+								client_to_res.insert(
+									std::pair<int, Response>(
+										fd,
+										Response(client_to_req[fd], servers[client_to_srv_idx[fd]])
+									)
+								);			
+							std::string buf = client_to_res[fd].getResponseBufferWithoutBody();
+							if (buf == "")
+								continue;
+							client_to_res_buf[fd].append(buf);
+							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
+							client_to_res.erase(fd);
 							client_to_req.erase(fd);
 						}
 						ssize_t ret = send(fd, client_to_res_buf[fd].c_str(), client_to_res_buf[fd].size(), 0);

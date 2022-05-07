@@ -103,7 +103,6 @@ class Response
 		std::map<std::string, std::string> representation_headers; // Content-*
 		std::map<std::string, std::string> response_headers; // Transfer encoding ? Location ? Allow (when method unsupported)
 
-		std::string body;
 
 		Request req;
 		Server *server;
@@ -111,9 +110,13 @@ class Response
 
 		std::string process_output_filename;
 		bool isCgi;
+		
+		int cgiPid;
 	public:
 
+
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
+			cgiPid = -1;
 			statusCode = handle_system_block(); // System block checks
 			//std::cout << statusCode << std::endl;
 			if (statusCode) return;
@@ -155,7 +158,22 @@ class Response
 			}
 		}
 		Response(){}
-		Response( Response const & src );
+		Response( Response const & src ): location(src.getLocation()){
+			server = src.getServer();
+			req = src.getRequest();
+
+			isCgi = src.getIsCgi();
+			process_output_filename = src.getProcessOutputFilename();
+
+			general_headers = src.getGeneralHeaders();
+			representation_headers = src.getRepresentationHeaders();
+			response_headers = src.getResponseHeaders();
+
+			statusCode = src.getStatusCode();
+			statusString = src.getStatusString();
+
+			cgiPid = src.getCgiPid();
+		}
 		~Response(){}
 
 		Response &		operator=( Response const & rhs );
@@ -392,6 +410,12 @@ class Response
 		
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
+
+			if(process_output_filename != "") // POST HANDLED IN process() block 
+			{
+				isCgi=1;
+				return process_output_filename;
+			}
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
@@ -425,13 +449,11 @@ class Response
 				isCgi = 1;
 				Cgi cgi(req, server, location,  res);
 				std::string filename = cgi.compile();
+				cgiPid = cgi.pid;
+				process_output_filename = filename;
 				return filename;
 			}
-			if(process_output_filename != "") // POST HANDLED IN process() block 
-			{
-				isCgi=1;
-				return process_output_filename;
-			}
+
 			return res;
 		}
 
@@ -599,6 +621,7 @@ class Response
 				std::string filename = cgi.compile();
 				if (filename != "")
 				{
+					cgiPid = cgi.pid;
 					process_output_filename = filename;
 					return (1);
 				}
@@ -642,7 +665,7 @@ class Response
 			general_headers.insert(std::pair<std::string,std::string>("Server","Webserv"));
 		}
 
-		void initRepresentationHeaders(){//// normal file, missing file, cgi, autoindex 
+		int initRepresentationHeaders(){//// normal file, missing file, cgi, autoindex 
 			std::string resPath;
 
 			resPath = getRessourcePath();
@@ -650,6 +673,10 @@ class Response
 
 			if(isCgi || process_output_filename!="")
 			{
+				int status;
+				int ret = waitpid(cgiPid,&status, WNOHANG);
+				if (ret != cgiPid)
+					return 1;
 				//int nbytes;
 				char cgi_buff[1024] = {0};
 				// //to reset cursor to first byte of the file
@@ -670,7 +697,7 @@ class Response
 			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
 			
 			//representation_headers.insert(std::pair<std::string,std::string>("Transfer-Encoding","chunked"));
-
+			return (0);
 		}
 
 		void initResponseHeaders(){
@@ -682,16 +709,35 @@ class Response
 		}
 
 		// GETTERS
-		int getStatusCode() const {
-			return statusCode;
+		std::string getProcessOutputFilename()const{
+			return process_output_filename;
 		}
+		bool getIsCgi() const{
+			return isCgi;
+		}
+		Location const*getLocation()const {return location;}
+		Server *getServer() const {return server;}
+		Request getRequest() const {return req;}
+
+		std::map<std::string, std::string> getGeneralHeaders() const{
+			return general_headers;
+		}
+		std::map<std::string, std::string> getRepresentationHeaders() const{
+			return representation_headers;
+		}
+		std::map<std::string, std::string> getResponseHeaders() const{
+			return response_headers;
+		}
+		int getStatusCode()const {return statusCode;}
+		std::string getStatusString() const {return statusString;}
+		int getCgiPid()const {return cgiPid;}
 
 		std::string getResponseBufferWithoutBody() {
 
-			initGeneralHeaders();
-			initRepresentationHeaders();
+		
+			if (initRepresentationHeaders())return "";
 			initResponseHeaders();
-
+			initGeneralHeaders();
 			std::string res = "";
 			std::string nl = "\r\n";
 

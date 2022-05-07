@@ -17,9 +17,10 @@ private:
 	std::string const resPath;
 	
 public:
+	int pid;
 	Cgi(Request const &_req,Server const* _srv,Location const* _loc, std::string const &_resPath) : req(_req), server(_srv), location(_loc), resPath(_resPath)
 	{
-
+		pid = -1;
 	}
 	Cgi(Cgi const &src);
 	~Cgi() {}
@@ -88,21 +89,21 @@ public:
 			}
 			else // parent process
 			{
-				int wstatus;
-				// int t1 = time();
-				waitpid(fork_id, &wstatus, 0);
-				if (WIFEXITED(wstatus))
-				{
+				// int wstatus;
+				// // int t1 = time();
+				// waitpid(fork_id, &wstatus, 0);
+				// if (WIFEXITED(wstatus))
+				// {
 
 
 					
-					int status_code = WEXITSTATUS(wstatus);
-					if (status_code != 0)
-					{
-						std::cout << "Failure with status code : " << status_code << std::endl;
-						throw "500 Internal Server Error";
-					}
-				}
+				// 	int status_code = WEXITSTATUS(wstatus);
+				// 	if (status_code != 0)
+				// 	{
+				// 		std::cout << "Failure with status code : " << status_code << std::endl;
+				// 		throw "500 Internal Server Error";
+				// 	}
+				// }
 				// int status;
 				// int ret = 0;
 				// time_t t = time(NULL);
@@ -127,9 +128,10 @@ public:
 				// std::string line(cgi_buff);
 				// if (line.find("Status: ")!= std::string::npos)
 				
-				
+				pid = fork_id;
 			}
-			close(fd);
+			//close(fd);
+			
 			return fileName;
 	}
 };
