@@ -33,6 +33,8 @@ class Request
 		std::string body;
 		std::string body_filename;
 
+		size_t req_time;
+
 	public:
 
 		Request(){
@@ -51,7 +53,6 @@ class Request
 				if (error == 4)
 					throw webserv_exception("Not done yet");
 
-
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
@@ -63,7 +64,8 @@ class Request
 				write(fd, body.c_str(), body.size());
 				body_filename = fileName;
 			}
-
+			req_time = time(NULL);
+			std::cout << req_time << std::endl;
 			//print();
 		}
 		Request( Request const & src ){
@@ -81,6 +83,7 @@ class Request
 			headers = rhs.getHeaders();
 			body = rhs.getBody();
 			body_filename = rhs.getBodyFilename();
+			req_time = rhs.getTime();
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -174,10 +177,13 @@ class Request
 		const std::string &getBodyFilename() const {
 			return body_filename;
 		}
+		size_t getTime() const {
+			return req_time;
+		}
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
 				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){
-				if (std::strstr(it->first.c_str(),"Accept") == it->first.c_str()){
+				if (std::strstr(it->first.c_str(),"Accept") == it->first.c_str()) {
 					request_headers.insert(*it);
 				}
 			}

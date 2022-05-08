@@ -8,7 +8,6 @@
 # include "Cgi.hpp" 
 class StatusCodes
 {
-
 	private:
 		StatusCodes(){}
 		~StatusCodes(){}
@@ -60,7 +59,7 @@ class StatusCodes
 		static int REQUESTED_RANGE_NOT_SATISFIABLE(){ return 416; }
 		static int EXPECTATION_FAILED(){ return 417; }
 
-		// 5xx Client Error
+		// 5xx Server Error
 		static int INTERNAL_SERVER_ERROR(){ return 500; }
 		static int NOT_IMPLEMENTED(){ return 501; }   // Method not implemented
 		static int BAD_GATEWAY(){ return 502; }
@@ -157,7 +156,11 @@ class Response
 
 			}
 		}
-		Response(){}
+		Response(){
+			statusCode = StatusCodes::GATEWAY_TIMEOUT();
+
+		}
+
 		Response( Response const & src ): location(src.getLocation()){
 			server = src.getServer();
 			req = src.getRequest();
@@ -411,6 +414,8 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
 
+			if(statusCode == StatusCodes::GATEWAY_TIMEOUT())
+				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			if(process_output_filename != "") // POST HANDLED IN process() block 
 			{
 				isCgi=1;
@@ -762,6 +767,13 @@ class Response
 				res.append(nl);
 			}
 			return res;
+		}
+
+		void timeout(){
+			statusCode = StatusCodes::GATEWAY_TIMEOUT();
+			isCgi = false;
+			process_output_filename = "";
+			kill(cgiPid, SIGKILL);
 		}
 
 };

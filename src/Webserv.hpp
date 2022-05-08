@@ -221,10 +221,15 @@ class Webserv
 										fd,
 										Response(client_to_req[fd], servers[client_to_srv_idx[fd]])
 									)
-								);			
+								);
 							std::string buf = client_to_res[fd].getResponseBufferWithoutBody();
 							if (buf == "")
+							{
+								size_t timeout_sec = 20; // timeout in seconds
+								if (time(NULL) - client_to_req[fd].getTime() > timeout_sec)
+									client_to_res[fd].timeout();
 								continue;
+							}
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);
