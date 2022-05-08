@@ -6,6 +6,7 @@
 # include "Request.hpp"
 # include "MimeTypes.hpp"
 # include "Cgi.hpp" 
+# include "Upload.hpp"
 class StatusCodes
 {
 	private:
@@ -87,6 +88,7 @@ class Implemented {
 			m.push_back("content-language");
 			m.push_back("content-length");
 			m.push_back("content-type");
+			m.push_back("content-disposition");
 			return (m);
 		};
 };
@@ -117,7 +119,6 @@ class Response
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
 			cgiPid = -1;
 			statusCode = handle_system_block(); // System block checks
-			//std::cout << statusCode << std::endl;
 			if (statusCode) return;
 			init_matching_location(); // Finding matching location
 			if (!location) statusCode = StatusCodes::NOT_FOUND();
@@ -156,11 +157,7 @@ class Response
 
 			}
 		}
-		Response(){
-			statusCode = StatusCodes::GATEWAY_TIMEOUT();
-
-		}
-
+		Response(){}
 		Response( Response const & src ): location(src.getLocation()){
 			server = src.getServer();
 			req = src.getRequest();
@@ -183,7 +180,7 @@ class Response
 
 		// BLOCKS
 
-		bool handle_system_block() {  // SYSTEM BLOCK
+		int 	handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
 				return (statusCode = StatusCodes::SERVICE_UNAVAILABLE());
 			}
@@ -228,8 +225,9 @@ class Response
 			std::map<std::string, std::string> rep_headers = req.getRepresentationHeaders();
 			std::vector<std::string> impl = Implemented::CONTENT_HEADERS();
 			for (std::map<std::string, std::string>::iterator it = rep_headers.begin(); it!= rep_headers.end(); ++it){
-				if (std::find(impl.begin(), impl.end(), asciitolower(it->first)) == impl.end())
+				if (std::find(impl.begin(), impl.end(), asciitolower(it->first)) == impl.end()){
 					return (false);
+				}
 			}
 			return (true);
 		} // 501
@@ -246,7 +244,7 @@ class Response
 		} // 500
 		//
 		 // REQUEST BLOCK
-		bool handle_request_block() {
+		int handle_request_block() {
 			if(!is_method_allowed())
 				return ((statusCode = StatusCodes::METHOD_NOT_ALLOWED()));
 			else if (!is_authorized())
@@ -377,10 +375,8 @@ class Response
 			std::string const &ext = MimeTypes::getFileExtension(resPath);
  			std::string const &mimeType = MimeTypes::extToMime(ext);
 
-			//std::vector<std::string> accepted_types = split_to_lines(req.getRequestHeaders().find("Accept")->second,",");
 			std::vector<std::string> accepted_types = parseAcceptedTypes();
 
-			//std::cout << "ext " << ext << " mimeType " << mimeType << " resPath "<< resPath << std::endl;
 			return (
 				std::find(accepted_types.begin(), accepted_types.end(), mimeType) != accepted_types.end() ||
 				std::find(accepted_types.begin(), accepted_types.end(), "*/*") != accepted_types.end()
@@ -414,13 +410,14 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
 
-			if(statusCode == StatusCodes::GATEWAY_TIMEOUT())
+			if(statusCode >= 500)
 				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			if(process_output_filename != "") // POST HANDLED IN process() block 
 			{
 				isCgi=1;
 				return process_output_filename;
 			}
+
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
@@ -442,12 +439,18 @@ class Response
 					if( (location && location->getAutoIndex()))
 						res = "auto index here";
 					else
+					{
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+						statusCode = StatusCodes::NOT_FOUND();
+					}
 				}
 			}
 			else if (statusCode >= 400 || !FileSystem::fileExists(res)){
 
 				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+				
+				if (statusCode < 400)
+				statusCode = StatusCodes::NOT_FOUND();
 			}
 
 			if (statusCode && MimeTypes::getFileExtension(res) == location->getCgiExtension() && req.getMethod()=="GET"){
@@ -469,7 +472,8 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
-			if (location->getRedirect() != "NULL" || location->getUploadPath() != "NULL" )
+			if (location->getRedirect() != "NULL"
+			|| (location->getUploadPath() != "NULL" && req.getMethod()=="POST") )
 				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
@@ -521,10 +525,13 @@ class Response
 			return req.getMethod() == "POST";
 		}
 		bool create_path(){ // upload path defined, else 500
-			return false;
+			return location->getUploadPath() != "NULL";
 		}
 		bool create(){ // here process upload, 500 if fails
-			return false;
+			std::cout << "CREATE\n";
+			Upload	up(req, *location);
+			statusCode = StatusCodes::CREATED();
+			return true;
 		}
 
 		// handle response after missing block 
