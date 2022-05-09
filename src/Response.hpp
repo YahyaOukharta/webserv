@@ -3,10 +3,13 @@
 
 # include <iostream>
 # include <string>
+# include <signal.h>
 # include "Request.hpp"
 # include "MimeTypes.hpp"
 # include "Cgi.hpp" 
 # include "Upload.hpp"
+
+
 class StatusCodes
 {
 	private:

@@ -32,6 +32,7 @@ class Upload
 			std::cout << "BOUNDARY = " << boundary << std::endl;
 
 			std::string	fileName = getFileName();
+			std::cout << "fileName = " << fileName << std::endl;
 			std::string name = loc.getUploadPath() + fileName;
 			std::cout << "uploaded to "<<name <<std::endl;
 			createFile(name, req.getBody());
@@ -65,6 +66,8 @@ class Upload
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
 				fileName = trim(fileName, "\"\n\r");
+				if (fileName == "\"\"\r")
+					fileName = "";
 			}
 			else if (it != _req_headers.end())
 			{
@@ -78,15 +81,19 @@ class Upload
 
 		void			createFile(std::string name, const std::string &buff)
 		{
+			std::cout << "name = " << name << std::endl;
 			std::ofstream	file(name);
+
+			std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
 
 			// file << buff;
 			std::string		content;
-			std::cout << buff << std::endl;
+			// std::cout << buff << std::endl;
 			for (size_t i = 0; i < buff.length(); i++)
 			{
 				if (buff[i] == '-' && boundary != "" && !boundary.compare(0, boundary.length() - 1, trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r")))
 				{
+					std::cout << "content = \n" << content << std::endl;
 					file << content;
 					file.close();
 					i = skip_buff(buff, i);
