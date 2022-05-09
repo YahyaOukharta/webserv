@@ -4,6 +4,7 @@
 # include <iostream>
 # include <string>
 # include "Request.hpp"
+# include "signal.h"
 # include "MimeTypes.hpp"
 # include "Cgi.hpp" 
 class StatusCodes
