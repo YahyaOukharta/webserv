@@ -187,7 +187,7 @@ class Response
 
 		// BLOCKS
 
-		bool handle_system_block() {  // SYSTEM BLOCK
+		int handle_system_block() {  // SYSTEM BLOCK
 			if (!is_service_available()){
 				return (statusCode = StatusCodes::SERVICE_UNAVAILABLE());
 			}
@@ -250,7 +250,7 @@ class Response
 		} // 500
 		//
 		 // REQUEST BLOCK
-		bool handle_request_block() {
+		int handle_request_block() {
 			if(!is_method_allowed())
 				return ((statusCode = StatusCodes::METHOD_NOT_ALLOWED()));
 			else if (!is_authorized())
@@ -476,7 +476,7 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
-			if (location->getRedirect() != "NULL" || location->getUploadPath() != "NULL" )
+			if (location->getRedirect() != "NULL" || (location->getUploadPath() != "NULL" && req.getMethod() == "POST") )
 				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
@@ -528,6 +528,7 @@ class Response
 			return req.getMethod() == "POST";
 		}
 		bool create_path(){ // upload path defined, else 500
+
 			return true;
 		}
 		bool create(){ // here process upload, 500 if fails
