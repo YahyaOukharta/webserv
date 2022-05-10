@@ -28,12 +28,6 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
-
-			std::cout << "BOUNDARY = " << boundary << std::endl;
-			std::cout << "BODY =\n" << req.getBody() << std::endl;
-
-			// std::string	fileName = getFileName();
-			// std::string name = req.getPath() == "/" ? _location.getRoot() + "/" + fileName : _location.getRoot() + req.getPath() + "/" + fileName;
 			createFile(req.getBody());
 		}
 

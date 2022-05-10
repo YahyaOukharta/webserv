@@ -8,6 +8,7 @@
 # include "MimeTypes.hpp"
 # include "Cgi.hpp"
 # include "Upload.hpp"
+# include "AutoIndex.hpp"
 
 class StatusCodes
 {
@@ -443,7 +444,10 @@ class Response
 				if (res[res.size() - 1] == '/')
 				{
 					if( (location && location->getAutoIndex()))
-						res = "auto index here";
+					{
+						res = AutoIndex(res, *location).getFilePath();
+						std::cout << "res = " << res << std::endl;
+					}
 					else
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 				}

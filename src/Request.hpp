@@ -120,7 +120,6 @@ class Request
 				return (4);
 			if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
 			{
-				std::cout << "HEERE\n";
 				vec	split_ret = split_first(headers["Content-Type"], ';');
 				boundary = trim(split_first(split_ret[1], '=')[1], "-");
 			}
