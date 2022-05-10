@@ -18,22 +18,23 @@ class Request
 		typedef std::vector<std::string>::iterator iter;
 
 	private:
-		std::string protocol; // HTTP
-		std::string version;  // 1.1
+		std::string							protocol; // HTTP
+		std::string							version;  // 1.1
 
-		std::string method; // GET POST OPTIONS ...
-		std::string path;  //   /ee/aa/
-		std::string query; //	?hello=1&dkd=22
+		std::string							method; // GET POST OPTIONS ...
+		std::string							path;  //   /ee/aa/
+		std::string							query; //	?hello=1&dkd=22
 		
-		std::map<std::string, std::string> headers; // split to general, request, and representation
+		std::map<std::string, std::string>	headers; // split to general, request, and representation
 
-		std::map<std::string, std::string> representation_headers; // split to general, request, and representation
-		std::map<std::string, std::string> request_headers; // split to general, request, and representation
+		std::map<std::string, std::string>	representation_headers; // split to general, request, and representation
+		std::map<std::string, std::string>	request_headers; // split to general, request, and representation
 
-		std::string body;
-		std::string body_filename;
+		std::string 						body;
+		std::string 						body_filename;
 
-		size_t req_time;
+		size_t								req_time;
+		std::string							boundary;
 
 	public:
 
@@ -84,6 +85,7 @@ class Request
 			body = rhs.getBody();
 			body_filename = rhs.getBodyFilename();
 			req_time = rhs.getTime();
+			boundary = rhs.getBoundary();
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -116,6 +118,12 @@ class Request
 			}
 			if (body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
 				return (4);
+			if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
+			{
+				std::cout << "HEERE\n";
+				vec	split_ret = split_first(headers["Content-Type"], ';');
+				boundary = trim(split_first(split_ret[1], '=')[1], "-");
+			}
 			return (0);
 		}
 
@@ -179,6 +187,9 @@ class Request
 		}
 		size_t getTime() const {
 			return req_time;
+		}
+		const std::string &getBoundary() const {
+			return boundary;
 		}
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){

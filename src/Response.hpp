@@ -6,7 +6,9 @@
 # include "Request.hpp"
 # include "signal.h"
 # include "MimeTypes.hpp"
-# include "Cgi.hpp" 
+# include "Cgi.hpp"
+# include "Upload.hpp"
+
 class StatusCodes
 {
 	private:
@@ -522,10 +524,14 @@ class Response
 			return req.getMethod() == "POST";
 		}
 		bool create_path(){ // upload path defined, else 500
-			return false;
+			return true;
 		}
 		bool create(){ // here process upload, 500 if fails
-			return false;
+			std::cout << "CREATE\n";
+			Upload	up(req, *location);
+			statusCode = StatusCodes::CREATED();
+			// return false;
+			return true;
 		}
 
 		// handle response after missing block 
