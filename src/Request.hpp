@@ -150,7 +150,7 @@ public:
 				}
 				// Trimming the string to compare it to the boundary later
 				boundary = trim(split_first(split_ret[1], '=')[1], "-");
-				headers["Content-Type"] = split_ret[0]; // To not enter this condition again
+				headers["Content-Type"] = split_ret[0];//trim(split_ret[0], "\r"); // To not enter this condition again
 				i = skip_buff(buffer, i);
 				i = skip_buff(buffer, i);
 				continue;
@@ -158,7 +158,7 @@ public:
 
 			lines = split_first(buffer.substr(i, buffer.length()), '\n');
 			split_ret = split_first(lines[0], ':');
-			headers[split_ret[0]] = split_ret[1];
+			headers[split_ret[0]] = trim(split_ret[1], "\r");
 			i = skip_buff(buffer, i);
 		}
 		std::cout << buffer.data() + i << std::endl;

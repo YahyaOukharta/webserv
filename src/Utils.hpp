@@ -123,7 +123,7 @@ std::string		trim(std::string str, std::string t)
 
 	// Trim Right
 	if (right != std::string::npos)
-		str.erase(right + 1);
+		str.erase(right + 1, std::string::npos);
 	
 	// Trim Left
 	if (left != std::string::npos)

@@ -33,7 +33,7 @@ class Upload
 
 			std::string	fileName = getFileName();
 			std::cout << "fileName = " << fileName << std::endl;
-			std::string name = loc.getUploadPath() + fileName;
+			std::string name = _location.getUploadPath() + fileName;
 			std::cout << "uploaded to "<<name <<std::endl;
 			createFile(name, req.getBody());
 
@@ -65,6 +65,7 @@ class Upload
 				std::cout << "\nstr = " << str << std::endl;
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
+				std::cout << "FILENAME = |" << fileName << "|\n";
 				fileName = trim(fileName, "\"\n\r");
 				if (fileName == "\"\"\r")
 					fileName = "";
@@ -102,7 +103,7 @@ class Upload
 					name = getFileName(split_first(str, ':')[1]);
 					if (name == "")
 						return ;
-					name = _req.getPath() == "/" ? _location.getRoot() + "/" + name : _location.getRoot() + _req.getPath() + "/" + name;
+					name =  _location.getUploadPath() + name;
 
 					// break;
 					content = "";
