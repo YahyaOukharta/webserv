@@ -67,13 +67,12 @@ public:
 			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
 			setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
 			setenv("REQUEST_METHOD", req.getMethod().c_str(), 1);
-
 			setenv("SCRIPT_FILENAME", req_file.c_str(), 1);
 			setenv("PATH_INFO",(req.getPath().substr(location->getPath().size())).c_str(), 1); //need path info from request
 			setenv("PATH_TRANSLATED", resPath.c_str(), 1);
 			setenv("QUERY_STRING", req.getQuery().c_str(), 1);
-			setenv("DOCUMENT_ROOT", ("" + location->getPath()).c_str(), 1);
-			setenv("SCRIPT_NAME", (("localhost:"+std::to_string(server->getConfig().getPort())+location->getPath())).c_str(), 1); //need script name from request
+			setenv("DOCUMENT_ROOT", (location->getPath()).c_str(), 1);
+			setenv("SCRIPT_NAME", (location->getPath()).c_str(), 1); //need script name from request
 
 			// setenv("REMOTE_HOST", remote_host.c_str(), 1);
 			setenv("REMOTE_ADDR", server->getConfig().getHost().c_str(), 1);
@@ -83,6 +82,8 @@ public:
 			setenv("HTTP_ACCEPT", req.getHeader("Accept").c_str(), 1);
 			setenv("HTTP_USER_AGENT", req.getHeader("User-Agent").c_str(), 1);
 			setenv("HTTP_REFERER", req.getHeader("Referer").c_str(), 1);
+			setenv("HTTP_HOST", req.getHeader("Host").c_str(), 1);
+			setenv("SERVER_NAME", req.getHeader("Host").c_str() , 1);
 			setenv("HTTP_COOKIE", req.getHeader("Cookie").c_str(), 1);
 
 			if (execve(args[0], args, environ) == -1)
