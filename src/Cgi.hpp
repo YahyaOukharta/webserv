@@ -73,7 +73,7 @@ public:
 			setenv("PATH_TRANSLATED", resPath.c_str(), 1);
 			setenv("QUERY_STRING", req.getQuery().c_str(), 1);
 			setenv("DOCUMENT_ROOT", ("" + location->getPath()).c_str(), 1);
-			setenv("SCRIPT_NAME", (("localhost:13371"+location->getPath())).c_str(), 1); //need script name from request
+			setenv("SCRIPT_NAME", (("localhost:"+std::to_string(server->getConfig().getPort())+location->getPath())).c_str(), 1); //need script name from request
 
 			// setenv("REMOTE_HOST", remote_host.c_str(), 1);
 			setenv("REMOTE_ADDR", server->getConfig().getHost().c_str(), 1);

@@ -54,6 +54,8 @@ class AutoIndex
 			struct dirent	*ep;
 			_location = loc;
 
+			if (path[path.length() - 1] != '/')
+				path += '/';
 			dp = opendir(path.c_str());
 			html_file_buff = "<html>\n<head><title>Index of " + 
 								path + "</title></head>\n<body>\n<h1>Index of " + 
@@ -73,7 +75,7 @@ class AutoIndex
 						perror("Stat failed");
 						break ;
 					}
-					date = dateOfCreation(st.st_ctim);
+					date = dateOfCreation(st.st_birthtimespec);
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
 					info = "<a href=\"" + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);

@@ -429,7 +429,16 @@ class Response
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
 			std::string res = (root[root.size()-1]=='/' ? root.substr(0,root.size()-1) : root) + req.getPath().substr(path.size()+(path[path.size()-1] == '/'?-1:0));
-			
+			if (FileSystem::fileExists(res) && res[res.size()-1]!='/'){
+				struct stat st;
+				if (stat(res.c_str(), &st) < 0)
+				{
+					perror("Stat failed");
+					throw webserv_exception("STAT TSETTI");
+				}
+				if ((st.st_mode & S_IFDIR) )
+					res +='/';
+			}
 			if (res[res.size()-1] == '/')
 			{
 				std::vector<std::string> index = location ? location->getIndex() : server->getConfig().getIndex();
@@ -444,17 +453,20 @@ class Response
 				if (res[res.size() - 1] == '/')
 				{
 					if( (location && location->getAutoIndex()))
-					{
 						res = AutoIndex(res, *location).getFilePath();
-						std::cout << "res = " << res << std::endl;
-					}
 					else
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 				}
 			}
-			else if (statusCode >= 400 || !FileSystem::fileExists(res)){
+			else 
+			{
+				int done = false;
 
-				res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+				if (!done && (statusCode >= 400 || !FileSystem::fileExists(res))){
+					if (!FileSystem::fileExists(res))
+						statusCode = StatusCodes::NOT_FOUND();
+					res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+				}
 			}
 
 			if (statusCode && MimeTypes::getFileExtension(res) == location->getCgiExtension() && req.getMethod()=="GET"){
@@ -551,7 +563,7 @@ class Response
 			// END OF DIAGRAM FOR MISSING
 		}
 		bool is_create_done(){ // 202 accepted
-			return false;
+			return true;
 		}
 		bool create_see_other(){ // 201 created, 303 if else 
 			return false;

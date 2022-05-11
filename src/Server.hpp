@@ -310,13 +310,26 @@ class Server
 			return sock;
 		}
 
-		int getMatchingLocationIndex(std::string const &path){
+		int getMatchingLocationIndex(std::string const &p){
 			// 
 			//  /  /images/  /images/hd/image.pmg
 			// /
 			std::vector<Location> const &locs = conf.getLocations();
+			std::string path = p;
+			
 			size_t last_slash = path.rfind('/');
+			if(last_slash != path.size()-1)
+			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+			{
+				if (it->getPath() == path)
+				{
+					path+='/';
+					break;
+				}
+			}
+			last_slash = path.rfind('/');
 			std::string route = path.substr(0,(last_slash != std::string::npos ? last_slash + 1 : std::string::npos));
+
 			std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
 
 			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
