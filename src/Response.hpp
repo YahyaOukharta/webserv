@@ -709,7 +709,7 @@ class Response
 				//int nbytes;
 				char cgi_buff[1024] = {0};
 				// //to reset cursor to first byte of the file
-				int fd = open(resPath.c_str(), O_RDWR , 0777);
+				int fd = open(resPath.c_str(), O_RDWR , 0777); 
 				std::string cgi_output;
 				int n;
 				while((n = read(fd, cgi_buff, 1024)) > 0){
