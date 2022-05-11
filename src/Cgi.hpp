@@ -72,7 +72,7 @@ public:
 			setenv("PATH_INFO",(req.getPath().substr(location->getPath().size())).c_str(), 1); //need path info from request
 			setenv("PATH_TRANSLATED", resPath.c_str(), 1);
 			setenv("QUERY_STRING", req.getQuery().c_str(), 1);
-			// setenv("DOCUMENT_ROOT", ("" + location->getPath()).c_str(), 1);
+			setenv("DOCUMENT_ROOT", ("" + location->getPath()).c_str(), 1);
 			setenv("SCRIPT_NAME", (("localhost:13371"+location->getPath())).c_str(), 1); //need script name from request
 
 			// setenv("REMOTE_HOST", remote_host.c_str(), 1);
@@ -83,6 +83,7 @@ public:
 			setenv("HTTP_ACCEPT", req.getHeader("Accept").c_str(), 1);
 			setenv("HTTP_USER_AGENT", req.getHeader("User-Agent").c_str(), 1);
 			setenv("HTTP_REFERER", req.getHeader("Referer").c_str(), 1);
+			setenv("HTTP_COOKIE", req.getHeader("Cookie").c_str(), 1);
 
 			if (execve(args[0], args, environ) == -1)
 				throw "500 Internal Server Error";
