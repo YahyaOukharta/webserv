@@ -73,7 +73,7 @@ class AutoIndex
 						perror("Stat failed");
 						break ;
 					}
-					date = dateOfCreation(st.st_birthtimespec);
+					date = dateOfCreation(st.st_ctim);
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
 					info = "<a href=\"" + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
