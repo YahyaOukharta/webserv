@@ -96,7 +96,8 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("path = ") != std::string::npos && test == "path" && l.path == "NULL")
                 {
                     str = s[pos].substr(s[pos].find("path = ") + 7, s[pos].length());
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.path = str;
@@ -111,13 +112,11 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                     {
                         str = s[pos].substr(s[pos].find("method = ") + 9, s[pos].length());
-                        // str = str.substr(0, str.length());
                         if(str == "")
                             {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                         l.method = str;
                         ////// ALLOWED METHODS
                         l.allowed_methods = ft::split_to_lines(l.method,"/");
-                        // std::cout << "split " << l.allowed_methods.size() << std::endl;
                         std::cout << l.method << " " << l.allowed_methods[0] << std::endl;
 
                     }
@@ -131,7 +130,8 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("root = ") != std::string::npos && test == "root" && l.root == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("root = ") + 7, s[pos].length());
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.root = str;}
@@ -140,11 +140,12 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                    
                     {str = s[pos].substr(s[pos].find("redirect = ") + 11, s[pos].length() - 11);
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.redirect = str;}
-                    // std::cout << l.redirect << std::endl;
+
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -155,7 +156,8 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("autoindex = ") != std::string::npos && test == "autoindex"  && l.autoindex == "NULL")
                 {
                     {str = s[pos].substr(s[pos].find("autoindex = ") + 12, s[pos].length());
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.autoindex = str;}
@@ -169,7 +171,8 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("cgi_path = ") != std::string::npos && test == "cgi_path"  )
                 {
                     {str = s[pos].substr(s[pos].find("cgi_path = ") + 11, s[pos].length());
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.cgi_path = str;
@@ -184,7 +187,8 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 if(s[pos].find("extension = ") != std::string::npos && test == "extension"  )
                 {
                     {str = s[pos].substr(s[pos].find("extension = ") + 12, s[pos].length());
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.extension = str;
@@ -200,11 +204,12 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                    
                     {str = s[pos].substr(s[pos].find("bodysize_limit = ") + 17, s[pos].length() - 17);
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "" || ft::atoi(str.c_str()) <= 0)
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.bodysize_limit = ft::atoi(str.c_str());}
-                // std::cout << l.bodysize_limit << std::endl;
+
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -214,11 +219,13 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 std::string test = normal_split(s[pos], "=");
                 if(s[pos].find("index = ") != std::string::npos && test == "index")
                 {
-                   
                     {str = s[pos].substr(s[pos].find("index = ") + 8, s[pos].length() - 8);
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.index = str;}
-                    // std::cout << l.index << std::endl;
+
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -228,11 +235,12 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 std::string test = normal_split(s[pos], "=");
                 if(s[pos].find("upload_path = ") != std::string::npos && test == "upload_path")
                 {
-                   
                     {str = s[pos].substr(s[pos].find("upload_path = ") + 14, s[pos].length() - 14);
-                    // str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.upload_path = str;}
-                    // std::cout << _servers[index].index << std::endl;
                 }
                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
@@ -245,10 +253,11 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                     
                     {str = s[pos].substr(s[pos].find("default_error_pages = ") + 22, s[pos].length() - 22);
                     str = str.substr(0, str.length());
+                    ft::ltrim(str);
+                    ft::rtrim(str);
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.default_error_pages = str;}
-                    // std::cout << _servers[index].default_error_pages << std::endl;
                 }
                  else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
