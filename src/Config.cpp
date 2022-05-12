@@ -52,6 +52,7 @@ void Config::set_defaults_2(Location *l)
     l->bodysize_limit = _servers[index].bodysize_limit;
     l->upload_path = "NULL";
     l->index = _servers[index].index;
+    l->default_error_pages = _servers[index].default_error_pages;
 }
 
 void Config::parse_location(std::string &line, const std::string &spliter)
@@ -231,6 +232,22 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                     // std::cout << _servers[index].index << std::endl;
                 }
                 else
+                {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                break;
+            }
+            case 'd': {
+                std::string test = normal_split(s[pos], "=");
+                if(s[pos].find("default_error_pages = ") != std::string::npos && test == "default_error_pages")
+                {
+                    
+                    {str = s[pos].substr(s[pos].find("default_error_pages = ") + 22, s[pos].length() - 22);
+                    str = str.substr(0, str.length() - 1);
+                    if(str == "")
+                        {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
+                    l.default_error_pages = str;}
+                    // std::cout << _servers[index].default_error_pages << std::endl;
+                }
+                 else
                 {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                 break;
             }
