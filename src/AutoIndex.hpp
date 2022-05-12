@@ -78,7 +78,7 @@ class AutoIndex
 						perror("Stat failed");
 						break ;
 					}
-
+					bool isDir = st.st_mode & S_IFDIR;
 					#ifdef LINUX
 						date = dateOfCreation(st.st_ctim);
 					#else
@@ -86,7 +86,7 @@ class AutoIndex
 					#endif
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
-					info = "<a href=\"" + req.getPath() + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
+					info = "<a href=\"" + req.getPath() + name +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
 					html_file_buff += "\n" + info;
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";
