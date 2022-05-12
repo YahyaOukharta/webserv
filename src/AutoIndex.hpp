@@ -51,7 +51,7 @@ class AutoIndex
 		}
 
 
-		AutoIndex(std::string path, Location loc)
+		AutoIndex(std::string path, Location loc, Request const & req)
 		{
 			DIR				*dp;
 			struct dirent	*ep;
@@ -63,17 +63,16 @@ class AutoIndex
 			html_file_buff = "<html>\n<head><title>Index of " + 
 								path + "</title></head>\n<body>\n<h1>Index of " + 
 								path + "</h1><hr><pre>\n";
-
+			std::cout << "req path auto index : " <<req.getPath() << std::endl;
 			if (dp != NULL)
 			{
 				while ((ep = readdir(dp)))
 				{
 					struct stat	st;
 					std::string	namePath(path + ep->d_name);
-					std::string	name(ep->d_name);
+					std::string	name( ep->d_name);
 					std::string	date;
 					std::string	info;
-
 					if (stat(namePath.c_str(), &st) < 0)
 					{
 						perror("Stat failed");
@@ -87,7 +86,7 @@ class AutoIndex
 					#endif
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
-					info = "<a href=\"" + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
+					info = "<a href=\"" + req.getPath() + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
 					html_file_buff += "\n" + info;
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";

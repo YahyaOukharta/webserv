@@ -80,6 +80,7 @@ class Implemented {
 			std::vector<std::string> m;
 			m.push_back("OPTIONS");
 			m.push_back("GET");
+			m.push_back("HEAD");
 			m.push_back("POST");
 			m.push_back("DELETE");
 			return (m);
@@ -418,7 +419,7 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
 
-			if(statusCode == StatusCodes::GATEWAY_TIMEOUT())
+			if(statusCode >= 400)
 				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			if(process_output_filename != "") // POST HANDLED IN process() block 
 			{
@@ -453,9 +454,12 @@ class Response
 				if (res[res.size() - 1] == '/')
 				{
 					if( (FileSystem::fileExists(res) && location && location->getAutoIndex()))
-						res = AutoIndex(res, *location).getFilePath();
+						res = AutoIndex(res, *location, req).getFilePath();
 					else
+					{						
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+						statusCode = StatusCodes::NOT_FOUND();
+					}
 				}
 			}
 			else 
@@ -488,7 +492,7 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
-			if (location->getRedirect() != "NULL" || (location->getUploadPath() != "NULL" && req.getMethod() == "POST") )
+			if (location->getRedirect() != "NULL" || (location->getUploadPath() != "NULL" && req.getMethod() == "POST" && req.getBoundary() != "") )
 				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
@@ -621,7 +625,7 @@ class Response
 			return (0);
 		}
 		bool is_method_head_get(){
-			return req.getMethod() == "GET";
+			return req.getMethod() == "GET" || req.getMethod() == "HEAD";
 		}
 		bool is_method_delete(){
 			return req.getMethod() == "DELETE";

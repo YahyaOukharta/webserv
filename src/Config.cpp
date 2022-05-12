@@ -21,7 +21,10 @@ int Config::check_args()
         size_t j = 0;
         while(j < _servers[i].locations.size())
         {
-            if(_servers[i].locations[j].path == "NULL" || _servers[i].locations[j].method == "NULL" || _servers[i].locations[j].root == "NULL" || _servers[i].locations[j].autoindex == "NULL")
+            if(_servers[i].locations[j].path == "NULL" 
+            || _servers[i].locations[j].method == "NULL" 
+            || _servers[i].locations[j].root == "NULL" 
+            || _servers[i].locations[j].autoindex == "NULL")
             {   return 1;}
             j++;
         }
@@ -241,7 +244,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                 {
                     
                     {str = s[pos].substr(s[pos].find("default_error_pages = ") + 22, s[pos].length() - 22);
-                    str = str.substr(0, str.length() - 1);
+                    str = str.substr(0, str.length());
                     if(str == "")
                         {throw std::invalid_argument( "bad argumet :" + s[pos] + "\n");}
                     l.default_error_pages = str;}
