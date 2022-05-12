@@ -310,12 +310,12 @@ class Server
 			return sock;
 		}
 
-		int getMatchingLocationIndex(std::string const &p){
+		int getMatchingLocationIndex(Request &req){
 			// 
 			//  /  /images/  /images/hd/image.pmg
 			// /
 			std::vector<Location> const &locs = conf.getLocations();
-			std::string path = p;
+			std::string path = req.getPath();
 			
 			size_t last_slash = path.rfind('/');
 			if(last_slash != path.size()-1)
@@ -324,6 +324,7 @@ class Server
 				if (it->getPath() == path)
 				{
 					path+='/';
+					req.addSlashToPath();
 					break;
 				}
 			}

@@ -18,10 +18,12 @@ class AutoIndex
 
 		std::string		html_file_buff;
 		Location		_location;
+		std::string filePath;
 
 		void				createFile()
 		{
-			std::ofstream	file(_location.getRoot() + "autoIndex.html");
+			filePath = "/tmp/autoindex_"+std::to_string(time(NULL));
+			std::ofstream	file(filePath);
 
 			file << html_file_buff;
 
@@ -42,6 +44,7 @@ class AutoIndex
 		~AutoIndex(){};
 		AutoIndex	&operator=(AutoIndex const &x)
 		{
+			filePath = x.filePath;
 			html_file_buff = x.html_file_buff;
 			_location = x._location;
 			return *this;
@@ -60,6 +63,7 @@ class AutoIndex
 			html_file_buff = "<html>\n<head><title>Index of " + 
 								path + "</title></head>\n<body>\n<h1>Index of " + 
 								path + "</h1><hr><pre>\n";
+
 			if (dp != NULL)
 			{
 				while ((ep = readdir(dp)))
@@ -75,7 +79,12 @@ class AutoIndex
 						perror("Stat failed");
 						break ;
 					}
-					date = dateOfCreation(st.st_birthtimespec);
+
+					#ifdef LINUX
+						date = dateOfCreation(st.st_ctim);
+					#else
+						date = dateOfCreation(st.st_birthtimespec);
+					#endif
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
 					info = "<a href=\"" + name + "\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
@@ -91,9 +100,8 @@ class AutoIndex
 		
 		std::string	const	&getBuff() const {	return html_file_buff;	}
 
-		std::string			getFilePath()
+		std::string	const &getFilePath() const
 		{
-			std::cout << "root = " << _location.getRoot() << std::endl;
-			return _location.getRoot() + "autoIndex.html";
+			return filePath;
 		}
 };

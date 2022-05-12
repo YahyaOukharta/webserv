@@ -280,7 +280,7 @@ class Response
 		}
 		// Request block utils
 		void init_matching_location(){
-			int locIndex = server->getMatchingLocationIndex(req.getPath());
+			int locIndex = server->getMatchingLocationIndex(req);
 			if (locIndex == -1){
 				location = 0;
 			}
@@ -452,7 +452,7 @@ class Response
 				}
 				if (res[res.size() - 1] == '/')
 				{
-					if( (location && location->getAutoIndex()))
+					if( (FileSystem::fileExists(res) && location && location->getAutoIndex()))
 						res = AutoIndex(res, *location).getFilePath();
 					else
 						res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();

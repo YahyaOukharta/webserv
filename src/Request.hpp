@@ -123,6 +123,8 @@ class Request
 				vec	split_ret = split_first(headers["Content-Type"], ';');
 				boundary = trim(split_first(split_ret[1], '=')[1], "-");
 			}
+			parseUrl();
+			parseQuery();
 			return (0);
 		}
 
@@ -145,8 +147,30 @@ class Request
 			return (0);
 		}
 		
-		int validate_request(){
-			return 0;
+		void parseUrl(){
+			size_t n = 0;
+			while((n = path.find('%')) != std::string::npos)
+			{
+				std::string sp = path.substr(n+1,2);
+				unsigned int x;   
+				std::stringstream ss;
+				ss << std::hex << sp;
+				ss >> x;
+				path.replace(n, 3,std::string(1,(char)x));
+			}
+		}
+		void parseQuery(){
+			size_t n = 0;
+
+			while((n = query.find('%')) != std::string::npos)
+			{
+				std::string sp = query.substr(n+1,2);
+				unsigned int x;   
+				std::stringstream ss;
+				ss << std::hex << sp;
+				ss >> x;
+				query.replace(n, 3,std::string(1,(char)x));
+			}
 		}
 
 		// getters
@@ -162,6 +186,9 @@ class Request
 		}
 		const std::string &getPath() const {
 			return path;
+		}
+		void addSlashToPath(){
+			path+='/';
 		}
 		const std::string &getQuery() const {
 			return query;
