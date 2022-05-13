@@ -76,14 +76,18 @@ class Upload
 			std::string		name;
 			std::ofstream	file;
 			std::string		content;
+			std::string		upload_path = _location.getUploadPath();
+
 			size_t			i = 0;
 
+			if(upload_path[upload_path.length() - 1] != '/')
+				upload_path  = upload_path + '/';
 			if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 			{
 				i = skip_buff(buff, i);
 				std::string str = buff.substr(i, buff.find("\n", i) - i);
 				name = getFileName(split_first(str, ':')[1]);
-				name = _location.getUploadPath() + name;
+				name = upload_path + name;
 				file.open(name);
 				// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
 				i = skip_buff(buff, i);
@@ -92,7 +96,7 @@ class Upload
 			else
 			{
 				name = getFileName();		
-				file.open(_location.getUploadPath() + name);
+				file.open(upload_path + name);
 			}
 
 			for (; i < buff.length(); i++)
@@ -110,7 +114,7 @@ class Upload
 					name = getFileName(str);
 					// if (name == "")
 					// 	return ;
-					name = _location.getUploadPath() + name;
+					name = upload_path + name;
 
 					// break;
 					content = "";
