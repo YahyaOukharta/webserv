@@ -81,7 +81,7 @@ class ServerConfig
 				
 				if (loc.getErrorPage() != "" && !FileSystem::fileExists(loc.getErrorPage()))
 					throw webserv_exception(std::string("Invalid path for location error_page ") + loc.getErrorPage());
-				if (loc.getRoot() != "" && !FileSystem::fileExists(loc.getRoot()))
+				if (loc.getRoot() != "NULL" && !FileSystem::fileExists(loc.getRoot()))
 					throw webserv_exception(std::string("Invalid path for location root ") + loc.getRoot());
 				_locations.push_back(loc);
 			}

@@ -23,7 +23,7 @@ int Config::check_args()
         {
             if(_servers[i].locations[j].path == "NULL" 
             || _servers[i].locations[j].method == "NULL" 
-            || _servers[i].locations[j].root == "NULL" 
+            || (_servers[i].locations[j].root == "NULL" && _servers[i].locations[j].redirect == "NULL")
             || _servers[i].locations[j].autoindex == "NULL")
             {   return 1;}
             j++;
