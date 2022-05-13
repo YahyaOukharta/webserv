@@ -14,6 +14,8 @@
 
 #include <errno.h>
 #include <cstring>
+
+#include "Config.hpp"
     // #include <arpa/inet.h> /// inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN); /// from sockaddr_in to string 
 
 
@@ -26,7 +28,6 @@ class Server
 		struct sockaddr_in client_address;
 		int address_size;
 
-		FileSystem fs;
 
 	public:
 		Server(){
@@ -39,10 +40,29 @@ class Server
 		Server(std::string name, std::string host, int port, int backlog){
 			conf = ServerConfig(name, host, port, backlog);
 		};
+		Server(Config::Server srv_conf){ // hakim
+			conf = ServerConfig(
+				srv_conf.name,
+
+				srv_conf.host,
+				srv_conf.port,
+
+				srv_conf.bodysize_limit,
+				srv_conf.default_error_pages,
+				srv_conf.allowed_methods,
+				ft::split_to_lines(srv_conf.index, "/"),
+				1000
+			);
+			if(!FileSystem::fileExists(conf.getDefaultErrorPage()))
+				throw webserv_exception(std::string("Invalid path for error_page ") + conf.getDefaultErrorPage());
+			conf.setLocations(srv_conf.locations);
+		};
 		Server( Server const & src ){
 			*this = src;
 		}
-		~Server(){}
+		~Server(){
+			//close(sock);
+		}
 
 		Server &		operator=( Server const & rhs ){
 			conf = rhs.getConfig();
@@ -50,7 +70,7 @@ class Server
 		}
 
 		//Config
-		ServerConfig getConfig()const {
+		ServerConfig const &getConfig()const {
 			return conf;
 		}
 		void setConfig(ServerConfig const & c) {
@@ -72,8 +92,8 @@ class Server
 			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			if (sock <= 0)
 			{
-				std::cout << "Error creating socket" << std::endl;
-				return (-2);
+				throw(webserv_exception("Error creating socket"));
+				//return (-2);
 			}
 
 			// Set socket options
@@ -81,7 +101,8 @@ class Server
 			if ( setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockopt_val, sizeof(sockopt_val)) )
 			{
 				//perror("setsockopt");
-				std::cout << "Error setting socket options" << std::endl;
+				throw(webserv_exception("Error setting socket options"));
+
 				return (-3);
 			}
 			address.sin_family = AF_INET;
@@ -95,8 +116,8 @@ class Server
 			if (bind(sock, (struct sockaddr *)&address, sizeof(address)))
 			{
 				//perror("bind");
-				std::cout << "Error bind socket to port" << std::endl;
-				return (-1);
+				throw(webserv_exception("Error bind socket to port"));
+
 			}
 			return (0);
 		}
@@ -105,36 +126,39 @@ class Server
 		int initServer()
 		{
 			address_size = sizeof(address);
-			if (!isValidConf())
+			if (!isValidConf()) // add more validation for new variables (max body size, etc ..)
 			{	
 				std::cout << "Invalid configuration " << getConfig() << std::endl;
+				throw(webserv_exception("Error in Config"));
+
 				return (-1);
 			}
 
 			//init socket
 			int error;
 			if((error = init_socket())){
+				throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
 				return (error);
 			}
 
 			//bind to address
 			if((bind_socket())){
 				//perror("listen");
-				std::cout << "Error Binding" << std::endl;
+				throw(webserv_exception("Error binding "));
 				return (-3);
 			}
 
 			// listen
 			if(listen(sock, 3)){
 				//perror("listen");
-				std::cout << "Error listening" << std::endl;
+				throw(webserv_exception("Error listening "));
 				return (-4);
 			}
 
 			// set server sock to non blocking mode
 			fcntl(sock, F_SETFL, O_NONBLOCK);
 
-			std::cout << "Listening on port " << conf.getPort() << std::endl;
+			 std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			return (0);
 		}
 
@@ -158,7 +182,7 @@ class Server
 //int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict errorfds, struct timeval *restrict timeout);
 		int async(){
 			fd_set master_set, working_set; 
-			struct timeval timeout = {3*60,0};
+			struct timeval timeout = {1,0};
 			int max_fd = sock;
 
 			FD_ZERO(&master_set);
@@ -204,9 +228,8 @@ class Server
 									max_fd = client_sock;
 							}
 						}
-						else{ // client ready
-							std::string buf = fs.getFileContent(fd);
-
+						else { // client ready
+							std::string buf = FileSystem::getFileContent(fd);
 							try
 							{
 								Request req(buf);
@@ -214,7 +237,7 @@ class Server
 								std::string filepath = req.getPath() == "/" ? req.getPath()+"index.html" : req.getPath();
 								std::string response("HTTP/1.1 200 OK\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n");
 
-								response.append(fs.getFileContent("www"+filepath)+"\r\n");
+								response.append(FileSystem::getFileContent("www"+filepath)+"\r\n");
 
 								send(fd, response.c_str(), response.size(), 0);
 
@@ -283,6 +306,44 @@ class Server
 			return (0);
 		}
 
+		int getSocket() const {
+			return sock;
+		}
+
+		int getMatchingLocationIndex(Request &req){
+			// 
+			//  /  /images/  /images/hd/image.pmg
+			// /
+			std::vector<Location> const &locs = conf.getLocations();
+			std::string path = req.getPath();
+			
+			size_t last_slash = path.rfind('/');
+			if(last_slash != path.size()-1)
+			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+			{
+				if (it->getPath() == path)
+				{
+					path+='/';
+					req.addSlashToPath();
+					break;
+				}
+			}
+			last_slash = path.rfind('/');
+			std::string route = path.substr(0,(last_slash != std::string::npos ? last_slash + 1 : std::string::npos));
+
+			std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
+
+			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+			{
+				std::string loc_path = it->getPath();
+				if (*(--loc_path.end()) != '/') loc_path.push_back('/');
+				if (route.find(loc_path) == 0)
+				{
+					return it - locs.begin();
+				}
+			}
+			return -1;
+		}
 };
 
 //fcntl(fd, F_SETFL, O_NONBLOCK);

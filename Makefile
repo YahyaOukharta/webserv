@@ -1,8 +1,8 @@
-NAME = a.out
+NAME = webserv
 
-SRCS = main2.cpp 
+SRCS = main.cpp src/Config.cpp
 
-FLAGS =  -std=c++98 -fsanitize=address -g 	-Wall -Wextra -Werror
+FLAGS =  -std=c++11 -pedantic -Wall -Wextra -Werror -fsanitize=address -g 
 
 COMP=clang++
 ifeq ($(shell uname), Linux)
@@ -26,4 +26,7 @@ re : fclean all
 
 c : re
 	clear
-	./$(NAME)
+	./$(NAME) configs/default.conf 	
+
+siege :
+	siege -b -i -c 100 -f siege.urls
