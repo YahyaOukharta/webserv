@@ -6,6 +6,7 @@
 # include <fstream>
 # include <cstring>
 # include <sys/stat.h>
+# include <fcntl.h>
 # include <unistd.h>
 # define BUFFER_SIZE 1024
 class FileSystem
@@ -28,10 +29,11 @@ class FileSystem
 		}
 
 		static std::string getFileContent(std::string const &path){
-			std::ifstream ifs(path.c_str());
-  			std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                       (std::istreambuf_iterator<char>()    ) );
-			return (content);
+			// std::ifstream ifs(path.c_str());
+  			// std::string content(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+			// return (content);
+			int fd = open(path.c_str(), O_RDONLY);
+			return getFileContent(fd);
 		}
 
 		static std::string getFileContent(int fd){
@@ -43,6 +45,7 @@ class FileSystem
 				buf.append(line, ret);
 				memset(line,0, BUFFER_SIZE);
 			}
+			close(fd);
 			return (buf);
 		}
 		static size_t getFileSize(std::string filename) // path to file

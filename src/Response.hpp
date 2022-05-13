@@ -419,13 +419,14 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
 
-			if(statusCode >= 300)
-				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			if(process_output_filename != "") // POST HANDLED IN process() block 
 			{
 				isCgi=1;
 				return process_output_filename;
 			}
+			if(statusCode >= 300 && statusCode != StatusCodes::FOUND())
+				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
+
 			std::string const &root = location->getRoot(); 
 			std::string const &path = location->getPath(); 
 			//std::cout << "root: "<< root << " reqPath: "<<req.getPath() << " locPath: "<<path << std::endl;
