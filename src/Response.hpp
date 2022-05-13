@@ -419,7 +419,7 @@ class Response
 		// Requested ressource root + req
 		std::string getRessourcePath()  {
 
-			if(statusCode >= 400)
+			if(statusCode >= 300)
 				return location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 			if(process_output_filename != "") // POST HANDLED IN process() block 
 			{
@@ -639,7 +639,8 @@ class Response
 		bool process_delete(){ // 500
 
 			std::string	root = location->getRoot();
-			std::string filename = root.erase(root.length() - 1) + req.getPath();
+			std::string path = req.getPath();
+			std::string filename = root + path.substr(location->getPath().length());
 			struct	stat	buff;
 			int ret;
 			std::cout << "filename = " << filename << std::endl;
