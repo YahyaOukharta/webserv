@@ -643,7 +643,7 @@ class Response
 			std::string filename = root + path.substr(location->getPath().length());
 			struct	stat	buff;
 			int ret;
-			std::cout << "filename = " << filename << std::endl;
+			//std::cout << "filename = " << filename << std::endl;
 
 			if ((ret = stat(filename.c_str(), &buff)) < 0 || !(buff.st_mode & S_IWUSR))
 			{
@@ -752,7 +752,7 @@ class Response
 			representation_headers.clear();
 			if(!isCgi)
 				representation_headers.insert(std::pair<std::string,std::string>("Content-Type",MimeTypes::extToMime(MimeTypes::getFileExtension(resPath))));
-			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", std::to_string(FileSystem::getFileSize(resPath))));
+			representation_headers.insert(std::pair<std::string,std::string>("Content-Length", ft::itoa(FileSystem::getFileSize(resPath))));
 			
 			//representation_headers.insert(std::pair<std::string,std::string>("Transfer-Encoding","chunked"));
 			return (0);
@@ -800,7 +800,7 @@ class Response
 			std::string nl = "\r\n";
 
 			res.append("HTTP/1.1 ");
-			res.append(std::to_string(statusCode));
+			res.append(ft::itoa(statusCode));
 			res.append(nl);
 
 			std::map<std::string, std::string>::const_iterator it = general_headers.begin();

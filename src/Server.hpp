@@ -137,7 +137,7 @@ class Server
 			//init socket
 			int error;
 			if((error = init_socket())){
-				throw(webserv_exception("Error in init_socket : " + std::to_string(error)));
+				throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
 				return (error);
 			}
 

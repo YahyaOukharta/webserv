@@ -1,6 +1,6 @@
 NAME = webserv
 
-SRCS = main2.cpp src/Config.cpp
+SRCS = main.cpp src/Config.cpp
 
 FLAGS =  -std=c++11 -pedantic -Wall -Wextra -Werror -fsanitize=address -g 
 
@@ -27,3 +27,6 @@ re : fclean all
 c : re
 	clear
 	./$(NAME) configs/default.conf 	
+
+siege :
+	siege -b -i -c 100 -f siege.urls

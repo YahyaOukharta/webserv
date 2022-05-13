@@ -50,7 +50,7 @@ class Upload
 			if (ret.size() > 0)
 				extention = ret[0];
 			std::cout << "extention = " << extention << std::endl;
-			std::string										fileName = "uploaded_" + std::to_string(time(NULL)) + (extention.size() ? "." + extention : "");
+			std::string										fileName = "uploaded_" + ft::itoa(time(NULL)) + (extention.size() ? "." + extention : "");
 			
 			if (str.length() > 1)
 			{

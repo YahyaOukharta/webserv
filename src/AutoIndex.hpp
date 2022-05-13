@@ -22,7 +22,7 @@ class AutoIndex
 
 		void				createFile()
 		{
-			filePath = "/tmp/autoindex_"+std::to_string(time(NULL));
+			filePath = "/tmp/autoindex_"+ft::itoa(time(NULL));
 			std::ofstream	file(filePath);
 
 			file << html_file_buff;
@@ -86,7 +86,7 @@ class AutoIndex
 					#endif
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
-					info = "<a href=\"" + req.getPath() + name +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + std::to_string(st.st_size);
+					info = "<a href=\"" + req.getPath() + name +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + ft::itoa(st.st_size);
 					html_file_buff += "\n" + info;
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";

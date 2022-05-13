@@ -30,7 +30,7 @@ public:
 	std::string compile()
 	{
 		int t1 = time(NULL);
-		std::string fileName = "/tmp/compiled_" + std::to_string(t1);
+		std::string fileName = "/tmp/compiled_" + ft::itoa(t1);
 		int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
 
 		int fork_id = fork();
@@ -65,7 +65,7 @@ public:
 			setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 			setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
 			setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-			setenv("SERVER_PORT", std::to_string(server->getConfig().getPort()).c_str(), 1);
+			setenv("SERVER_PORT", ft::itoa(server->getConfig().getPort()).c_str(), 1);
 			setenv("REQUEST_METHOD", req.getMethod().c_str(), 1);
 			setenv("SCRIPT_FILENAME", req_file.c_str(), 1);
 			setenv("PATH_INFO",(req.getPath().substr(location->getPath().size())).c_str(), 1); //need path info from request
