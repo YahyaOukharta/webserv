@@ -69,6 +69,7 @@ application/x-xpinstall                          xpi;
 application/xhtml+xml                            xhtml;
 application/xspf+xml                             xspf;
 application/zip                                  zip;
+application/gzip                                 gz;
 
 application/octet-stream                         bin exe dll;
 application/octet-stream                         deb;

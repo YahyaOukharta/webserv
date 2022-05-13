@@ -50,7 +50,7 @@ class Upload
 			if (ret.size() > 0)
 				extention = ret[0];
 			std::cout << "extention = " << extention << std::endl;
-			std::string										fileName = "file." + extention;
+			std::string										fileName = "uploaded_" + std::to_string(time(NULL)) + (extention.size() ? "." + extention : "");
 			
 			if (str.length() > 1)
 			{
@@ -90,7 +90,10 @@ class Upload
 				i = skip_buff(buff, skip_buff(buff, i));
 			}
 			else
+			{
 				name = getFileName();		
+				file.open(_location.getUploadPath() + name);
+			}
 
 			for (; i < buff.length(); i++)
 			{

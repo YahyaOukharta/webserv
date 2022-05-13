@@ -7,7 +7,7 @@
 # include <cstring>
 #include "Utils.hpp"
 # include <fcntl.h>
-# define DEBUG 0
+# define DEBUG 1
 //# include "Response.hpp"
 
 class Request
@@ -248,7 +248,7 @@ class Request
 				for(std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it){
 					std::cout << " " << it->first << " " << it->second << std::endl;
 				}
-				std::cout << "\nBody:\n" <<body<< std::endl;
+				std::cout << "\nBody size:\n" <<body.size()<< std::endl;
 				//
 				return;
 			}

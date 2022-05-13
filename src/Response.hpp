@@ -464,9 +464,11 @@ class Response
 			}
 			else 
 			{
-				int done = false;
+				if(req.getMethod() == "DELETE"){
+					res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
 
-				if (!done && (statusCode >= 400 || !FileSystem::fileExists(res))){
+				}
+				else if ((statusCode >= 400 || !FileSystem::fileExists(res))){
 					if (!FileSystem::fileExists(res))
 						statusCode = StatusCodes::NOT_FOUND();
 					res =  location && location->getErrorPage().size() ? location->getErrorPage() : server->getConfig().getDefaultErrorPage();
@@ -492,7 +494,8 @@ class Response
 		}
 
 		bool missing(){ // ressource missing || ressource for upload || redirect 
-			if (location->getRedirect() != "NULL" || (location->getUploadPath() != "NULL" && req.getMethod() == "POST" && req.getBoundary() != "") )
+			if (location->getRedirect() != "NULL" 
+			|| (location->getUploadPath() != "NULL" && req.getMethod() == "POST" ) )
 				return true;
 			std::string const & resPath = getRessourcePath();
 			std::cout << "ressource path : "<< resPath << std::endl;
@@ -612,8 +615,11 @@ class Response
 		int handle_process_block(){
 			if(is_method_head_get())
 				return (0);
-			if (is_method_delete() && !process_delete())
-				return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+			if (is_method_delete()){
+				if(!process_delete())
+					return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
+					
+			}
 			else{
 				if (!is_method_process())
 					return statusCode = StatusCodes::INTERNAL_SERVER_ERROR();
@@ -631,7 +637,25 @@ class Response
 			return req.getMethod() == "DELETE";
 		}
 		bool process_delete(){ // 500
-			return (0);
+
+			std::string	root = location->getRoot();
+			std::string filename = root.erase(root.length() - 1) + req.getPath();
+			struct	stat	buff;
+			int ret;
+			std::cout << "filename = " << filename << std::endl;
+
+			if ((ret = stat(filename.c_str(), &buff)) < 0 || !(buff.st_mode & S_IWUSR))
+			{
+				std::cout << "ret = " << ret << std::endl;
+				std::cout << "not deleted\n";
+				return false;
+			}
+			if (remove(filename.c_str()) < 0)
+			{
+				perror("remove failed");
+				return false;
+			}
+			return true;				
 		}
 		bool is_method_put(){
 			return (0);
