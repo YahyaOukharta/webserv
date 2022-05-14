@@ -411,12 +411,11 @@ void Config::parse_buffer(const std::string &s)
 
 Config::Config(const std::string s)
 {
-    //thisi s for allocation of servers later
+
     // count_servers(s);
     index = 0;
     checker = 0;
-    // std::cout << server_count << std::endl;
-    //
+
     std::ifstream       file(s);
     if (file)
     {

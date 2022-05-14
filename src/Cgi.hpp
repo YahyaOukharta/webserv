@@ -45,12 +45,15 @@ public:
 			// if R is GET
 			// if R is POST dup file disc of body to input
 			//pipe is limited because it can hang, and you dont need it since at the end you will put the output in a file.
-			dup2(fd, 1);//if this fail it an internal error with an appropriate err number
+			
+			if (dup2(fd, 1) < 0)
+				throw "500 Internal Server Error";
 
 			if(req.getMethod() == "POST")
 			{
 				int body_fd = open(req.getBodyFilename().c_str(), O_RDONLY);
-				dup2(body_fd, 0);
+				if(dup2(body_fd, 0) < 0)
+					throw "500 Internal Server Error";
 			}
 
 			std::string cgi_location = location->getCgiPath();

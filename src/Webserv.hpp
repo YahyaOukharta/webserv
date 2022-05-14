@@ -230,6 +230,7 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
+							
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);

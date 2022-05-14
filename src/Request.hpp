@@ -149,7 +149,7 @@ class Request
 		
 		void parseUrl(){
 			size_t n = 0;
-			while((n = path.find('%')) != std::string::npos)
+			while((n = path.find('%', n )) != std::string::npos)
 			{
 				std::string sp = path.substr(n+1,2);
 				unsigned int x;   
@@ -162,7 +162,7 @@ class Request
 		void parseQuery(){
 			size_t n = 0;
 
-			while((n = query.find('%')) != std::string::npos)
+			while((n = query.find('%', n )) != std::string::npos)
 			{
 				std::string sp = query.substr(n+1,2);
 				unsigned int x;   
