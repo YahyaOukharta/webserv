@@ -142,7 +142,7 @@ class Webserv
 							// std::string buf; // = FileSystem::getFileContent(fd);
 							char buff[102400] = {0};
 							int rd = recv(fd, buff, 102400, 0);
-							std::cout << "RD = " << rd << std::endl;
+							// std::cout << "RD = " << rd << std::endl;
 							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
 								perror("recv :");

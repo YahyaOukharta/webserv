@@ -84,8 +84,22 @@ class Upload
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
 			
-			if (_req_headers["Transfer-Encoding"] == "chunked")
+			// For chunked encoding
+
+			bool			chunked = _req_headers["Transfer-Encoding"] == "chunked";
+			unsigned int	num;
+
+			
+			if (chunked)
+			{
+				std::string		hex = buff.substr(i, skip_buff(buff, i));
+				// std::cout << num << std::endl;
 				i = skip_buff(buff, i);
+				num = std::stol(hex, nullptr, 16) + i + 2;
+				// std::cout << "buff\n" << buff[skip_buff(buff, i) + num] << std::endl;
+			}
+
+			// Checking boundary for multipart form data
 
 			if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 			{
@@ -98,7 +112,7 @@ class Upload
 				i = skip_buff(buff, i);
 				i = skip_buff(buff, skip_buff(buff, i));
 			}
-			else
+			else	// Thers is no boundary
 			{
 				name = getFileName();		
 				file.open(upload_path + name);
@@ -106,6 +120,21 @@ class Upload
 
 			for (; i < buff.length(); i++)
 			{
+				// Check if the chunk is finished
+				
+				if (chunked && (i + 2) >= num) 
+				{
+					// std::cout << "buff[" << (i + 2) << "] = " << buff[(i + 2)] << std::endl;
+					std::string		hex = buff.substr(i + 2, skip_buff(buff, i + 2));
+					num = std::stol(hex, nullptr, 16);
+					if (!num)
+						break ;
+					i = skip_buff(buff, skip_buff(buff, i));
+					num += i + 2;
+				}
+
+				// Check if there is a boundary
+
 				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 				{
 					file << content;
