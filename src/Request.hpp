@@ -116,7 +116,8 @@ class Request
 				vec header = split_to_lines(*it, ": ");
 				headers[header[0]] = header[1];
 			}
-			if (body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			// std::cout << "BODY = \n" << body << std::endl;
+			if (body.size() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
 				return (4);
 			if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
 			{

@@ -12,7 +12,6 @@
 #include "Request.hpp"
 #include "FileSystem.hpp"
 
-#include <errno.h>
 #include <cstring>
 
 #include "Config.hpp"
@@ -216,10 +215,6 @@ class Server
 							while (client_sock != -1) { // Add to queue all incoming connections
 								client_sock = accept_connection();
 								if(client_sock == -1){
-									if(errno != EWOULDBLOCK){
-										std::cout << "Accept failed errno!=EWOUlDBLOCK" << std::endl;
-										return (1);
-									}
 									break;
 								}
 								//std::cout << "new connection on sock " << client_sock << std::endl;

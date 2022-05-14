@@ -156,7 +156,9 @@ static std::string itoa(long nbr)
 		result[0] = '-';
 	result[n_digits + negative] = '\0';
 	ft::ft_store(result + negative, n, n_digits);
-	return (std::string(result));
+    std::string res(result);
+    free(result);
+	return (res);
 }
 };
 

@@ -28,6 +28,7 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
+			std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
 			createFile(req.getBody());
 		}
 
@@ -82,6 +83,10 @@ class Upload
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
+			
+			if (_req_headers["Transfer-Encoding"] == "chunked")
+				i = skip_buff(buff, i);
+
 			if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 			{
 				i = skip_buff(buff, i);

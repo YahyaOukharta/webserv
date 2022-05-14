@@ -128,11 +128,6 @@ class Webserv
 							while (client_sock != -1){
 								client_sock = servers[srv_index]->accept_connection();
 								if (client_sock == -1){
-									if (errno != EWOULDBLOCK)
-									{
-										std::cout << "accepting failed" << std::endl;
-										return;
-									}
 									break;
 								}
 
@@ -147,6 +142,8 @@ class Webserv
 							// std::string buf; // = FileSystem::getFileContent(fd);
 							char buff[102400] = {0};
 							int rd = recv(fd, buff, 102400, 0);
+							std::cout << "RD = " << rd << std::endl;
+							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
 								close(fd);
@@ -186,33 +183,6 @@ class Webserv
 						}
 					}
 					else if(FD_ISSET(fd, &working_wr_set)){
-						// Request req = client_to_req[fd];
-						// std::string response;
-
-						// client_to_req.erase(fd);
-						// // response
-						// if(req.getVersion()=="")
-						// {
-						// 	response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
-
-						// }
-						// else if(!client_to_res_buf[fd].size()){
-						// 	Response res(req, servers[client_to_srv_idx[fd]]);
-						// 	response.append(res.getResponseBufferWithoutBody());
-						// 	response.append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
-						// //
-						// }
-
-						// // Response res(req, servers[client_to_srv_idx[fd]]);
-						// // std::cout << "statusCode = " << res.getStatusCode() << std::endl;
-						// // std::cout << res.getResponseBufferWithoutBody() << std::endl;
-
-						// client_to_srv_idx.erase(fd);
-						// size_t ret = send(fd, response.c_str(), response.size(), 0);
-						// std::cout << ret <<" sent, "<<response.size()<< " total" << std::endl;
-						// close(fd);
-
-						// 
 						if (client_to_req[fd].getVersion() != "")
 						{
 							if (!client_to_res.count(fd))
