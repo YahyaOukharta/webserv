@@ -149,7 +149,7 @@ class Server
 			}
 
 			// listen
-			if(listen(sock, 3)){
+			if(listen(sock, 1024)){
 				//perror("listen");
 				throw(webserv_exception("Error listening "));
 				return (-4);
