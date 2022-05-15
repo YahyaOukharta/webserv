@@ -164,10 +164,10 @@ class Webserv
 								if (rd == 0 )
 								{ // done reading
 									try{
-										std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
+										// std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
 										Request req(client_to_req_buf[fd]);
 										client_to_req[fd] = req;
-										req.print();
+										//req.print();
 
 									}
 									catch(webserv_exception const& e){ // bad request
@@ -200,7 +200,8 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
-							
+							std::cout << "\n[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
+							client_to_req[fd].print(); 
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);

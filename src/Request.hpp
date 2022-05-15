@@ -67,7 +67,7 @@ class Request
 				close(fd);
 			}
 			req_time = time(NULL);
-			std::cout << req_time << std::endl;
+			// std::cout << req_time << std::endl;
 			//print();
 		}
 		Request( Request const & src ){
@@ -237,7 +237,7 @@ class Request
 			}
 		}
 		// debug
-		void print() const {
+		void print(int no_endl = 0) const {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
@@ -256,10 +256,12 @@ class Request
 			}
 			std::cout << headers.size() << " headers   ";
 			if (body.size())
-				std::cout << "Body size : " << body.size() << " bytes"<< std::endl;
+				std::cout << "Body size : " << body.size() << " bytes";
 			else
-				std::cout << "Empty body" << std::endl;
+				std::cout << "Empty body";
 
+			if (no_endl)
+			std::cout << std::endl;
 		}
 
 	private:
