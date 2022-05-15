@@ -118,7 +118,7 @@ class Request
 				headers[header[0]] = header[1];
 			}
 			// std::cout << "BODY = \n" << body << std::endl;
-			if (body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			if (headers["Content-Length"] != "" && body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
 			{
 				std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 				return (4);
@@ -130,7 +130,7 @@ class Request
 			}
 			parseUrl();
 			parseQuery();
-			//std::cout << "request "<< path <<" done" << std::endl;
+			std::cout << "request "<< path <<" done" << std::endl;
 			return (0);
 		}
 
