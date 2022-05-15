@@ -137,7 +137,7 @@ class Upload
 
 				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 				{
-					file << content;
+					file.write(content.data(), content.size());
 					file.close();
 					i = skip_buff(buff, i);
 					
@@ -155,10 +155,11 @@ class Upload
 					file.open(name);
 					i = skip_buff(buff, i);
 					i = skip_buff(buff, skip_buff(buff, i));
+					
 				}
 				content += buff[i];
 			}
-			file << content;
+			file.write(content.data(), content.size());
 			file.close();
 		}
 

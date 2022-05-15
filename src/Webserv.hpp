@@ -140,8 +140,8 @@ class Webserv
 						else { // client socket ready for reading
 
 							// std::string buf; // = FileSystem::getFileContent(fd);
-							char buff[102400] = {0};
-							int rd = recv(fd, buff, 102400, 0);
+							char buff[2000000] = {0};
+							int rd = recv(fd, buff, 2000000, 0);
 							// std::cout << "RD = " << rd << std::endl;
 							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
@@ -154,8 +154,8 @@ class Webserv
 							else{
  								client_to_req_buf[fd].append(buff, rd);
 								try{
-									Request req(client_to_req_buf[fd]);
-									if(req.getVersion().size()) rd = 0;
+									client_to_req[fd] = Request(client_to_req_buf[fd]);
+									if(client_to_req[fd].getVersion().size()) rd = 0;
 								}
 								catch(webserv_exception const &e){
 									//std::cout << e.what() << std::endl;
@@ -165,8 +165,8 @@ class Webserv
 								{ // done reading
 									try{
 										// std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
-										Request req(client_to_req_buf[fd]);
-										client_to_req[fd] = req;
+										if(!client_to_req[fd].getVersion().size())
+										client_to_req[fd] = Request(client_to_req_buf[fd]);
 										//req.print();
 
 									}

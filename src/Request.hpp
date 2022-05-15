@@ -118,8 +118,11 @@ class Request
 				headers[header[0]] = header[1];
 			}
 			// std::cout << "BODY = \n" << body << std::endl;
-			if (body.size() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			if (body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			{
+				std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 				return (4);
+			}
 			if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
 			{
 				vec	split_ret = split_first(headers["Content-Type"], ';');
@@ -127,6 +130,7 @@ class Request
 			}
 			parseUrl();
 			parseQuery();
+			//std::cout << "request "<< path <<" done" << std::endl;
 			return (0);
 		}
 
