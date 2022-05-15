@@ -326,7 +326,7 @@ class Server
 			last_slash = path.rfind('/');
 			std::string route = path.substr(0,(last_slash != std::string::npos ? last_slash + 1 : std::string::npos));
 
-			std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
+			//std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
 
 			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
 			{

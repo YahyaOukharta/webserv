@@ -135,7 +135,7 @@ public:
 				
 				pid = fork_id;
 			}
-			//close(fd);
+			close(fd);
 			
 			return fileName;
 	}

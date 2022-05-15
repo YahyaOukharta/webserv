@@ -137,7 +137,7 @@ class Response
 			if(is_ressource_missing){
 				// ressource missing
 				statusCode = handle_retrieve_when_missing_block();
-				std::cout << statusCode << std::endl;
+				//std::cout << statusCode << std::endl;
 				if(statusCode) return;
 
 				statusCode = handle_create_block();
@@ -497,7 +497,7 @@ class Response
 			|| (location->getUploadPath() != "NULL" && req.getMethod() == "POST" ) )
 				return true;
 			std::string const & resPath = getRessourcePath();
-			std::cout << "ressource path : "<< resPath << std::endl;
+			//std::cout << "ressource path : "<< resPath << std::endl;
 			return !FileSystem::fileExists(resPath);
 		}
 
@@ -550,7 +550,7 @@ class Response
 			return true;
 		}
 		bool create(){ // here process upload, 500 if fails
-			std::cout << "CREATE\n";
+			//std::cout << "CREATE\n";
 			Upload	up(req, *location);
 			statusCode = StatusCodes::CREATED();
 			// return false;
@@ -646,8 +646,8 @@ class Response
 
 			if ((ret = stat(filename.c_str(), &buff)) < 0 || !(buff.st_mode & S_IWUSR))
 			{
-				std::cout << "ret = " << ret << std::endl;
-				std::cout << "not deleted\n";
+				//std::cout << "ret = " << ret << std::endl;
+				//std::cout << "not deleted\n";
 				return false;
 			}
 			if (remove(filename.c_str()) < 0)
@@ -746,6 +746,7 @@ class Response
 				if (cgi_output.find("Status: ")!= std::string::npos){
 					statusCode = ft::atoi(cgi_output.c_str() + cgi_output.find("Status: ") + 8);
 				}
+				close(fd);
 			}
 
 			representation_headers.clear();

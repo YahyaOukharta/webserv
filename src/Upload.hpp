@@ -28,7 +28,7 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
-			std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
+			//std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
 			createFile(req.getBody());
 		}
 
@@ -50,12 +50,12 @@ class Upload
 			std::vector<std::string>						ret = MimeTypes::mimeToExt(trim(_req_headers["Content-Type"], " \n\r"));
 			if (ret.size() > 0)
 				extention = ret[0];
-			std::cout << "extention = " << extention << std::endl;
+			//std::cout << "extention = " << extention << std::endl;
 			std::string										fileName = "uploaded_" + ft::itoa(time(NULL)) + (extention.size() ? "." + extention : "");
 			
 			if (str.length() > 1)
 			{
-				std::cout << "\nstr = " << str << std::endl;
+				//std::cout << "\nstr = " << str << std::endl;
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
 				fileName = trim(fileName, " \"\n\r");
@@ -80,6 +80,8 @@ class Upload
 			std::string		upload_path = _location.getUploadPath();
 
 			size_t			i = 0;
+
+			content.reserve(buff.size());
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
@@ -121,26 +123,27 @@ class Upload
 			for (; i < buff.length(); i++)
 			{
 				// Check if the chunk is finished
-				
-				if (chunked && (i + 2) >= num) 
+
+				if (chunked && (i + 2) >= num)
 				{
 					// std::cout << "buff[" << (i + 2) << "] = " << buff[(i + 2)] << std::endl;
 					std::string		hex = buff.substr(i + 2, skip_buff(buff, i + 2));
+					std::cout << "HEX = " << hex << std::endl;
 					num = std::stol(hex, nullptr, 16);
 					if (!num)
 						break ;
 					i = skip_buff(buff, skip_buff(buff, i));
-					num += i + 2;
+					num += i;
 				}
 
 				// Check if there is a boundary
 
 				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
 				{
-					file << content;
+					file.write(content.data(), content.size());
 					file.close();
 					i = skip_buff(buff, i);
-					
+
 					std::string str = buff.substr(i, buff.find("\n", i) - i);
 					if (str.length() < 1)
 						return ;
@@ -148,17 +151,36 @@ class Upload
 					name = getFileName(str);
 					// if (name == "")
 					// 	return ;
+
 					name = upload_path + name;
 
 					// break;
 					content = "";
+					content.reserve(buff.size());
+
 					file.open(name);
 					i = skip_buff(buff, i);
 					i = skip_buff(buff, skip_buff(buff, i));
+					
 				}
-				content += buff[i];
+				size_t next_bound = 0;
+				if (boundary != "")
+				{	next_bound = buff.find(boundary, i);
+					content.assign(buff.data() + i, next_bound - 29 - i);
+					i = next_bound - 29 ;
+				}
+				else if (chunked)
+				{
+					content.append(buff.data() + i, num - i);
+					i = num;
+				}
+				else
+				{
+					content = buff;
+					i = buff.size();
+				}
 			}
-			file << content;
+			file.write(content.data(), content.size());
 			file.close();
 		}
 

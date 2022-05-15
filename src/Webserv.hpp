@@ -84,7 +84,7 @@ class Webserv
 			// }
 			fd_set master_rd_set, working_rd_set; // reading fd sets
 			fd_set master_wr_set, working_wr_set; // writing fd sets
-			struct timeval select_timeout = {60, 0}; 
+			struct timeval select_timeout = {1,0}; 
 			int max_fd = 0;
 
 			FD_ZERO(&master_rd_set);
@@ -114,7 +114,7 @@ class Webserv
 				}
 				if (select_ret == 0)
 				{
-					std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
+					//std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
 					return;
 				}
 				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){
@@ -140,8 +140,8 @@ class Webserv
 						else { // client socket ready for reading
 
 							// std::string buf; // = FileSystem::getFileContent(fd);
-							char buff[102400] = {0};
-							int rd = recv(fd, buff, 102400, 0);
+							char buff[2000000] = {0};
+							int rd = recv(fd, buff, 2000000, 0);
 							// std::cout << "RD = " << rd << std::endl;
 							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
@@ -154,8 +154,8 @@ class Webserv
 							else{
  								client_to_req_buf[fd].append(buff, rd);
 								try{
-									Request req(client_to_req_buf[fd]);
-									if(req.getVersion().size()) rd = 0;
+									client_to_req[fd] = Request(client_to_req_buf[fd]);
+									if(client_to_req[fd].getVersion().size()) rd = 0;
 								}
 								catch(webserv_exception const &e){
 									//std::cout << e.what() << std::endl;
@@ -164,14 +164,14 @@ class Webserv
 								if (rd == 0 )
 								{ // done reading
 									try{
-										std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
-										Request req(client_to_req_buf[fd]);
-										client_to_req[fd] = req;
-										req.print();
+										// std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
+										if(!client_to_req[fd].getVersion().size())
+										client_to_req[fd] = Request(client_to_req_buf[fd]);
+										//req.print();
 
 									}
 									catch(webserv_exception const& e){ // bad request
-										std::cout << e.what() << std::endl;
+										//std::cout << e.what() << std::endl;
 										client_to_req_buf.erase(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
@@ -200,7 +200,10 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
-							
+
+							std::cout << "[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
+							client_to_req[fd].print(); 
+
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);

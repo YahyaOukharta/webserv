@@ -66,9 +66,10 @@ class Request
 				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
 				write(fd, body.c_str(), body.size());
 				body_filename = fileName;
+				close(fd);
 			}
 			req_time = time(NULL);
-			std::cout << req_time << std::endl;
+			// std::cout << req_time << std::endl;
 			//print();
 		}
 		Request( Request const & src ){
@@ -119,8 +120,11 @@ class Request
 				headers[header[0]] = header[1];
 			}
 			// std::cout << "BODY = \n" << body << std::endl;
-			if (body.size() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			if (headers["Content-Length"] != "" && body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			{
+				std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 				return (4);
+			}
 			if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
 			{
 				vec	split_ret = split_first(headers["Content-Type"], ';');
@@ -128,6 +132,7 @@ class Request
 			}
 			parseUrl();
 			parseQuery();
+			std::cout << "request "<< path <<" done" << std::endl;
 			return (0);
 		}
 
@@ -238,7 +243,7 @@ class Request
 			}
 		}
 		// debug
-		void print() const {
+		void print(int no_endl = 0) const {
 			std::cout 
 				<< method << " " 
 				<< path << " " 
@@ -257,10 +262,12 @@ class Request
 			}
 			std::cout << headers.size() << " headers   ";
 			if (body.size())
-				std::cout << "Body size : " << body.size() << " bytes"<< std::endl;
+				std::cout << "Body size : " << body.size() << " bytes";
 			else
-				std::cout << "Empty body" << std::endl;
+				std::cout << "Empty body";
 
+			if (!no_endl)
+			std::cout << std::endl;
 		}
 
 	private:

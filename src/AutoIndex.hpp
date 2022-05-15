@@ -63,7 +63,6 @@ class AutoIndex
 			html_file_buff = "<html>\n<head><title>Index of " + 
 								path + "</title></head>\n<body>\n<h1>Index of " + 
 								path + "</h1><hr><pre>\n";
-			std::cout << "req path auto index : " <<req.getPath() << std::endl;
 			if (dp != NULL)
 			{
 				while ((ep = readdir(dp)))
@@ -91,6 +90,7 @@ class AutoIndex
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";
 				createFile();
+				closedir(dp);
 			}
 			else
 				perror("Couldn't open the directory");
