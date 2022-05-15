@@ -260,7 +260,7 @@ class Request
 			else
 				std::cout << "Empty body";
 
-			if (no_endl)
+			if (!no_endl)
 			std::cout << std::endl;
 		}
 

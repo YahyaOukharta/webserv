@@ -171,7 +171,7 @@ class Webserv
 
 									}
 									catch(webserv_exception const& e){ // bad request
-										std::cout << e.what() << std::endl;
+										//std::cout << e.what() << std::endl;
 										client_to_req_buf.erase(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
@@ -200,8 +200,10 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
-							std::cout << "\n[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
+
+							std::cout << "[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
 							client_to_req[fd].print(); 
+
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);

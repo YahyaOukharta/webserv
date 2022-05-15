@@ -28,7 +28,7 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
-			std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
+			//std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
 			createFile(req.getBody());
 		}
 
@@ -50,12 +50,12 @@ class Upload
 			std::vector<std::string>						ret = MimeTypes::mimeToExt(trim(_req_headers["Content-Type"], " \n\r"));
 			if (ret.size() > 0)
 				extention = ret[0];
-			std::cout << "extention = " << extention << std::endl;
+			//std::cout << "extention = " << extention << std::endl;
 			std::string										fileName = "uploaded_" + ft::itoa(time(NULL)) + (extention.size() ? "." + extention : "");
 			
 			if (str.length() > 1)
 			{
-				std::cout << "\nstr = " << str << std::endl;
+				//std::cout << "\nstr = " << str << std::endl;
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
 				fileName = trim(fileName, " \"\n\r");
