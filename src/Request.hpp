@@ -57,6 +57,8 @@ class Request
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
+			std::cout << "body = \n" << body << std::endl;
+			std::cout << "raw req = \n" << raw_req << std::endl;
 			if (method=="POST")
 			{
 				int t1 = time(NULL);
@@ -77,7 +79,7 @@ class Request
 		Request &		operator=( Request const & rhs )
 		{
 			protocol = rhs.getProtocol();
-			version = rhs.getVersion();			
+			version = rhs.getVersion();
 			method = rhs.getMethod();
 			path = rhs.getPath();
 			query = rhs.getQuery();
