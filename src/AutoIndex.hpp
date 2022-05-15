@@ -91,6 +91,7 @@ class AutoIndex
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";
 				createFile();
+				closedir(dp);
 			}
 			else
 				perror("Couldn't open the directory");

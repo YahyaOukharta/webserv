@@ -64,6 +64,7 @@ class Request
 				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
 				write(fd, body.c_str(), body.size());
 				body_filename = fileName;
+				close(fd);
 			}
 			req_time = time(NULL);
 			std::cout << req_time << std::endl;

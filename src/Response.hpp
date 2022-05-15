@@ -746,6 +746,7 @@ class Response
 				if (cgi_output.find("Status: ")!= std::string::npos){
 					statusCode = ft::atoi(cgi_output.c_str() + cgi_output.find("Status: ") + 8);
 				}
+				close(fd);
 			}
 
 			representation_headers.clear();

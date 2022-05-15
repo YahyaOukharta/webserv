@@ -48,10 +48,13 @@ class FileSystem
 			close(fd);
 			return (buf);
 		}
+
 		static size_t getFileSize(std::string filename) // path to file
 		{
 			FILE *p_file = NULL;
+			std::cout << "calc file size : "<<filename << std::endl; 
 			p_file = fopen(filename.c_str(),"rb");
+			if (!p_file)return (-1);
 			fseek(p_file,0,SEEK_END);
 			size_t size = ftell(p_file);
 			fclose(p_file);

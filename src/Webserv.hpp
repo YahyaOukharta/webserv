@@ -84,7 +84,7 @@ class Webserv
 			// }
 			fd_set master_rd_set, working_rd_set; // reading fd sets
 			fd_set master_wr_set, working_wr_set; // writing fd sets
-			struct timeval select_timeout = {60, 0}; 
+			struct timeval select_timeout = {1,0}; 
 			int max_fd = 0;
 
 			FD_ZERO(&master_rd_set);
@@ -114,7 +114,7 @@ class Webserv
 				}
 				if (select_ret == 0)
 				{
-					std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
+					//std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
 					return;
 				}
 				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){

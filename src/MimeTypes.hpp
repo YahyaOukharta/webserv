@@ -47,6 +47,7 @@ class MimeTypes
 		}
 		static std::string getFileExtension(std::string const &filepath){
 			str_vec v = split_to_lines(filepath, "/");
+			if (!v.size()) return "";
 			v = split_to_lines(v[v.size()-1], ".");
 			if (v.size()) return v[v.size() - 1];
 			else return "";
