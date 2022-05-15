@@ -84,7 +84,7 @@ class Webserv
 			// }
 			fd_set master_rd_set, working_rd_set; // reading fd sets
 			fd_set master_wr_set, working_wr_set; // writing fd sets
-			struct timeval select_timeout = {0,5}; 
+			struct timeval select_timeout = {1,0}; 
 			int max_fd = 0;
 
 			FD_ZERO(&master_rd_set);
