@@ -122,16 +122,12 @@ class Request
 			if(headers["Transfer-Encoding"]=="chunked")
 			{
 				body = unchunked_body(body);
-				std::cout << "BODY = \n" << body << std::endl;
 				headers["Transfer-Encoding"]="";
 			}
-			// std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
-
 			if(headers["Content-Length"] != "")
 			{
 				if (body.size() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
 				{
-					// std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 					return (4);
 				}
 				if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
