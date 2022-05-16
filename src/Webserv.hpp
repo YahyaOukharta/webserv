@@ -199,6 +199,11 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
+							if(!client_to_res[fd].getUpload().is_done())
+							{
+								client_to_res[fd].getUpload().createFile();
+								continue ;
+							}
 
 							std::cout << "[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
 							client_to_req[fd].print(); 

@@ -114,6 +114,8 @@ class Response
 		bool isCgi;
 		
 		int cgiPid;
+
+		Upload	uploadFile;
 	public:
 
 
@@ -551,7 +553,12 @@ class Response
 		}
 		bool create(){ // here process upload, 500 if fails
 			//std::cout << "CREATE\n";
-			Upload	up(req, *location);
+			uploadFile = Upload(req, *location);
+			// while(!uploadFile.is_done())
+			// {
+			// 	// std::cout << "here\n";
+			// 	uploadFile.createFile();
+			// }
 			statusCode = StatusCodes::CREATED();
 			// return false;
 			return true;
@@ -789,6 +796,8 @@ class Response
 		int getStatusCode()const {return statusCode;}
 		std::string getStatusString() const {return statusString;}
 		int getCgiPid()const {return cgiPid;}
+
+		Upload	getUpload() const {	return uploadFile;	}
 
 		std::string getResponseBufferWithoutBody() {
 

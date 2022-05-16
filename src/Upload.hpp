@@ -14,6 +14,9 @@ class Upload
 		Location								_location;
 		std::string								boundary;
 		Request									_req;
+		size_t									i;
+		std::string								name;
+		std::string								buff;
 
 	public:
 		Upload(){}
@@ -28,19 +31,28 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
+			i = 0;
+			name = "";
+			buff = req.getBody();
+
 			//std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
-			createFile(req.getBody());
+			createFile();
 		}
 
 		Upload 		&operator=(Upload const &u)
 		{
+			_req = u._req;
 			_req_headers = u._req_headers;
 			_location = u._location;
+			boundary = u.boundary;
+
+			i = u.i;
+			name = u.name;
+			buff = u.buff;
 
 			return *this;
 		}
 		~Upload() {}
-
 		std::string		getFileName(std::string str = "")
 		{
 			// std::map<std::string, std::string>::iterator	it = _req_headers.find("Content-Disposition");
@@ -72,55 +84,45 @@ class Upload
 			return fileName;
 		}
 
-		void			createFile(std::string buff)
+		void			createFile()
 		{
 			std::string		name;
 			std::ofstream	file;
 			std::string		content;
 			std::string		upload_path = _location.getUploadPath();
 
-			size_t			i = 0;
+			// size_t			i = 0;
+
+			size_t			end = i + 1000 <= buff.length() ? i + 1000 : buff.length();
 
 			content.reserve(buff.size());
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
-			
-			// For chunked encoding
-
-			bool			chunked = _req_headers["Transfer-Encoding"] == "chunked";
-			// unsigned int	chunk_size;
-
-			
-			// if (chunked)
-			// {
-			// 	std::string		hex = buff.substr(i, skip_buff(buff, i));
-			// 	i = skip_buff(buff, i);
-			// 	chunk_size = std::stol(hex, nullptr, 16) + i;
-			// 	std::cout << "NUM = |" << buff[chunk_size] << "|" << std::endl;
-			// 	// std::cout << "buff\n" << buff[skip_buff(buff, i) + chunk_size] << std::endl;
-			// }
 
 			// Checking boundary for multipart form data
 
-			if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+			if (!i)
 			{
-				i = skip_buff(buff, i);
-				std::string str = buff.substr(i, buff.find("\n", i) - i);
-				name = getFileName(split_first(str, ':')[1]);
-				name = upload_path + name;
-				file.open(name);
-				// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
-				i = skip_buff(buff, i);
-				i = skip_buff(buff, skip_buff(buff, i));
-			}
-			else	// Thers is no boundary
-			{
-				name = getFileName();		
-				file.open(upload_path + name);
+				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+				{
+					i = skip_buff(buff, i);
+					std::string str = buff.substr(i, buff.find("\n", i) - i);
+					name = getFileName(split_first(str, ':')[1]);
+					name = upload_path + name;
+					file.open(name);
+					// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
+					i = skip_buff(buff, i);
+					i = skip_buff(buff, skip_buff(buff, i));
+				}
+				else	// Thers is no boundary
+				{
+					name = getFileName();		
+					file.open(upload_path + name);
+				}
 			}
 
-			for (; i < buff.length(); i++)
+			for (; i < end; i++)
 			{
 				// Check if there is a boundary
 
@@ -156,19 +158,6 @@ class Upload
 					content.assign(buff.data() + i, next_bound - 29 - i);
 					i = next_bound - 29 ;
 				}
-				else if (chunked)
-				{
-					std::string		hex = buff.substr(i, skip_buff(buff, i));
-					// std::cout << "HEX = " << hex << std::endl;
-					unsigned int	chunk_size = std::stol(hex, nullptr, 16);
-					// std::cout << "chunk_size = " << chunk_size << std::endl;
-					if (!chunk_size)
-						break;
-					i = skip_buff(buff, i);
-					content.append(buff.data() + i, chunk_size);
-					i += chunk_size;
-					
-				}
 				else
 				{
 					content = buff;
@@ -194,4 +183,10 @@ class Upload
 					break;
 			return i;
 		}
+
+		bool	is_done()	{
+			// std::cout << "i = " << i << " size = " << buff.size() << std::endl;
+			return i >= buff.size();
+		}
+
 };
