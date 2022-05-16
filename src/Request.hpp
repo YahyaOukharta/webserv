@@ -146,16 +146,22 @@ class Request
 			size_t n = 0;
 			size_t c = 0;
 			std::cout << "chunking" << std::endl;
+
 			int chunk_size = -1;
+
 			std::string chunked;
+
 			while ((n = bod.find("\r\n", c)) != std::string::npos ){
 				if (chunk_size == -1)
+				{
 					chunk_size = std::stol(bod.substr(c,n),0,16);
+					c = n + 2;
+				}
 				else{
 					chunked.append(bod.substr(c,chunk_size));
+					c += chunk_size + 2;
 					chunk_size = -1;
 				}
-				c = n + 2;
 			}
 			return (chunked);
 		}
