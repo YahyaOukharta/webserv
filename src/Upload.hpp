@@ -89,17 +89,17 @@ class Upload
 			// For chunked encoding
 
 			bool			chunked = _req_headers["Transfer-Encoding"] == "chunked";
-			unsigned int	num;
+			// unsigned int	chunk_size;
 
 			
-			if (chunked)
-			{
-				std::string		hex = buff.substr(i, skip_buff(buff, i));
-				// std::cout << num << std::endl;
-				i = skip_buff(buff, i);
-				num = std::stol(hex, nullptr, 16) + i + 2;
-				// std::cout << "buff\n" << buff[skip_buff(buff, i) + num] << std::endl;
-			}
+			// if (chunked)
+			// {
+			// 	std::string		hex = buff.substr(i, skip_buff(buff, i));
+			// 	i = skip_buff(buff, i);
+			// 	chunk_size = std::stol(hex, nullptr, 16) + i;
+			// 	std::cout << "NUM = |" << buff[chunk_size] << "|" << std::endl;
+			// 	// std::cout << "buff\n" << buff[skip_buff(buff, i) + chunk_size] << std::endl;
+			// }
 
 			// Checking boundary for multipart form data
 
@@ -122,20 +122,6 @@ class Upload
 
 			for (; i < buff.length(); i++)
 			{
-				// Check if the chunk is finished
-
-				if (chunked && (i + 2) >= num)
-				{
-					// std::cout << "buff[" << (i + 2) << "] = " << buff[(i + 2)] << std::endl;
-					std::string		hex = buff.substr(i + 2, skip_buff(buff, i + 2));
-					std::cout << "HEX = " << hex << std::endl;
-					num = std::stol(hex, nullptr, 16);
-					if (!num)
-						break ;
-					i = skip_buff(buff, skip_buff(buff, i));
-					num += i;
-				}
-
 				// Check if there is a boundary
 
 				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
@@ -165,14 +151,23 @@ class Upload
 				}
 				size_t next_bound = 0;
 				if (boundary != "")
-				{	next_bound = buff.find(boundary, i);
+				{	
+					next_bound = buff.find(boundary, i);
 					content.assign(buff.data() + i, next_bound - 29 - i);
 					i = next_bound - 29 ;
 				}
 				else if (chunked)
 				{
-					content.append(buff.data() + i, num - i);
-					i = num;
+					std::string		hex = buff.substr(i, skip_buff(buff, i));
+					// std::cout << "HEX = " << hex << std::endl;
+					unsigned int	chunk_size = std::stol(hex, nullptr, 16);
+					std::cout << "chunk_size = " << chunk_size << std::endl;
+					if (!chunk_size)
+						break;
+					i = skip_buff(buff, i);
+					content.append(buff.data() + i, chunk_size);
+					i += chunk_size;
+					
 				}
 				else
 				{

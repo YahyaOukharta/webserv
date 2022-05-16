@@ -57,8 +57,6 @@ class Request
 			}
 			initRepresentationHeaders();
 			initRequestHeaders();
-			std::cout << "body = \n" << body << std::endl;
-			std::cout << "raw req = \n" << raw_req << std::endl;
 			if (method=="POST")
 			{
 				int t1 = time(NULL);
@@ -120,7 +118,7 @@ class Request
 				headers[header[0]] = header[1];
 			}
 			// std::cout << "BODY = \n" << body << std::endl;
-			if (headers["Content-Length"] != "" && body.size() != (u_int)ft::atoi(headers["Content-Length"].c_str()))
+			if (headers["Content-Length"] != "" && body.size() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
 			{
 				std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 				return (4);
