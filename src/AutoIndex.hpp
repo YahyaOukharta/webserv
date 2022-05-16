@@ -83,7 +83,7 @@ class AutoIndex
 					#else
 						date = dateOfCreation(st.st_birthtimespec);
 					#endif
-					std::string firstPadding = std::string(50 - name.length(), ' ');
+					std::string firstPadding = name.size() > 50 ? std::string(2, ' ') : std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
 					info = "<a href=\"" + req.getPath() + name +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + ft::itoa(st.st_size);
 					html_file_buff += "\n" + info;
