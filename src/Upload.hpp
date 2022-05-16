@@ -79,7 +79,7 @@ class Upload
 			std::string		content;
 			std::string		upload_path = _location.getUploadPath();
 
-			size_t			i = 0;
+			size_t			i = 500;
 
 			content.reserve(buff.size());
 
@@ -147,7 +147,6 @@ class Upload
 					file.open(name);
 					i = skip_buff(buff, i);
 					i = skip_buff(buff, skip_buff(buff, i));
-					
 				}
 				size_t next_bound = 0;
 				if (boundary != "")
@@ -159,7 +158,7 @@ class Upload
 				else if (chunked)
 				{
 					std::string		hex = buff.substr(i, skip_buff(buff, i));
-					// std::cout << "HEX = " << hex << std::endl;
+					std::cout << "HEX = " << hex << std::endl;
 					unsigned int	chunk_size = std::stol(hex, nullptr, 16);
 					// std::cout << "chunk_size = " << chunk_size << std::endl;
 					if (!chunk_size)
@@ -167,7 +166,6 @@ class Upload
 					i = skip_buff(buff, i);
 					content.append(buff.data() + i, chunk_size);
 					i += chunk_size;
-					
 				}
 				else
 				{

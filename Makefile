@@ -2,7 +2,7 @@ NAME = webserv
 
 SRCS = main.cpp src/Config.cpp
 
-FLAGS =  -std=c++11 -pedantic -Wall -Wextra -Werror -fsanitize=address -g 
+FLAGS =  -std=c++11 -pedantic -Wall -Wextra -Werror #-fsanitize=address -g 
 
 COMP=clang++
 ifeq ($(shell uname), Linux)

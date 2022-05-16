@@ -96,6 +96,7 @@ class Request
 	
 		int parse_request(std::string raw_req){
 
+			//std::cout << raw_req<<std::endl<<std::endl;
 			vec req_split_body = split_to_lines(raw_req,"\r\n\r\n");
 
 			if (req_split_body.size() < 2)
@@ -117,7 +118,10 @@ class Request
 				vec header = split_to_lines(*it, ": ");
 				headers[header[0]] = header[1];
 			}
-			// std::cout << "BODY = \n" << body << std::endl;
+
+			body = unchunked_body(body);
+			std::cout << "BODY = \n" << body << std::endl;
+
 			// std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 
 			if(headers["Content-Length"] != "")
@@ -138,7 +142,23 @@ class Request
 			// std::cout << "request "<< path <<" done" << std::endl;
 			return (0);
 		}
-
+		std::string unchunked_body(std::string const &bod){
+			size_t n = 0;
+			size_t c = 0;
+			std::cout << "chunking" << std::endl;
+			int chunk_size = -1;
+			std::string chunked;
+			while ((n = bod.find("\r\n", c)) != std::string::npos ){
+				if (chunk_size == -1)
+					chunk_size = std::stol(bod.substr(c,n),0,16);
+				else{
+					chunked.append(bod.substr(c,chunk_size));
+					chunk_size = -1;
+				}
+				c = n + 2;
+			}
+			return (chunked);
+		}
 		int parse_first_line(std::string first_line)
 		{
 			vec tokens = split_to_lines(first_line," ");

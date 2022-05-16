@@ -222,15 +222,18 @@ class Webserv
 								max_fd--;
 						}
 						//
-
 						// FD_CLR(fd, &master_wr_set);
 						// while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
 						// 	max_fd--;
+						//
 					}else {
 						//std::cout <<  "fd is  :" << fd << std::endl;
 					}
 				}
+			// Upload
+
 			}
+
 			for (int i = 0; i < max_fd; i++){
 				if(FD_ISSET(i, &master_rd_set)){
 					close(i);
