@@ -119,9 +119,12 @@ class Request
 				headers[header[0]] = header[1];
 			}
 
-			body = unchunked_body(body);
-			std::cout << "BODY = \n" << body << std::endl;
-
+			if(headers["Transfer-Encoding"]=="chunked")
+			{
+				body = unchunked_body(body);
+				std::cout << "BODY = \n" << body << std::endl;
+				headers["Transfer-Encoding"]="";
+			}
 			// std::cout <<"not done yet "<< body.size() << " " << (u_int)ft::atoi(headers["Content-Length"].c_str()) << std::endl;
 
 			if(headers["Content-Length"] != "")
