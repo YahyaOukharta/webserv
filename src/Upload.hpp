@@ -161,7 +161,7 @@ class Upload
 					std::string		hex = buff.substr(i, skip_buff(buff, i));
 					// std::cout << "HEX = " << hex << std::endl;
 					unsigned int	chunk_size = std::stol(hex, nullptr, 16);
-					std::cout << "chunk_size = " << chunk_size << std::endl;
+					// std::cout << "chunk_size = " << chunk_size << std::endl;
 					if (!chunk_size)
 						break;
 					i = skip_buff(buff, i);

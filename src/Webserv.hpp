@@ -84,7 +84,7 @@ class Webserv
 			// }
 			fd_set master_rd_set, working_rd_set; // reading fd sets
 			fd_set master_wr_set, working_wr_set; // writing fd sets
-			struct timeval select_timeout = {1,0}; 
+			// struct timeval select_timeout = {1,0}; 
 			int max_fd = 0;
 
 			FD_ZERO(&master_rd_set);
@@ -104,8 +104,9 @@ class Webserv
 				
 				// std::cout << "sleeping 2 sec " << std::endl;
 				// usleep(1e5);
+				// std::cout << "max_fd : " << max_fd << std::endl;
+				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL,  NULL);
 
-				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL, &select_timeout);
 				if (select_ret == -1)
 				{
 					perror("ss");
@@ -119,10 +120,11 @@ class Webserv
 				}
 				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){
 					if (FD_ISSET(fd, &working_rd_set)){ // fd is ready for writing
-						
+
 						select_ret--;
 						int srv_index;
 						if ((srv_index = getServerIndexWithSock(fd)) != -1){ // server socket ready for reading
+
 							// accept all connections
 							int client_sock = 0;
 							while (client_sock != -1){
@@ -130,7 +132,6 @@ class Webserv
 								if (client_sock == -1){
 									break;
 								}
-
 								client_to_srv_idx[client_sock] = srv_index; // map client sock to server it came from 
 								FD_SET(client_sock, &master_rd_set); // add client sock to master reading set
 
@@ -138,8 +139,6 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-
-							// std::string buf; // = FileSystem::getFileContent(fd);
 							char buff[2000000] = {0};
 							int rd = recv(fd, buff, 2000000, 0);
 							// std::cout << "RD = " << rd << std::endl;
@@ -171,7 +170,7 @@ class Webserv
 
 									}
 									catch(webserv_exception const& e){ // bad request
-										//std::cout << e.what() << std::endl;
+										//std::cout << e.what() << " " << fd << std::endl;
 										client_to_req_buf.erase(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
@@ -214,7 +213,7 @@ class Webserv
 						client_to_res_buf[fd].erase(client_to_res_buf[fd].begin(), client_to_res_buf[fd].begin() + ret);
 						//std::cout << " left " << client_to_res_buf[fd].size() << std::endl ;
 
-						if (ret == -1 || !client_to_res_buf[fd].size())
+						if (ret <=0  || !client_to_res_buf[fd].size())
 						{
 							client_to_res_buf.erase(fd);
 							close(fd);
@@ -227,6 +226,8 @@ class Webserv
 						// FD_CLR(fd, &master_wr_set);
 						// while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
 						// 	max_fd--;
+					}else {
+						//std::cout <<  "fd is  :" << fd << std::endl;
 					}
 				}
 			}

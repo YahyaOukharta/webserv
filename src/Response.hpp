@@ -763,7 +763,7 @@ class Response
 
 			if(statusCode == StatusCodes::MOVED_PERMANENTLY())
 				response_headers.insert(std::pair<std::string,std::string>("Location",location->getRedirect()));
-			// response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+			response_headers.insert(std::pair<std::string,std::string>("Connection","close"));
 		}
 
 		// GETTERS
