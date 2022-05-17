@@ -39,6 +39,7 @@ void Config::set_defaults(size_t i)
     _servers[i].host = "NULL";
     _servers[i].index = "NULL";
     _servers[i].root = "NULL";
+    _servers[i].name = "NULL";
     _servers[i].bodysize_limit = -1;
     _servers[i].default_error_pages = "default/path";
 }
