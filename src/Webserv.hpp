@@ -91,6 +91,8 @@ class Webserv
 			FD_ZERO(&master_wr_set);
 			
 			for (srv_vec_it it = servers.begin(); it!= servers.end(); ++it){ //add servers socks to reading set
+				if ((*it)->getConfig().getIsChild())
+					continue;
 				int sock = (*it)->getSocket();
 				FD_SET (sock, &master_rd_set);
 				if (sock > max_fd)
@@ -185,12 +187,16 @@ class Webserv
 						if (client_to_req[fd].getVersion() != "")
 						{
 							if (!client_to_res.count(fd))
+							{
+								// which server ?
+
 								client_to_res.insert(
 									std::pair<int, Response>(
 										fd,
 										Response(client_to_req[fd], servers[client_to_srv_idx[fd]])
 									)
 								);
+							}
 							std::string buf = client_to_res[fd].getResponseBufferWithoutBody();
 							if (buf == "")
 							{
