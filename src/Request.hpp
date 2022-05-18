@@ -114,12 +114,14 @@ class Request
 				if ((n = pending_buf.find("\r\n")) != std::string::npos){
 					int ret = parse_first_line(pending_buf.substr(0,n));
 					if (ret)
-						std::cout << "something wrong with first line" << std::endl;
+					{
+	//						std::cout << "something wrong with first line" << std::endl;
+					}
 					else
 					{
 						pending_buf.erase(pending_buf.begin(),pending_buf.begin()+ n + 2);
 						state++;
-						std::cout << "done parsing first line" << std::endl;
+						// std::cout << "done parsing first line" << std::endl;
 						//return (0);
 					}
 				}
@@ -137,7 +139,7 @@ class Request
 					}
 					pending_buf.erase(pending_buf.begin(),pending_buf.begin()+ n + 4);
 					state++;
-					std::cout << "done parsing headers" << std::endl;
+					// std::cout << "done parsing headers" << std::endl;
 					//return (0);
 				}
 			}
@@ -166,21 +168,18 @@ class Request
 						else
 						{
 							std::string sub = pending_buf.substr(0, MIN(chunk_size_update, pending_buf.size()));
-							std::cout << "sub size = " << sub.size() << std::endl;
 							body.append(sub);
 							pending_buf.erase(pending_buf.begin(), pending_buf.begin()+ sub.size());
 							chunk_size_update -= sub.size();
+	
 						}
 					}
 					if (chunk_size == (size_t)-1 && (n = pending_buf.find("\r\n")) != std::string::npos){
 						chunk_size = std::stol(pending_buf.substr(0,n),0,16);
 						chunk_size_update = chunk_size;
-						pending_buf.erase(pending_buf.begin(),pending_buf.begin()+ n + 2);
+						pending_buf.erase(pending_buf.begin(),pending_buf.begin() + n + 2);
 						if(chunk_size_update == 0)
 							state++;
-					}
-					else{
-						break;
 					}
 				}
 			}
@@ -189,7 +188,7 @@ class Request
 				//print();
 			}
 			//print();
-			std::cout << "body size = " << ((float)body.size() / (float)ft::atoi(headers["Content-Length"].c_str()))*100 << std::endl;
+			// std::cout << "body size = " << ((float)body.size() / (float)ft::atoi(headers["Content-Length"].c_str()))*100 <<"%"<< std::endl;
 			return (0);
 		}
 

@@ -143,7 +143,7 @@ class Webserv
 						else { // client socket ready for reading
 							char buff[2000000] = {0};
 							int rd = recv(fd, buff, 2000000, 0);
-							std::cout << "RD = " << rd << std::endl;
+							//std::cout << "RD = " << rd << std::endl;
 							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
@@ -181,7 +181,7 @@ class Webserv
 							{
 								// which server ?
 								Server *srv = getChild(servers[client_to_srv_idx[fd]]->getConfig().getPort(), client_to_req[fd].getHeader("Host") );
-								std::cout << srv << std::endl;
+								// std::cout << srv << std::endl;
 								client_to_res.insert(
 									std::pair<int, Response>(
 										fd,
