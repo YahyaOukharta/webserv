@@ -83,7 +83,7 @@ class ft {
         static int	atoi(std::string const &str){
             return atoi(str.c_str());
         }
-        static int	count_digits(long long n)
+static int	count_digits(ssize_t n)
 {
 	int	res;
 
@@ -136,7 +136,7 @@ static void		ft_store(char *s, long n, size_t ndigits)
 
 static std::string itoa(long nbr)
 {
-	long long	n;
+	ssize_t  	n;
 	char		*result;
 	int			negative;
 	int			n_digits;

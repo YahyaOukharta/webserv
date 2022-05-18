@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <time.h>
 
+# define MIN(a,b)  a<b?a:b
+# define MAX(a,b)  a>b?a:b
+
 std::vector<std::string> split_to_lines(std::string text, std::string delimiter = std::string("\r\n"))
 {
     std::vector<std::string> res;

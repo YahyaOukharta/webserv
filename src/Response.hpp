@@ -115,9 +115,9 @@ class Response
 		
 		int cgiPid;
 
-		Upload	uploadFile;
 	public:
 
+		Upload	uploadFile;
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
 			cgiPid = -1;
@@ -181,6 +181,7 @@ class Response
 			statusString = src.getStatusString();
 
 			cgiPid = src.getCgiPid();
+			uploadFile = src.uploadFile;
 		}
 		~Response(){}
 
@@ -554,12 +555,14 @@ class Response
 		bool create(){ // here process upload, 500 if fails
 			//std::cout << "CREATE\n";
 			uploadFile = Upload(req, *location);
+
+			std::cout << "index = " << uploadFile.getIndex() << std::endl;
 			// while(!uploadFile.is_done())
 			// {
 			// 	// std::cout << "here\n";
 			// 	uploadFile.createFile();
 			// }
-			statusCode = StatusCodes::CREATED();
+			// statusCode = StatusCodes::CREATED();
 			// return false;
 			return true;
 		}
