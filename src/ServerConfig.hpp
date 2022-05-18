@@ -29,7 +29,7 @@ class ServerConfig
 		std::vector<Location> _locations;
 
 		int			_backlog; //request queue size
-
+		int			_isChild;
 
 
 	public:
@@ -45,6 +45,7 @@ class ServerConfig
 			std::string default_error_page,
 			std::vector<std::string> allowed_methods,
 			std::vector<std::string> index,
+			bool isChild,
 
 			int backlog
 		){
@@ -57,6 +58,8 @@ class ServerConfig
 			_allowed_methods = allowed_methods;
 			_default_error_page = default_error_page;
 			_index = index;
+
+			_isChild = isChild;
 		};
 		void setLocations(std::vector<Location> const &locs){
 			_locations = locs;
@@ -113,6 +116,9 @@ class ServerConfig
 			_allowed_methods = rhs.getAllowedMethods();
 			_default_error_page = rhs.getDefaultErrorPage();
 			_index = rhs.getIndex();
+
+			_isChild = rhs.getIsChild();
+
 			setLocations(rhs.getLocations());
 			return *this;
 		}
@@ -129,7 +135,9 @@ class ServerConfig
 		int			getBacklog() const{
 			return _backlog;
 		}
-
+		bool		getIsChild() const {
+			return _isChild;
+		}
 		int getBodySizeLimit() const {
 			return _body_size_limit;
 		}

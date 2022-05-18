@@ -44,6 +44,7 @@ class Config
             std::string default_error_pages;
             // std::map<int, std::string> error_pages; //int for error number string for path for later
             std::vector<Location> locations; // containes all locations of a server
+            bool isChild;
             
         };
         public:

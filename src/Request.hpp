@@ -38,8 +38,9 @@ class Request
 
 	public:
 
-		Request(){
-
+		Request():	protocol(""), version(""), method(""), path(""), query(""), 
+					body(""), body_filename(""), req_time(0), boundary("")
+		{
 		}
 		Request(std::string raw_req)
 		{
@@ -93,6 +94,14 @@ class Request
 		}
 
 		// parsing
+
+		int	handle_update(std::string buff)
+		{
+			if (headers.empty())
+			{
+				
+			}
+		}
 	
 		int parse_request(std::string raw_req){
 

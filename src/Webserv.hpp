@@ -91,6 +91,8 @@ class Webserv
 			FD_ZERO(&master_wr_set);
 			
 			for (srv_vec_it it = servers.begin(); it!= servers.end(); ++it){ //add servers socks to reading set
+				if ((*it)->getConfig().getIsChild())
+					continue;
 				int sock = (*it)->getSocket();
 				FD_SET (sock, &master_rd_set);
 				if (sock > max_fd)
@@ -185,12 +187,16 @@ class Webserv
 						if (client_to_req[fd].getVersion() != "")
 						{
 							if (!client_to_res.count(fd))
+							{
+								// which server ?
+								Server *srv = getChild(servers[client_to_srv_idx[fd]]->getConfig().getPort(), client_to_req[fd].getHeader("Host") );
 								client_to_res.insert(
 									std::pair<int, Response>(
 										fd,
-										Response(client_to_req[fd], servers[client_to_srv_idx[fd]])
+										Response(client_to_req[fd], srv ? srv : servers[client_to_srv_idx[fd]])
 									)
 								);
+							}
 							std::string buf = client_to_res[fd].getResponseBufferWithoutBody();
 							if (buf == "")
 							{
@@ -244,6 +250,16 @@ class Webserv
 			}
 		}
 
+		Server *getChild(int port, std::string server_name) const{
+			if(server_name == "") return (0);
+			for (srv_vec_cit it = servers.begin(); it != servers.end(); ++it){
+				if ((*it)->getConfig().getPort() == port 
+				&& (*it)->getConfig().getIsChild()
+				&& (*it)->getConfig().getName() == server_name)
+				return (*it);
+			}
+			return (0);
+		}
 	private:
 
 };

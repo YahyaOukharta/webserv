@@ -50,6 +50,7 @@ class Server
 				srv_conf.default_error_pages,
 				srv_conf.allowed_methods,
 				ft::split_to_lines(srv_conf.index, "/"),
+				srv_conf.isChild,
 				1000
 			);
 			if(!FileSystem::fileExists(conf.getDefaultErrorPage()))
@@ -133,31 +134,37 @@ class Server
 				return (-1);
 			}
 
-			//init socket
-			int error;
-			if((error = init_socket())){
-				throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
-				return (error);
+			if (!getConfig().getIsChild())
+			{
+				//init socket
+				int error;
+				if((error = init_socket())){
+					throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
+					return (error);
+				}
+
+				//bind to address
+				if((bind_socket())){
+					//perror("listen");
+					throw(webserv_exception("Error binding "));
+					return (-3);
+				}
+
+				// listen
+				if(listen(sock, 1024)){
+					//perror("listen");
+					throw(webserv_exception("Error listening "));
+					return (-4);
+				}
+
+				// set server sock to non blocking mode
+				fcntl(sock, F_SETFL, O_NONBLOCK);
+
+				std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			}
-
-			//bind to address
-			if((bind_socket())){
-				//perror("listen");
-				throw(webserv_exception("Error binding "));
-				return (-3);
+			else{
+				std::cout << "Virtual Server ready on port " << conf.getPort() << std::endl;
 			}
-
-			// listen
-			if(listen(sock, 1024)){
-				//perror("listen");
-				throw(webserv_exception("Error listening "));
-				return (-4);
-			}
-
-			// set server sock to non blocking mode
-			fcntl(sock, F_SETFL, O_NONBLOCK);
-
-			 std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			return (0);
 		}
 
