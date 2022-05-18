@@ -15,7 +15,7 @@ int main(int ac, char **av)
         while(1)
             srv.run();
     }
-    catch(webserv_exception const &e){
+    catch(std::exception const &e){
         std::cerr << e.what() << std::endl;
         return (1);
     }
