@@ -143,7 +143,7 @@ class Webserv
 						else { // client socket ready for reading
 							char buff[2000000] = {0};
 							int rd = recv(fd, buff, 2000000, 0);
-							// std::cout << "RD = " << rd << std::endl;
+							std::cout << "RD = " << rd << std::endl;
 							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
@@ -153,32 +153,23 @@ class Webserv
 									max_fd -= 1;
 							}
 							else{
- 								client_to_req_buf[fd].append(buff, rd);
-								try{
-									client_to_req[fd] = Request(client_to_req_buf[fd]);
-									if(client_to_req[fd].getVersion().size()) rd = 0;
-								}
-								catch(webserv_exception const &e){
-									//std::cout << e.what() << std::endl;
-									(void)e;
-								}
-								if (rd == 0 )
+								if(!client_to_req.count(fd))
+									client_to_req[fd] = Request();
+								client_to_req[fd].handle_request_update(buff, rd);
+ 
+								if (rd == 0 || client_to_req[fd].getState() == 3)
 								{ // done reading
-									try{
-										// std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
-										if(!client_to_req[fd].getVersion().size())
-										client_to_req[fd] = Request(client_to_req_buf[fd]);
-										//req.print();
+									if (client_to_req[fd].getState() == 3)
+									{
+										client_to_req[fd].print();
+										FD_SET(fd, &master_wr_set);
 
 									}
-									catch(webserv_exception const& e){ // bad request
-										//std::cout << e.what() << " " << fd << std::endl;
+									else{
 										client_to_req_buf.erase(fd);
+										close(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
-									FD_SET(fd, &master_wr_set);
-									//std::cout << "buf " << client_to_req_buf[fd] << std::endl;
-									client_to_req_buf.erase(fd);
 								}
 							}
 						}
@@ -190,6 +181,7 @@ class Webserv
 							{
 								// which server ?
 								Server *srv = getChild(servers[client_to_srv_idx[fd]]->getConfig().getPort(), client_to_req[fd].getHeader("Host") );
+								std::cout << srv << std::endl;
 								client_to_res.insert(
 									std::pair<int, Response>(
 										fd,
