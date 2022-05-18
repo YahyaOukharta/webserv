@@ -554,6 +554,9 @@ class Response
 		bool create(){ // here process upload, 500 if fails
 			//std::cout << "CREATE\n";
 			uploadFile = Upload(req, *location);
+
+			std::cout << "index = " << uploadFile.getIndex() << std::endl;
+			std::cout << "done = " << uploadFile.is_done() << std::endl;
 			// while(!uploadFile.is_done())
 			// {
 			// 	// std::cout << "here\n";

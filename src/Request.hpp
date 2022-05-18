@@ -115,12 +115,14 @@ class Request
 					int ret = parse_first_line(pending_buf.substr(0,n));
 					if (ret)
 					{
-	//						std::cout << "something wrong with first line" << std::endl;
+						//std::cout << "something wrong with first line" << std::endl;
 					}
 					else
 					{
 						pending_buf.erase(pending_buf.begin(),pending_buf.begin()+ n + 2);
 						state++;
+						parseUrl();
+						parseQuery();
 						// std::cout << "done parsing first line" << std::endl;
 						//return (0);
 					}
@@ -139,6 +141,11 @@ class Request
 					}
 					pending_buf.erase(pending_buf.begin(),pending_buf.begin()+ n + 4);
 					state++;
+					if (!headers["Content-Type"].compare(0, 19, "multipart/form-data"))
+					{
+						vec	split_ret = split_first(headers["Content-Type"], ';');
+						boundary = trim(split_first(split_ret[1], '=')[1], "-");
+					}
 					// std::cout << "done parsing headers" << std::endl;
 					//return (0);
 				}
@@ -258,27 +265,40 @@ class Request
 		
 		void parseUrl(){
 			size_t n = 0;
+			std::string digits = "0123456789ABCDEF";
 			while((n = path.find('%', n )) != std::string::npos)
 			{
-				std::string sp = path.substr(n+1,2);
-				unsigned int x;   
-				std::stringstream ss;
-				ss << std::hex << sp;
-				ss >> x;
-				path.replace(n, 3,std::string(1,(char)x));
+				if(n + 2 < path.size()
+			 	&& digits.find(path[n+1]) != std::string::npos
+			 	&& digits.find(path[n+2]) != std::string::npos)
+				{
+					std::string sp = path.substr(n+1,2);
+					unsigned int x;   
+					std::stringstream ss;
+					ss << std::hex << sp;
+					ss >> x;
+					path.replace(n, 3,std::string(1,(char)x));
+				}
+				else n++;
 			}
 		}
 		void parseQuery(){
 			size_t n = 0;
-
+			std::string digits = "0123456789ABCDEF";
 			while((n = query.find('%', n )) != std::string::npos)
 			{
-				std::string sp = query.substr(n+1,2);
-				unsigned int x;   
-				std::stringstream ss;
-				ss << std::hex << sp;
-				ss >> x;
-				query.replace(n, 3,std::string(1,(char)x));
+				if(n + 2 < path.size()
+			 	&& digits.find(path[n+1]) != std::string::npos
+			 	&& digits.find(path[n+2]) != std::string::npos)
+				{
+					std::string sp = query.substr(n+1,2);
+					unsigned int x;   
+					std::stringstream ss;
+					ss << std::hex << sp;
+					ss >> x;
+					query.replace(n, 3,std::string(1,(char)x));
+				}
+				else n++;
 			}
 		}
 

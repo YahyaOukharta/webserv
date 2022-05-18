@@ -93,7 +93,7 @@ class Upload
 
 			// size_t			i = 0;
 
-			size_t			end = i + 1000 <= buff.length() ? i + 1000 : buff.length();
+			size_t			end = i + 1e3 <= buff.length() ? i + 1e3 : buff.length();
 
 			content.reserve(buff.size());
 
@@ -121,6 +121,8 @@ class Upload
 					file.open(upload_path + name);
 				}
 			}
+
+			// std::cout << "i = " << i << " size = " << buff.size() << std::endl; 
 
 			for (; i < end; i++)
 			{
@@ -185,8 +187,10 @@ class Upload
 		}
 
 		bool	is_done()	{
-			// std::cout << "i = " << i << " size = " << buff.size() << std::endl;
+			std::cout << "i = " << i << " size = " << buff.size() << std::endl;
 			return i >= buff.size();
 		}
+
+		size_t	getIndex() const {	return i;	}
 
 };
