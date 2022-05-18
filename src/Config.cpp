@@ -426,11 +426,8 @@ Config::Config(const std::string s)
         std::string buffer;
 
         os << file.rdbuf();
-        buffer = os.str();
 
-        std::stringstream a(buffer);
-
-        while(std::getline(a, buffer))
+        while(std::getline(os, buffer))
         {
             ft::ltrim(buffer);
             ft::rtrim(buffer);
