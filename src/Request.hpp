@@ -135,7 +135,7 @@ class Request
 			}
 			parseUrl();
 			parseQuery();
-			// std::cout << "request "<< path <<" done" << std::endl;
+			std::cout << "request "<< path <<" done" << std::endl;
 			return (0);
 		}
 

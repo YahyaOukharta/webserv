@@ -93,6 +93,7 @@ class Upload
 
 			// size_t			i = 0;
 
+			std::cout << "in create file\n";
 			size_t			end = i + 1000 <= buff.length() ? i + 1000 : buff.length();
 
 			content.reserve(buff.size());
