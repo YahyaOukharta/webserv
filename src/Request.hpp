@@ -101,6 +101,18 @@ class Request
 		}
 
 		// parsing
+	
+		void setReqTimeAndBodyToFile(){
+			req_time = time(NULL);
+			if (method=="POST")
+			{
+				std::string fileName = "/tmp/body_" + ft::itoa(req_time);
+				int fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+				write(fd, body.c_str(), body.size());
+				body_filename = fileName;
+				close(fd);
+			}
+		}
 
 		int handle_request_update(char *buf, size_t s) {
 
@@ -160,7 +172,10 @@ class Request
 					body.append(pending_buf);
 					pending_buf.clear();
 					if(body.size() >= (u_int)ft::atoi(headers["Content-Length"].c_str()))
+					{
 						state++;
+						setReqTimeAndBodyToFile();
+					}
 				}
 				while(pending_buf.size())
 				{	
@@ -178,7 +193,6 @@ class Request
 							body.append(sub);
 							pending_buf.erase(pending_buf.begin(), pending_buf.begin()+ sub.size());
 							chunk_size_update -= sub.size();
-	
 						}
 					}
 					if (chunk_size == (size_t)-1 && (n = pending_buf.find("\r\n")) != std::string::npos){
@@ -186,7 +200,10 @@ class Request
 						chunk_size_update = chunk_size;
 						pending_buf.erase(pending_buf.begin(),pending_buf.begin() + n + 2);
 						if(chunk_size_update == 0)
+						{
 							state++;
+							setReqTimeAndBodyToFile();
+						}
 					}
 				}
 			}
