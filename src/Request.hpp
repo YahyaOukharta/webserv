@@ -98,6 +98,7 @@ class Request
 			body_filename = rhs.getBodyFilename();
 			req_time = rhs.getTime();
 			boundary = rhs.getBoundary();
+			boundary_idx = rhs.boundary_idx;
 			initRepresentationHeaders();
 			initRequestHeaders();
 			return *this;
@@ -213,7 +214,7 @@ class Request
 				if(boundary != "")
 				{
 					size_t bound;
-					while ((bound = body.find(boundary, (boundary_idx.size() ? boundary_idx[boundary_idx.size() - 1] + 1 : 58 ))) != std::string::npos){
+					while ((bound = body.find(boundary, (boundary_idx.size() ? boundary_idx[boundary_idx.size() - 1] + 1 : 0 ))) != std::string::npos){
 						boundary_idx.push_back(bound);
 					}
 				}
@@ -377,6 +378,7 @@ class Request
 		int	getState() const {
 			return state;
 		}
+		const std::vector<size_t>	&getIndexes() const {	return boundary_idx;	}
 		void initRequestHeaders(){
 			for (std::map<std::string, std::string>::iterator it = headers.begin(); it!=headers.end(); ++it){
 				// if (std::find(it->first.begin(),it->first.end(), "Content-") == it->first.begin()){

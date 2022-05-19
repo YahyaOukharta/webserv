@@ -14,10 +14,6 @@ class Upload
 		Location								_location;
 		std::string								boundary;
 		Request									_req;
-		size_t									i;
-		std::string								name;
-		std::string								buff;
-		// std::string								content;
 
 	public:
 		Upload(){}
@@ -32,12 +28,12 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
-			i = 0;
-			name = "";
-			buff = req.getBody();
+			// i = 0;
+			// name = "";
+			// buff = req.getBody();
 
 			//std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
-			createFile();
+			createFile(req.getBody());
 		}
 
 		Upload 		&operator=(Upload const &u)
@@ -47,9 +43,9 @@ class Upload
 			_location = u._location;
 			boundary = u.boundary;
 
-			i = u.i;
-			name = u.name;
-			buff = u.buff;
+			// i = u.i;
+			// name = u.name;
+			// buff = u.buff;
 
 			return *this;
 		}
@@ -85,150 +81,52 @@ class Upload
 			return fileName;
 		}
 
-		void			createFile()
+		void			createFile(std::string const &buff)
 		{
 			std::string		name;
 			std::ofstream	file;
-			// std::string		content;
+
 			std::string		upload_path = _location.getUploadPath();
 
-			// size_t			i = 0;
-
-			// std::cout << "index = " << i << std::endl;
-
-			size_t			end = i + 1e4 <= buff.length() ? i + 1e4 : buff.length();
-
-			// content.reserve(buff.size());
+			std::vector<size_t>	indexes = _req.getIndexes();
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
 
-			// Checking boundary for multipart form data
-
-			if (!i)
+			if (boundary == "")
 			{
-				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+				name = upload_path + getFileName();
+				file.open(name);
+				file.write(buff.data(), buff.size());
+				file.close();
+			}
+			else
+			{
+			// std::cout << "buff = " << buff.size() << " index = " << indexes.size() << std::endl;
+				for (size_t i = 0; i < indexes.size() - 1; i++)
 				{
-					i = skip_buff(buff, i);
-					std::string str = buff.substr(i, buff.find("\n", i) - i);
-					name = getFileName(split_first(str, ':')[1]);
+					size_t	j = skip_buff(buff, indexes[i]);
+
+
+					std::string str = buff.substr(j, buff.find("\n", j) - j);
+					str = split_first(str, ':')[1];
+					name = getFileName(str);
+					if (name == "")
+						continue;
 					name = upload_path + name;
-					file.open(name);
-					// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
-					i = skip_buff(buff, i);
-					i = skip_buff(buff, skip_buff(buff, i));
-					std::cout << "NAME = " << name << std::endl;
-				}
-				else	// Thers is no boundary
-				{
-					name = getFileName();		
-					file.open(upload_path + name);
-				}
-			}
-
-			// std::cout << "i = " << i << " size = " << buff.size() << std::endl; 
-
-			for (; i < end;)
-			{
-				// Check if there is a boundary
-
-				// if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
-				// {
-				// 	std::cout << "new file\n";
-				// 	file.write(content.data(), content.size());
-				// 	file.close();
-				// 	i = skip_buff(buff, i);
-
-				// 	std::string str = buff.substr(i, buff.find("\n", i) - i);
-				// 	if (str.length() < 1)
-				// 		return ;
-				// 	str = split_first(str, ':')[1];
-				// 	name = getFileName(str);
-				// 	if (name == "")
-				// 		continue ;
-
-				// 	name = upload_path + name;
-
-				// 	// break;
-				// 	content = "";
-				// 	content.reserve(buff.size());
-
-				// 	file.open(name);
-				// 	i = skip_buff(buff, i);
-				// 	i = skip_buff(buff, skip_buff(buff, i));
 					
-				// }
-				if (boundary != "")
-				{
-					size_t next_bound = 0;
-					std::string	sub = buff.substr(i, 30);
-					// next_bound = buff.find(boundary, i);
-					next_bound = sub.find(boundary);
-					if (next_bound == std::string::npos)
-					{
-						// content.append(buff.data() + i, sub.size());
-						file.write(buff.data() + i, sub.size());
-						i += sub.size();
-					}
-					else
-					{
-						std::cout << "HEEERE\n";
-						std::cout << "\nSUB = \n" << sub[next_bound + 30] << std::endl;
-						std::cout << "name = " << name << std::endl;
-						next_bound += i;
-						// content.assign(buff.data() + i, next_bound - 29 - i);
-						// content.append(buff.data() + i, next_bound - 29 - i);
-						file.write(buff.data() + i, next_bound - 29 - i);
-						// std::cout << "size = " << content.size() << std::endl;
-						i = next_bound - 29;
-						// file.write(content.data(), content.size());
-						// content = "";
-						name = "";
-						file.close();
-						if (buff[next_bound + 30] == '-')
-							i = buff.size();
-						else
-						{
-							std::cout << "new file\n";
-							// file.write(content.data(), content.size());
-							// file.close();
-							i = skip_buff(buff, i);
+					// std::cout << "j = " << j << " name = " << name << " index = " << indexes[i] << std::endl;
+					file.open(name);
+					j = skip_buff(buff, skip_buff(buff, skip_buff(buff, j)));
 
-							std::string str = buff.substr(i, buff.find("\n", i) - i);
-							// if (str.length() < 1)
-							// 	continue ;
-							str = split_first(str, ':')[1];
-							name = getFileName(str);
-							if (name == "")
-								continue ;
+					file.write(buff.data() + j, indexes[i + 1] - j - 31);
 
-							name = upload_path + name;
-							std::cout << "new name = " << name << std::endl;
-
-							// break;
-							// content = "";
-							// content.reserve(buff.size());
-
-							file.open(name);
-							i = skip_buff(buff, i);
-							i = skip_buff(buff, skip_buff(buff, i));
-						}
-					}
-				}
-				else
-				{
-					file.write(buff.data(), buff.size());
 					file.close();
-					// content = buff;
-					i = buff.size();
 				}
 			}
-			// std::cout << "index = " << i << std::endl;
-			// file.write(content.data(), content.size());
-			// file.close();
 		}
 
-		size_t	skip_buff(std::string buf, size_t i)
+		size_t	skip_buff(std::string const &buf, size_t i)
 		{
 			for (; buf[i] != '\r'; i++)
 				;
@@ -244,11 +142,19 @@ class Upload
 			return i;
 		}
 
-		bool	is_done()	{
-			std::cout << "i = " << i << " size = " << buff.size() << std::endl;
-			return i >= buff.size();
-		}
+		size_t	getFSize(std::string name)
+		{
+			struct stat	st;
 
-		size_t	getIndex() const {	return i;	}
+			stat(name.c_str(), &st);
+
+			return st.st_size;
+		}
+		// bool	is_done()	{
+		// 	std::cout << "i = " << i << " size = " << buff.size() << std::endl;
+		// 	return i >= buff.size();
+		// }
+
+		// size_t	getIndex() const {	return i;	}
 
 };

@@ -556,7 +556,7 @@ class Response
 			//std::cout << "CREATE\n";
 			uploadFile = Upload(req, *location);
 
-			std::cout << "index = " << uploadFile.getIndex() << std::endl;
+			// std::cout << "index = " << uploadFile.getIndex() << std::endl;
 			// while(!uploadFile.is_done())
 			// {
 			// 	// std::cout << "here\n";
