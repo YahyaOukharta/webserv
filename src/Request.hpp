@@ -8,6 +8,7 @@
 #include "Utils.hpp"
 # include <fcntl.h>
 # define DEBUG 0
+# include <sys/time.h>
 //# include "Response.hpp"
 
 class Request
@@ -41,6 +42,8 @@ class Request
 		std::string pending_buf;
 		size_t chunk_size;
 		size_t chunk_size_update;
+
+		std::vector<size_t> boundary_idx;
 
 
 	public:
@@ -163,10 +166,8 @@ class Request
 				}
 			}
 			if (state == 2){
-				//std::cout <<"pending buf = <<"<<pending_buf << ">>" <<std::endl;
 				if (body.capacity() < (u_int)ft::atoi(headers["Content-Length"].c_str()))
 					body.reserve((u_int)ft::atoi(headers["Content-Length"].c_str()));
-				//std::cout << std::string(buf,s) << ">> size "<< s << std::endl;
 				if (headers["Transfer-Encoding"] != "chunked")
 				{
 					body.append(pending_buf);
@@ -209,6 +210,16 @@ class Request
 			}
 			
 			if(state == 3){
+				if(boundary != "")
+				{
+					size_t bound;
+					while ((bound = body.find(boundary, (boundary_idx.size() ? boundary_idx[boundary_idx.size() - 1] + 1 : 58 ))) != std::string::npos){
+						boundary_idx.push_back(bound);
+					}
+				}
+				// for(std::vector<size_t>::iterator it = boundary_idx.begin(); it!= boundary_idx.end(); ++it){
+				// 	std::cout << "->" << *it << std::endl;
+				// }
 				//print();
 			}
 			//print();
@@ -407,6 +418,10 @@ class Request
 			else
 				std::cout << "Empty body";
 
+			struct timeval time_now;
+			gettimeofday(&time_now, nullptr);
+			time_t msecs_time = (time_now.tv_sec * 1000) + (time_now.tv_usec / 1000);
+			std::cout <<" "<< msecs_time - req_time*1000<<"ms";
 			if (!no_endl)
 			std::cout << std::endl;
 		}

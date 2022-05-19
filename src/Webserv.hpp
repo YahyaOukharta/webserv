@@ -161,7 +161,6 @@ class Webserv
 								{ // done reading
 									if (client_to_req[fd].getState() == 3)
 									{
-										client_to_req[fd].print();
 										FD_SET(fd, &master_wr_set);
 
 									}
