@@ -80,7 +80,7 @@ class Server
 		//validate conf
 		bool isValidConf(){
 			if (conf.getName() == "" || conf.getHost()=="" 
-			|| conf.getPort() < 1024 || conf.getPort() > 65535 || !conf.getBacklog())
+			|| conf.getPort() < 79 || conf.getPort() > 65535 || !conf.getBacklog())
 				return false;
 			return true;
 		}
