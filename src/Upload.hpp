@@ -17,6 +17,7 @@ class Upload
 		size_t									i;
 		std::string								name;
 		std::string								buff;
+		// std::string								content;
 
 	public:
 		Upload(){}
@@ -88,16 +89,16 @@ class Upload
 		{
 			std::string		name;
 			std::ofstream	file;
-			std::string		content;
+			// std::string		content;
 			std::string		upload_path = _location.getUploadPath();
 
 			// size_t			i = 0;
 
-			std::cout << "index = " << i << std::endl;
+			// std::cout << "index = " << i << std::endl;
 
-			size_t			end = i + 1e3 <= buff.length() ? i + 1e3 : buff.length();
+			size_t			end = i + 1e4 <= buff.length() ? i + 1e4 : buff.length();
 
-			content.reserve(buff.size());
+			// content.reserve(buff.size());
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
@@ -116,6 +117,7 @@ class Upload
 					// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
 					i = skip_buff(buff, i);
 					i = skip_buff(buff, skip_buff(buff, i));
+					std::cout << "NAME = " << name << std::endl;
 				}
 				else	// Thers is no boundary
 				{
@@ -126,51 +128,104 @@ class Upload
 
 			// std::cout << "i = " << i << " size = " << buff.size() << std::endl; 
 
-			for (; i < end; i++)
+			for (; i < end;)
 			{
 				// Check if there is a boundary
 
-				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
-				{
-					file.write(content.data(), content.size());
-					file.close();
-					i = skip_buff(buff, i);
+				// if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+				// {
+				// 	std::cout << "new file\n";
+				// 	file.write(content.data(), content.size());
+				// 	file.close();
+				// 	i = skip_buff(buff, i);
 
-					std::string str = buff.substr(i, buff.find("\n", i) - i);
-					if (str.length() < 1)
-						return ;
-					str = split_first(str, ':')[1];
-					name = getFileName(str);
-					// if (name == "")
-					// 	return ;
+				// 	std::string str = buff.substr(i, buff.find("\n", i) - i);
+				// 	if (str.length() < 1)
+				// 		return ;
+				// 	str = split_first(str, ':')[1];
+				// 	name = getFileName(str);
+				// 	if (name == "")
+				// 		continue ;
 
-					name = upload_path + name;
+				// 	name = upload_path + name;
 
-					// break;
-					content = "";
-					content.reserve(buff.size());
+				// 	// break;
+				// 	content = "";
+				// 	content.reserve(buff.size());
 
-					file.open(name);
-					i = skip_buff(buff, i);
-					i = skip_buff(buff, skip_buff(buff, i));
+				// 	file.open(name);
+				// 	i = skip_buff(buff, i);
+				// 	i = skip_buff(buff, skip_buff(buff, i));
 					
-				}
-				size_t next_bound = 0;
+				// }
 				if (boundary != "")
-				{	
-					next_bound = buff.find(boundary, i);
-					content.assign(buff.data() + i, next_bound - 29 - i);
-					i = next_bound - 29 ;
+				{
+					size_t next_bound = 0;
+					std::string	sub = buff.substr(i, 30);
+					// next_bound = buff.find(boundary, i);
+					next_bound = sub.find(boundary);
+					if (next_bound == std::string::npos)
+					{
+						// content.append(buff.data() + i, sub.size());
+						file.write(buff.data() + i, sub.size());
+						i += sub.size();
+					}
+					else
+					{
+						std::cout << "HEEERE\n";
+						std::cout << "\nSUB = \n" << sub[next_bound + 30] << std::endl;
+						std::cout << "name = " << name << std::endl;
+						next_bound += i;
+						// content.assign(buff.data() + i, next_bound - 29 - i);
+						// content.append(buff.data() + i, next_bound - 29 - i);
+						file.write(buff.data() + i, next_bound - 29 - i);
+						// std::cout << "size = " << content.size() << std::endl;
+						i = next_bound - 29;
+						// file.write(content.data(), content.size());
+						// content = "";
+						name = "";
+						file.close();
+						if (buff[next_bound + 30] == '-')
+							i = buff.size();
+						else
+						{
+							std::cout << "new file\n";
+							// file.write(content.data(), content.size());
+							// file.close();
+							i = skip_buff(buff, i);
+
+							std::string str = buff.substr(i, buff.find("\n", i) - i);
+							// if (str.length() < 1)
+							// 	continue ;
+							str = split_first(str, ':')[1];
+							name = getFileName(str);
+							if (name == "")
+								continue ;
+
+							name = upload_path + name;
+							std::cout << "new name = " << name << std::endl;
+
+							// break;
+							// content = "";
+							// content.reserve(buff.size());
+
+							file.open(name);
+							i = skip_buff(buff, i);
+							i = skip_buff(buff, skip_buff(buff, i));
+						}
+					}
 				}
 				else
 				{
-					content = buff;
+					file.write(buff.data(), buff.size());
+					file.close();
+					// content = buff;
 					i = buff.size();
 				}
 			}
-			std::cout << "index = " << i << std::endl;
-			file.write(content.data(), content.size());
-			file.close();
+			// std::cout << "index = " << i << std::endl;
+			// file.write(content.data(), content.size());
+			// file.close();
 		}
 
 		size_t	skip_buff(std::string buf, size_t i)
