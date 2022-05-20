@@ -108,7 +108,7 @@ class Upload
 					size_t	j = skip_buff(buff, indexes[i]);
 
 
-					std::string str = buff.substr(j, buff.find("\n", j) - j);
+					std::string str(buff.data()+j, buff.find("\n", j) - j);
 					str = split_first(str, ':')[1];
 					name = getFileName(str);
 					if (name == "")
@@ -116,12 +116,12 @@ class Upload
 					name = upload_path + name;
 					
 					// std::cout << "j = " << j << " name = " << name << " index = " << indexes[i] << std::endl;
-					file.open(name);
+					int fd = open(name.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666);
 					j = skip_buff(buff, skip_buff(buff, skip_buff(buff, j)));
 
-					file.write(buff.data() + j, indexes[i + 1] - j - 31);
-
-					file.close();
+					write(fd,buff.data() + j, indexes[i + 1] - j - 31);
+					close(fd);
+					//file.close();
 				}
 			}
 		}

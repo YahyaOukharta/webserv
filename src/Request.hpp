@@ -213,10 +213,12 @@ class Request
 			if(state == 3){
 				if(boundary != "")
 				{
+					//std::cout << "blocking here" << std::endl;
 					size_t bound;
 					while ((bound = body.find(boundary, (boundary_idx.size() ? boundary_idx[boundary_idx.size() - 1] + 1 : 0 ))) != std::string::npos){
 						boundary_idx.push_back(bound);
 					}
+					//std::cout << "end of blocking" << std::endl;
 				}
 				// for(std::vector<size_t>::iterator it = boundary_idx.begin(); it!= boundary_idx.end(); ++it){
 				// 	std::cout << "->" << *it << std::endl;
