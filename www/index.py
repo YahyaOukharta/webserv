@@ -7,8 +7,8 @@ import cgi, cgitb
 form = cgi.FieldStorage() 
 
 # Get data from fields
-first_name = form.getvalue('fn')
-last_name  = form.getvalue('ln')
+first_name = form.getvalue('first_name')
+last_name  = form.getvalue('last_name')
 
 print "Content-type:text/html\r\n\r\n"
 print "<html>"

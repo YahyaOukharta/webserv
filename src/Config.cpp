@@ -15,7 +15,7 @@ int Config::check_args()
     
     while(i < _servers.size())
     {
-        if(_servers[i].port == -1 || _servers[i].host == "NULL" )
+        if(_servers[i].port == -1 || _servers[i].host == "NULL")
         {;return 1;}
         
         size_t j = 0;
@@ -39,7 +39,9 @@ void Config::set_defaults(size_t i)
     _servers[i].host = "NULL";
     _servers[i].index = "NULL";
     _servers[i].root = "NULL";
+    // _servers[i].name = "";
     _servers[i].bodysize_limit = -1;
+    _servers[i].isChild = 0;
     _servers[i].default_error_pages = "default/path";
 }
 
@@ -117,7 +119,7 @@ void Config::parse_location(std::string &line, const std::string &spliter)
                         l.method = str;
                         ////// ALLOWED METHODS
                         l.allowed_methods = ft::split_to_lines(l.method,"/");
-                        std::cout << l.method << " " << l.allowed_methods[0] << std::endl;
+                        // std::cout << l.method << " " << l.allowed_methods[0] << std::endl;
 
                     }
                 }
@@ -424,11 +426,8 @@ Config::Config(const std::string s)
         std::string buffer;
 
         os << file.rdbuf();
-        buffer = os.str();
 
-        std::stringstream a(buffer);
-
-        while(std::getline(a, buffer))
+        while(std::getline(os, buffer))
         {
             ft::ltrim(buffer);
             ft::rtrim(buffer);
@@ -448,20 +447,45 @@ Config::Config(const std::string s)
         // std::cout << index << " " << std::endl;
         throw std::invalid_argument( "Config file syntax is not proper\n");
     }
-    size_t i = -1;
-    std::cout << "==================>" + _servers[0].name << "<================="<< std::endl;
-     std::cout << "==================>" + _servers[0].default_error_pages << "<================="<< std::endl;
-    while(++i < _servers[0].locations.size())
-    {
-        std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root
-        + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension
-        + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index << " " << _servers[0].locations[i].redirect << " " << _servers[0].locations[i].upload_path;
+    // size_t i = -1;
+    // std::cout << "==================>" + _servers[0].name << "<================="<< std::endl;
+    //  std::cout << "==================>" + _servers[0].default_error_pages << "<================="<< std::endl;
+    // while(++i < _servers[0].locations.size())
+    // {
+    //     // std::cout << _servers[0].locations[i].path + "  " + _servers[0].locations[i].root
+    //     // + "  " + _servers[0].locations[i].cgi_path + "  " + _servers[0].locations[i].extension
+    //     // + " " + _servers[0].locations[i].autoindex << " " <<_servers[0].locations[i].index << " " << _servers[0].locations[i].redirect << " " << _servers[0].locations[i].upload_path;
         
-        std::cout << "  " + _servers[0].locations[i].method << " ";
+    //     // std::cout << "  " + _servers[0].locations[i].method << " ";
 
-        std::cout << get_all_locations(_servers[0])[i].bodysize_limit;
-        std::cout << std::endl;
+    //     // std::cout << get_all_locations(_servers[0])[i].bodysize_limit;
+        
+    // }
+    size_t i=0;
+    while(i < _servers.size())
+    {
+        size_t j = i;      
+        while(++j < _servers.size())
+        {
+            if((_servers[i].name == _servers[j].name && _servers[i].port == _servers[j].port)
+            || ((_servers[i].name == "_" || _servers[j].name == "_") && _servers[i].port == _servers[j].port))
+            {
+                throw std::invalid_argument( "bad argumet : cannot have same port and name or not set a name\n");
+            }
+            else if (_servers[i].port == _servers[j].port && _servers[i].name != _servers[j].name)
+            {
+                _servers[j].isChild = 1;
+            }
+        }
+        i++;
     }
+    // i = 0;
+    // while(i < _servers.size())
+    // {
+    //     std::cout << "isChild : " << _servers[i].isChild << std::endl;
+    //     i++;
+    // }
+    std::cout << std::endl;
 }
 // void Config::count_servers(const std::string &s)
 //  {

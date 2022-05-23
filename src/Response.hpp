@@ -78,9 +78,7 @@ class Implemented {
 	public:
 		static std::vector<std::string> METHODS(){
 			std::vector<std::string> m;
-			m.push_back("OPTIONS");
 			m.push_back("GET");
-			m.push_back("HEAD");
 			m.push_back("POST");
 			m.push_back("DELETE");
 			return (m);
@@ -116,8 +114,10 @@ class Response
 		bool isCgi;
 		
 		int cgiPid;
+
 	public:
 
+		Upload	uploadFile;
 
 		Response(Request const &_req, Server *srv) : statusCode(0), req(_req), server(srv), location(0), isCgi(0){
 			cgiPid = -1;
@@ -139,7 +139,7 @@ class Response
 			if(is_ressource_missing){
 				// ressource missing
 				statusCode = handle_retrieve_when_missing_block();
-				std::cout << statusCode << std::endl;
+				//std::cout << statusCode << std::endl;
 				if(statusCode) return;
 
 				statusCode = handle_create_block();
@@ -181,6 +181,7 @@ class Response
 			statusString = src.getStatusString();
 
 			cgiPid = src.getCgiPid();
+			uploadFile = src.uploadFile;
 		}
 		~Response(){}
 
@@ -499,7 +500,7 @@ class Response
 			|| (location->getUploadPath() != "NULL" && req.getMethod() == "POST" ) )
 				return true;
 			std::string const & resPath = getRessourcePath();
-			std::cout << "ressource path : "<< resPath << std::endl;
+			//std::cout << "ressource path : "<< resPath << std::endl;
 			return !FileSystem::fileExists(resPath);
 		}
 
@@ -552,9 +553,16 @@ class Response
 			return true;
 		}
 		bool create(){ // here process upload, 500 if fails
-			std::cout << "CREATE\n";
-			Upload	up(req, *location);
-			statusCode = StatusCodes::CREATED();
+			//std::cout << "CREATE\n";
+			uploadFile = Upload(req, *location);
+
+			// std::cout << "index = " << uploadFile.getIndex() << std::endl;
+			// while(!uploadFile.is_done())
+			// {
+			// 	// std::cout << "here\n";
+			// 	uploadFile.createFile();
+			// }
+			// statusCode = StatusCodes::CREATED();
 			// return false;
 			return true;
 		}
@@ -632,7 +640,7 @@ class Response
 			return (0);
 		}
 		bool is_method_head_get(){
-			return req.getMethod() == "GET" || req.getMethod() == "HEAD";
+			return req.getMethod() == "GET";
 		}
 		bool is_method_delete(){
 			return req.getMethod() == "DELETE";
@@ -648,8 +656,8 @@ class Response
 
 			if ((ret = stat(filename.c_str(), &buff)) < 0 || !(buff.st_mode & S_IWUSR))
 			{
-				std::cout << "ret = " << ret << std::endl;
-				std::cout << "not deleted\n";
+				//std::cout << "ret = " << ret << std::endl;
+				//std::cout << "not deleted\n";
 				return false;
 			}
 			if (remove(filename.c_str()) < 0)
@@ -748,6 +756,7 @@ class Response
 				if (cgi_output.find("Status: ")!= std::string::npos){
 					statusCode = ft::atoi(cgi_output.c_str() + cgi_output.find("Status: ") + 8);
 				}
+				close(fd);
 			}
 
 			representation_headers.clear();
@@ -764,7 +773,7 @@ class Response
 
 			if(statusCode == StatusCodes::MOVED_PERMANENTLY())
 				response_headers.insert(std::pair<std::string,std::string>("Location",location->getRedirect()));
-			// response_headers.insert(std::pair<std::string,std::string>("Content-Length","Webserv"));
+			response_headers.insert(std::pair<std::string,std::string>("Connection","close"));
 		}
 
 		// GETTERS
@@ -790,6 +799,8 @@ class Response
 		int getStatusCode()const {return statusCode;}
 		std::string getStatusString() const {return statusString;}
 		int getCgiPid()const {return cgiPid;}
+
+		Upload	getUpload() const {	return uploadFile;	}
 
 		std::string getResponseBufferWithoutBody() {
 

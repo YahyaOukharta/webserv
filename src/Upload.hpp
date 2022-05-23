@@ -28,18 +28,28 @@ class Upload
 			_location = loc;
 			boundary = req.getBoundary();
 
+			// i = 0;
+			// name = "";
+			// buff = req.getBody();
+
+			//std::cout << "Transfer-Encoding = " << _req_headers["Transfer-Encoding"] << std::endl;
 			createFile(req.getBody());
 		}
 
 		Upload 		&operator=(Upload const &u)
 		{
+			_req = u._req;
 			_req_headers = u._req_headers;
 			_location = u._location;
+			boundary = u.boundary;
+
+			// i = u.i;
+			// name = u.name;
+			// buff = u.buff;
 
 			return *this;
 		}
 		~Upload() {}
-
 		std::string		getFileName(std::string str = "")
 		{
 			// std::map<std::string, std::string>::iterator	it = _req_headers.find("Content-Disposition");
@@ -49,12 +59,12 @@ class Upload
 			std::vector<std::string>						ret = MimeTypes::mimeToExt(trim(_req_headers["Content-Type"], " \n\r"));
 			if (ret.size() > 0)
 				extention = ret[0];
-			std::cout << "extention = " << extention << std::endl;
+			//std::cout << "extention = " << extention << std::endl;
 			std::string										fileName = "uploaded_" + ft::itoa(time(NULL)) + (extention.size() ? "." + extention : "");
 			
 			if (str.length() > 1)
 			{
-				std::cout << "\nstr = " << str << std::endl;
+				//std::cout << "\nstr = " << str << std::endl;
 				std::string s = str.erase(0, str.find_first_of(";") + 1);
 				fileName = split_first(split_first(s, ';')[1], '=')[1];
 				fileName = trim(fileName, " \"\n\r");
@@ -71,64 +81,52 @@ class Upload
 			return fileName;
 		}
 
-		void			createFile(std::string buff)
+		void			createFile(std::string const &buff)
 		{
 			std::string		name;
 			std::ofstream	file;
-			std::string		content;
+
 			std::string		upload_path = _location.getUploadPath();
 
-			size_t			i = 0;
+			std::vector<size_t>	indexes = _req.getIndexes();
 
 			if(upload_path[upload_path.length() - 1] != '/')
 				upload_path  = upload_path + '/';
-			if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+
+			if (boundary == "")
 			{
-				i = skip_buff(buff, i);
-				std::string str = buff.substr(i, buff.find("\n", i) - i);
-				name = getFileName(split_first(str, ':')[1]);
-				name = upload_path + name;
+				name = upload_path + getFileName();
 				file.open(name);
-				// std::cout << (file.is_open() ? "YES ITS OPEN" : "NO ITS NOT OPEN") << std::endl;
-				i = skip_buff(buff, i);
-				i = skip_buff(buff, skip_buff(buff, i));
+				file.write(buff.data(), buff.size());
+				file.close();
 			}
 			else
 			{
-				name = getFileName();		
-				file.open(upload_path + name);
-			}
-
-			for (; i < buff.length(); i++)
-			{
-				if (buff[i] == '-' && boundary != "" && boundary == trim(buff.substr(i, not_from_boundary(buff, i) - i), "-\n\r"))
+			// std::cout << "buff = " << buff.size() << " index = " << indexes.size() << std::endl;
+				for (size_t i = 0; i < indexes.size() - 1; i++)
 				{
-					file << content;
-					file.close();
-					i = skip_buff(buff, i);
-					
-					std::string str = buff.substr(i, buff.find("\n", i) - i);
-					if (str.length() < 1)
-						return ;
+					size_t	j = skip_buff(buff, indexes[i]);
+
+
+					std::string str(buff.data()+j, buff.find("\n", j) - j);
 					str = split_first(str, ':')[1];
 					name = getFileName(str);
-					// if (name == "")
-					// 	return ;
+					if (name == "")
+						continue;
 					name = upload_path + name;
+					
+					// std::cout << "j = " << j << " name = " << name << " index = " << indexes[i] << std::endl;
+					int fd = open(name.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666);
+					j = skip_buff(buff, skip_buff(buff, skip_buff(buff, j)));
 
-					// break;
-					content = "";
-					file.open(name);
-					i = skip_buff(buff, i);
-					i = skip_buff(buff, skip_buff(buff, i));
+					write(fd,buff.data() + j, indexes[i + 1] - j - 31);
+					close(fd);
+					//file.close();
 				}
-				content += buff[i];
 			}
-			file << content;
-			file.close();
 		}
 
-		size_t	skip_buff(std::string buf, size_t i)
+		size_t	skip_buff(std::string const &buf, size_t i)
 		{
 			for (; buf[i] != '\r'; i++)
 				;
@@ -143,4 +141,20 @@ class Upload
 					break;
 			return i;
 		}
+
+		size_t	getFSize(std::string name)
+		{
+			struct stat	st;
+
+			stat(name.c_str(), &st);
+
+			return st.st_size;
+		}
+		// bool	is_done()	{
+		// 	std::cout << "i = " << i << " size = " << buff.size() << std::endl;
+		// 	return i >= buff.size();
+		// }
+
+		// size_t	getIndex() const {	return i;	}
+
 };

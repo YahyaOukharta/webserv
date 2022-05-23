@@ -83,7 +83,7 @@ class ft {
         static int	atoi(std::string const &str){
             return atoi(str.c_str());
         }
-        static int	count_digits(long long n)
+static int	count_digits(ssize_t n)
 {
 	int	res;
 
@@ -136,7 +136,7 @@ static void		ft_store(char *s, long n, size_t ndigits)
 
 static std::string itoa(long nbr)
 {
-	long long	n;
+	ssize_t  	n;
 	char		*result;
 	int			negative;
 	int			n_digits;
@@ -156,7 +156,9 @@ static std::string itoa(long nbr)
 		result[0] = '-';
 	result[n_digits + negative] = '\0';
 	ft::ft_store(result + negative, n, n_digits);
-	return (std::string(result));
+    std::string res(result);
+    free(result);
+	return (res);
 }
 };
 

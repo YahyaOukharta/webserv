@@ -12,7 +12,6 @@
 #include "Request.hpp"
 #include "FileSystem.hpp"
 
-#include <errno.h>
 #include <cstring>
 
 #include "Config.hpp"
@@ -51,6 +50,7 @@ class Server
 				srv_conf.default_error_pages,
 				srv_conf.allowed_methods,
 				ft::split_to_lines(srv_conf.index, "/"),
+				srv_conf.isChild,
 				1000
 			);
 			if(!FileSystem::fileExists(conf.getDefaultErrorPage()))
@@ -80,7 +80,7 @@ class Server
 		//validate conf
 		bool isValidConf(){
 			if (conf.getName() == "" || conf.getHost()=="" 
-			|| conf.getPort() < 1024 || conf.getPort() > 65535 || !conf.getBacklog())
+			|| conf.getPort() < 79 || conf.getPort() > 65535 || !conf.getBacklog())
 				return false;
 			return true;
 		}
@@ -134,31 +134,37 @@ class Server
 				return (-1);
 			}
 
-			//init socket
-			int error;
-			if((error = init_socket())){
-				throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
-				return (error);
+			if (!getConfig().getIsChild())
+			{
+				//init socket
+				int error;
+				if((error = init_socket())){
+					throw(webserv_exception("Error in init_socket : " + ft::ft::itoa(error)));
+					return (error);
+				}
+
+				//bind to address
+				if((bind_socket())){
+					//perror("listen");
+					throw(webserv_exception("Error binding "));
+					return (-3);
+				}
+
+				// listen
+				if(listen(sock, 1024)){
+					//perror("listen");
+					throw(webserv_exception("Error listening "));
+					return (-4);
+				}
+
+				// set server sock to non blocking mode
+				fcntl(sock, F_SETFL, O_NONBLOCK);
+
+				std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			}
-
-			//bind to address
-			if((bind_socket())){
-				//perror("listen");
-				throw(webserv_exception("Error binding "));
-				return (-3);
+			else{
+				std::cout << "Virtual Server ready on port " << conf.getPort() << std::endl;
 			}
-
-			// listen
-			if(listen(sock, 1024)){
-				//perror("listen");
-				throw(webserv_exception("Error listening "));
-				return (-4);
-			}
-
-			// set server sock to non blocking mode
-			fcntl(sock, F_SETFL, O_NONBLOCK);
-
-			 std::cout << "Server ready on port " << conf.getPort() << std::endl;
 			return (0);
 		}
 
@@ -216,10 +222,6 @@ class Server
 							while (client_sock != -1) { // Add to queue all incoming connections
 								client_sock = accept_connection();
 								if(client_sock == -1){
-									if(errno != EWOULDBLOCK){
-										std::cout << "Accept failed errno!=EWOUlDBLOCK" << std::endl;
-										return (1);
-									}
 									break;
 								}
 								//std::cout << "new connection on sock " << client_sock << std::endl;
@@ -331,7 +333,7 @@ class Server
 			last_slash = path.rfind('/');
 			std::string route = path.substr(0,(last_slash != std::string::npos ? last_slash + 1 : std::string::npos));
 
-			std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
+			//std::cout << "Requested path : " << path << " - route : " <<route <<  std::endl;
 
 			for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
 			{

@@ -84,13 +84,15 @@ class Webserv
 			// }
 			fd_set master_rd_set, working_rd_set; // reading fd sets
 			fd_set master_wr_set, working_wr_set; // writing fd sets
-			struct timeval select_timeout = {60, 0}; 
+			// struct timeval select_timeout = {1,0}; 
 			int max_fd = 0;
 
 			FD_ZERO(&master_rd_set);
 			FD_ZERO(&master_wr_set);
 			
 			for (srv_vec_it it = servers.begin(); it!= servers.end(); ++it){ //add servers socks to reading set
+				if ((*it)->getConfig().getIsChild())
+					continue;
 				int sock = (*it)->getSocket();
 				FD_SET (sock, &master_rd_set);
 				if (sock > max_fd)
@@ -104,8 +106,9 @@ class Webserv
 				
 				// std::cout << "sleeping 2 sec " << std::endl;
 				// usleep(1e5);
+				// std::cout << "max_fd : " << max_fd << std::endl;
+				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL,  NULL);
 
-				select_ret = select(max_fd + 1, &working_rd_set, &working_wr_set,NULL, &select_timeout);
 				if (select_ret == -1)
 				{
 					perror("ss");
@@ -114,28 +117,23 @@ class Webserv
 				}
 				if (select_ret == 0)
 				{
-					std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
+					//std::cout << "select timed out, pending reqs="<<client_to_req.size() << std::endl;
 					return;
 				}
 				for (int fd = 0; fd <= max_fd && select_ret > 0; ++fd){
 					if (FD_ISSET(fd, &working_rd_set)){ // fd is ready for writing
-						
+
 						select_ret--;
 						int srv_index;
 						if ((srv_index = getServerIndexWithSock(fd)) != -1){ // server socket ready for reading
+
 							// accept all connections
 							int client_sock = 0;
 							while (client_sock != -1){
 								client_sock = servers[srv_index]->accept_connection();
 								if (client_sock == -1){
-									if (errno != EWOULDBLOCK)
-									{
-										std::cout << "accepting failed" << std::endl;
-										return;
-									}
 									break;
 								}
-
 								client_to_srv_idx[client_sock] = srv_index; // map client sock to server it came from 
 								FD_SET(client_sock, &master_rd_set); // add client sock to master reading set
 
@@ -143,10 +141,10 @@ class Webserv
 							}
 						}
 						else { // client socket ready for reading
-
-							// std::string buf; // = FileSystem::getFileContent(fd);
-							char buff[102400] = {0};
-							int rd = recv(fd, buff, 102400, 0);
+							char buff[2000000] = {0};
+							int rd = recv(fd, buff, 2000000, 0);
+							//std::cout << "RD = " << rd << std::endl;
+							// std::cout << "BUFF = \n" << buff << std::endl;
 							if (rd == -1 ){ // recv failed
 								perror("recv :");
 								close(fd);
@@ -155,73 +153,41 @@ class Webserv
 									max_fd -= 1;
 							}
 							else{
- 								client_to_req_buf[fd].append(buff, rd);
-								try{
-									Request req(client_to_req_buf[fd]);
-									if(req.getVersion().size()) rd = 0;
-								}
-								catch(webserv_exception const &e){
-									//std::cout << e.what() << std::endl;
-									(void)e;
-								}
-								if (rd == 0 )
+								if(!client_to_req.count(fd))
+									client_to_req[fd] = Request();
+								client_to_req[fd].handle_request_update(buff, rd);
+ 
+								if (rd == 0 || client_to_req[fd].getState() == 3)
 								{ // done reading
-									try{
-										std::cout << "\n[" << client_to_srv_idx[fd] << "] " ;
-										Request req(client_to_req_buf[fd]);
-										client_to_req[fd] = req;
-										req.print();
+									if (client_to_req[fd].getState() == 3)
+									{
+										FD_SET(fd, &master_wr_set);
 
 									}
-									catch(webserv_exception const& e){ // bad request
-										std::cout << e.what() << std::endl;
+									else{
 										client_to_req_buf.erase(fd);
+										close(fd);
 									}
 									FD_CLR(fd, &master_rd_set);
-									FD_SET(fd, &master_wr_set);
-									//std::cout << "buf " << client_to_req_buf[fd] << std::endl;
-									client_to_req_buf.erase(fd);
 								}
 							}
 						}
 					}
 					else if(FD_ISSET(fd, &working_wr_set)){
-						// Request req = client_to_req[fd];
-						// std::string response;
-
-						// client_to_req.erase(fd);
-						// // response
-						// if(req.getVersion()=="")
-						// {
-						// 	response=("HTTP/1.1 500 BAD REQUEST\r\nAA:OO\r\nBB:OO\r\nCC:OO\r\n\r\n\r\n");
-
-						// }
-						// else if(!client_to_res_buf[fd].size()){
-						// 	Response res(req, servers[client_to_srv_idx[fd]]);
-						// 	response.append(res.getResponseBufferWithoutBody());
-						// 	response.append(FileSystem::getFileContent(res.getRessourcePath())+"\r\n");
-						// //
-						// }
-
-						// // Response res(req, servers[client_to_srv_idx[fd]]);
-						// // std::cout << "statusCode = " << res.getStatusCode() << std::endl;
-						// // std::cout << res.getResponseBufferWithoutBody() << std::endl;
-
-						// client_to_srv_idx.erase(fd);
-						// size_t ret = send(fd, response.c_str(), response.size(), 0);
-						// std::cout << ret <<" sent, "<<response.size()<< " total" << std::endl;
-						// close(fd);
-
-						// 
 						if (client_to_req[fd].getVersion() != "")
 						{
 							if (!client_to_res.count(fd))
+							{
+								// which server ?
+								Server *srv = getChild(servers[client_to_srv_idx[fd]]->getConfig().getPort(), client_to_req[fd].getHeader("Host") );
+								// std::cout << srv << std::endl;
 								client_to_res.insert(
 									std::pair<int, Response>(
 										fd,
-										Response(client_to_req[fd], servers[client_to_srv_idx[fd]])
+										Response(client_to_req[fd], srv ? srv : servers[client_to_srv_idx[fd]])
 									)
 								);
+							}
 							std::string buf = client_to_res[fd].getResponseBufferWithoutBody();
 							if (buf == "")
 							{
@@ -230,7 +196,10 @@ class Webserv
 									client_to_res[fd].timeout();
 								continue;
 							}
-							
+
+							std::cout << "[" << client_to_srv_idx[fd] << "] " << "\033[1;34m" << client_to_res[fd].getStatusCode() << "\033[0m " ;
+							client_to_req[fd].print(); 
+
 							client_to_res_buf[fd].append(buf);
 							client_to_res_buf[fd].append(FileSystem::getFileContent(client_to_res[fd].getRessourcePath())+"\r\n");
 							client_to_res.erase(fd);
@@ -241,7 +210,7 @@ class Webserv
 						client_to_res_buf[fd].erase(client_to_res_buf[fd].begin(), client_to_res_buf[fd].begin() + ret);
 						//std::cout << " left " << client_to_res_buf[fd].size() << std::endl ;
 
-						if (ret == -1 || !client_to_res_buf[fd].size())
+						if (ret <=0  || !client_to_res_buf[fd].size())
 						{
 							client_to_res_buf.erase(fd);
 							close(fd);
@@ -254,6 +223,8 @@ class Webserv
 						// FD_CLR(fd, &master_wr_set);
 						// while(FD_ISSET(max_fd, &master_rd_set) == 0 && FD_ISSET(max_fd, &master_wr_set) == 0)
 						// 	max_fd--;
+					}else {
+						//std::cout <<  "fd is  :" << fd << std::endl;
 					}
 				}
 			}
@@ -264,6 +235,16 @@ class Webserv
 			}
 		}
 
+		Server *getChild(int port, std::string server_name) const{
+			if(server_name == "") return (0);
+			for (srv_vec_cit it = servers.begin(); it != servers.end(); ++it){
+				if ((*it)->getConfig().getPort() == port 
+				&& (*it)->getConfig().getIsChild()
+				&& (*it)->getConfig().getName() == server_name)
+				return (*it);
+			}
+			return (0);
+		}
 	private:
 
 };

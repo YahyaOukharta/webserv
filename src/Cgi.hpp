@@ -62,8 +62,6 @@ public:
 			args[0] = (char *)cgi_location.c_str();
 			args[1] = (char *)req_file.c_str();
 			args[2] = NULL;
-
-			std::vector<std::string> spl = ft::split_to_lines(req_file, "/");
 			
 			setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 			setenv("SERVER_SOFTWARE", "Webserv 1.0", 1);
@@ -135,7 +133,7 @@ public:
 				
 				pid = fork_id;
 			}
-			//close(fd);
+			close(fd);
 			
 			return fileName;
 	}

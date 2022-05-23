@@ -63,7 +63,6 @@ class AutoIndex
 			html_file_buff = "<html>\n<head><title>Index of " + 
 								path + "</title></head>\n<body>\n<h1>Index of " + 
 								path + "</h1><hr><pre>\n";
-			std::cout << "req path auto index : " <<req.getPath() << std::endl;
 			if (dp != NULL)
 			{
 				while ((ep = readdir(dp)))
@@ -84,13 +83,17 @@ class AutoIndex
 					#else
 						date = dateOfCreation(st.st_birthtimespec);
 					#endif
+					std::string	fullName = name;
+					if (name.size() > 50)
+						name = name.substr(0, 46) + "...";
 					std::string firstPadding = std::string(50 - name.length(), ' ');
 					std::string secondPadding = std::string(30, ' ');
-					info = "<a href=\"" + req.getPath() + name +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + ft::itoa(st.st_size);
+					info = "<a href=\"" + req.getPath() + fullName +(isDir ? "/" : "") +"\">" + name + "</a>" + firstPadding + date + secondPadding + ft::itoa(st.st_size);
 					html_file_buff += "\n" + info;
 				}
 				html_file_buff += "\n</pre><hr></body>\n</html>";
 				createFile();
+				closedir(dp);
 			}
 			else
 				perror("Couldn't open the directory");
